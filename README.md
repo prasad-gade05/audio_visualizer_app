@@ -32,11 +32,11 @@ You need to have [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/) ins
 
 1.  Clone the repository:
     ```bash
-    git clone https://github.com/prasad-gade05/your-repo-name.git
+    git clone https://github.com/prasad-gade05/audio_visualizer_app.git
     ```
 2.  Navigate to the project directory:
     ```bash
-    cd your-repo-name
+    cd audio_visualizer_app
     ```
 3.  Install the dependencies:
     ```bash
