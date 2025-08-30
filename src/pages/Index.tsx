@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { LandingView } from "@/components/LandingView";
 import { MultiPlayerView } from "@/components/MultiPlayerView";
-import { MultiVisualizationController } from "@/components/MultiVisualizationController";
 import { FileUpload } from "@/components/FileUpload";
 import { SystemAudioCapture } from "@/components/SystemAudioCapture";
 import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
@@ -221,50 +220,36 @@ export default function Index() {
 
       case "filePlayer":
         return (
-          <div className="relative h-screen overflow-hidden">
-            <MultiPlayerView
-              mode="file"
-              fileName={fileName}
-              audioState={audioState}
-              audioData={fileAudioData}
-              isPlaying={audioState.isPlaying}
-              onBack={handleBack}
-              onPlay={play}
-              onPause={pause}
-              onSeek={seek}
-              onVolumeChange={setVolume}
-              onSettingsClick={() => console.log("Settings clicked")}
-              multiVisualizationConfig={multiVisualizationConfig}
-              onMultiVisualizationConfigChange={setMultiVisualizationConfig}
-            />
-            <MultiVisualizationController
-              config={multiVisualizationConfig}
-              onConfigChange={setMultiVisualizationConfig}
-              isVisible={true}
-            />
-          </div>
+          <MultiPlayerView
+            mode="file"
+            fileName={fileName}
+            audioState={audioState}
+            audioData={fileAudioData}
+            isPlaying={audioState.isPlaying}
+            onBack={handleBack}
+            onPlay={play}
+            onPause={pause}
+            onSeek={seek}
+            onVolumeChange={setVolume}
+            onSettingsClick={() => console.log("Settings clicked")}
+            multiVisualizationConfig={multiVisualizationConfig}
+            onMultiVisualizationConfigChange={setMultiVisualizationConfig}
+          />
         );
 
       case "systemPlayer":
         return (
-          <div className="relative h-screen overflow-hidden">
-            <MultiPlayerView
-              mode="system"
-              audioData={systemAudioData}
-              isPlaying={isCapturing}
-              isCapturing={isCapturing}
-              onBack={handleBack}
-              onStop={handleStop}
-              onSettingsClick={() => console.log("Settings clicked")}
-              multiVisualizationConfig={multiVisualizationConfig}
-              onMultiVisualizationConfigChange={setMultiVisualizationConfig}
-            />
-            <MultiVisualizationController
-              config={multiVisualizationConfig}
-              onConfigChange={setMultiVisualizationConfig}
-              isVisible={true}
-            />
-          </div>
+          <MultiPlayerView
+            mode="system"
+            audioData={systemAudioData}
+            isPlaying={isCapturing}
+            isCapturing={isCapturing}
+            onBack={handleBack}
+            onStop={handleStop}
+            onSettingsClick={() => console.log("Settings clicked")}
+            multiVisualizationConfig={multiVisualizationConfig}
+            onMultiVisualizationConfigChange={setMultiVisualizationConfig}
+          />
         );
 
       default:

@@ -33,12 +33,12 @@ export const MultiVisualizationController = ({
 
   return (
     <div
-      className={`fixed right-6 top-1/2 transform -translate-y-1/2 z-40 transition-all duration-300 ${
-        isVisible ? "opacity-100 translate-x-0" : "opacity-30 translate-x-2"
+      className={`transition-all duration-300 ${
+        isVisible ? "opacity-100" : "opacity-0"
       }`}
     >
       <div
-        className="glass p-3 space-y-2"
+        className="glass p-3 flex gap-2"
         style={{ boxShadow: "var(--box-shadow-glow-sm)" }}
       >
         {/* Toggle Controls */}

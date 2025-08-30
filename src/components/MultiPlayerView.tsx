@@ -9,6 +9,7 @@ import {
   SkipForward,
 } from "lucide-react";
 import { MultiAudioVisualizer } from "./MultiAudioVisualizer";
+import { MultiVisualizationController } from "./MultiVisualizationController";
 import { AudioState, AudioData, MultiVisualizationConfig } from "@/types/audio";
 import { Slider } from "@/components/ui/slider";
 
@@ -108,17 +109,17 @@ export const MultiPlayerView = ({
         />
       </div>
 
-      {/* Top Bar Overlay */}
+      {/* Now Playing Card - Bottom Left */}
       <div
-        className={`absolute top-0 left-0 right-0 z-20 p-6 transition-opacity duration-300 ${
+        className={`absolute bottom-6 left-6 z-20 transition-opacity duration-300 ${
           controlsVisible ? "opacity-100" : "opacity-0"
         }`}
       >
-        <div className="glass flex items-center justify-between p-4">
+        <div className="glass flex items-center gap-4 p-4 min-w-72">
           {/* Back Button */}
           <button
             onClick={mode === "system" && isCapturing ? onStop : onBack}
-            className="glass-interactive p-3 hover:scale-105 smooth-transition"
+            className="glass-interactive p-3 hover:scale-105 smooth-transition flex-shrink-0"
           >
             <ArrowLeft
               className="w-5 h-5"
@@ -127,9 +128,9 @@ export const MultiPlayerView = ({
           </button>
 
           {/* Track Info */}
-          <div className="flex-1 text-center px-6">
+          <div className="flex-1 min-w-0">
             <p
-              className="text-lg font-medium"
+              className="text-lg font-medium truncate"
               style={{ color: "var(--color-text-primary)" }}
             >
               {mode === "file"
@@ -147,7 +148,7 @@ export const MultiPlayerView = ({
           {/* Settings Button */}
           <button
             onClick={onSettingsClick}
-            className="glass-interactive p-3 hover:scale-105 smooth-transition"
+            className="glass-interactive p-3 hover:scale-105 smooth-transition flex-shrink-0"
           >
             <Settings
               className="w-5 h-5"
@@ -160,7 +161,7 @@ export const MultiPlayerView = ({
       {/* Bottom Controls Overlay (Only for file mode) */}
       {mode === "file" && audioState && (
         <div
-          className={`absolute bottom-0 left-1/2 transform -translate-x-1/2 z-20 p-6 transition-opacity duration-300 ${
+          className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20 transition-opacity duration-300 ${
             controlsVisible ? "opacity-100" : "opacity-0"
           }`}
         >
@@ -264,6 +265,19 @@ export const MultiPlayerView = ({
           </div>
         </div>
       )}
+
+      {/* Multi-Visualization Controller - Bottom Right */}
+      <div
+        className={`absolute bottom-6 right-6 z-20 transition-opacity duration-300 ${
+          controlsVisible ? "opacity-100" : "opacity-0"
+        }`}
+      >
+        <MultiVisualizationController
+          config={multiVisualizationConfig}
+          onConfigChange={onMultiVisualizationConfigChange}
+          isVisible={controlsVisible}
+        />
+      </div>
     </div>
   );
 };
