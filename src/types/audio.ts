@@ -20,6 +20,21 @@ export interface VisualizationConfig {
   intensity?: number;
 }
 
+export interface MultiVisualizationConfig {
+  enabled: {
+    bars: boolean;
+    circular: boolean;
+    waveform: boolean;
+    particles: boolean;
+  };
+  configs: {
+    bars: VisualizationConfig;
+    circular: VisualizationConfig;
+    waveform: VisualizationConfig;
+    particles: VisualizationConfig;
+  };
+}
+
 export interface AudioState {
   isPlaying: boolean;
   isLoaded: boolean;

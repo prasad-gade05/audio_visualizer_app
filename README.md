@@ -22,7 +22,7 @@ These instructions will get you a copy of the project up and running on your loc
 
 1.  Clone the repo:
     ```sh
-    git clone https://github.com/your_username/audio-visualizer.git
+    git clone https://github.com/prasad-gade05/audio-visualizer.git
     ```
 2.  Install the dependencies:
     ```sh
@@ -37,29 +37,30 @@ These instructions will get you a copy of the project up and running on your loc
 ## Usage
 
 1.  **File Upload Mode:**
-    -   Click on the "File Upload" tab.
-    -   Drag and drop an audio file or click to select a file from your computer.
-    -   Once the file is loaded, use the playback controls to play, pause, and seek through the audio.
-    -   The visualizer will react to the audio in real-time.
+
+    - Click on the "File Upload" tab.
+    - Drag and drop an audio file or click to select a file from your computer.
+    - Once the file is loaded, use the playback controls to play, pause, and seek through the audio.
+    - The visualizer will react to the audio in real-time.
 
 2.  **System Audio Mode:**
-    -   Click on the "System Audio" tab.
-    -   Click the "Start Capture" button. Your browser will ask for permission to capture your screen's audio.
-    -   Once you grant permission, any audio playing on your system will be visualized.
-    -   To stop the visualization, click the "Stop Capture" button.
+    - Click on the "System Audio" tab.
+    - Click the "Start Capture" button. Your browser will ask for permission to capture your screen's audio.
+    - Once you grant permission, any audio playing on your system will be visualized.
+    - To stop the visualization, click the "Stop Capture" button.
 
 ## Technologies Used
 
--   **Frontend:**
-    -   [React](https://reactjs.org/) - A JavaScript library for building user interfaces.
-    -   [Vite](https://vitejs.dev/) - A fast build tool and development server.
-    -   [TypeScript](https://www.typescriptlang.org/) - A typed superset of JavaScript.
-    -   [shadcn/ui](https://ui.shadcn.com/) - A collection of re-usable components built with Radix UI and Tailwind CSS.
-    -   [Tailwind CSS](https://tailwindcss.com/) - A utility-first CSS framework.
-    -   [Zustand](https://github.com/pmndrs/zustand) - A small, fast and scalable bearbones state-management solution.
-    -   [React Router](https://reactrouter.com/) - For routing and navigation.
--   **Backend:**
-    -   [Supabase](https://supabase.io/) - An open source Firebase alternative.
+- **Frontend:**
+  - [React](https://reactjs.org/) - A JavaScript library for building user interfaces.
+  - [Vite](https://vitejs.dev/) - A fast build tool and development server.
+  - [TypeScript](https://www.typescriptlang.org/) - A typed superset of JavaScript.
+  - [shadcn/ui](https://ui.shadcn.com/) - A collection of re-usable components built with Radix UI and Tailwind CSS.
+  - [Tailwind CSS](https://tailwindcss.com/) - A utility-first CSS framework.
+  - [Zustand](https://github.com/pmndrs/zustand) - A small, fast and scalable bearbones state-management solution.
+  - [React Router](https://reactrouter.com/) - For routing and navigation.
+- **Backend:**
+  - [Supabase](https://supabase.io/) - An open source Firebase alternative.
 
 ## Project Structure
 

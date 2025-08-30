@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { LandingView } from "@/components/LandingView";
-import { PlayerView } from "@/components/PlayerView";
-import { VisualizationModeSwitcher } from "@/components/VisualizationModeSwitcher";
+import { MultiPlayerView } from "@/components/MultiPlayerView";
+import { MultiVisualizationController } from "@/components/MultiVisualizationController";
 import { FileUpload } from "@/components/FileUpload";
 import { SystemAudioCapture } from "@/components/SystemAudioCapture";
 import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
 import { useSystemAudio } from "@/hooks/useSystemAudio";
-import { VisualizationConfig } from "@/types/audio";
+import { MultiVisualizationConfig } from "@/types/audio";
 
 type AppView =
   | "landing"
@@ -18,14 +18,52 @@ type AppView =
 export default function Index() {
   const [currentView, setCurrentView] = useState<AppView>("landing");
   const [fileName, setFileName] = useState<string>("");
-  const [visualizationConfig, setVisualizationConfig] =
-    useState<VisualizationConfig>({
-      type: "bars",
-      color: "#8A42FF",
-      sensitivity: 1,
-      smoothing: 0.8,
-      secondaryColor: "#00D1FF",
-      backgroundColor: "#0D0B14",
+  const [multiVisualizationConfig, setMultiVisualizationConfig] =
+    useState<MultiVisualizationConfig>({
+      enabled: {
+        bars: true,
+        circular: true,
+        waveform: true,
+        particles: true,
+      },
+      configs: {
+        bars: {
+          type: "bars",
+          color: "#8A42FF",
+          sensitivity: 1,
+          smoothing: 0.8,
+          secondaryColor: "#00D1FF",
+          backgroundColor: "#0D0B14",
+          barCount: 32,
+        },
+        circular: {
+          type: "circular",
+          color: "#00D1FF",
+          sensitivity: 1,
+          smoothing: 0.8,
+          secondaryColor: "#FF55E1",
+          backgroundColor: "#0D0B14",
+          radius: 1,
+          intensity: 1,
+        },
+        waveform: {
+          type: "waveform",
+          color: "#FF55E1",
+          sensitivity: 1,
+          smoothing: 0.8,
+          secondaryColor: "#8A42FF",
+          backgroundColor: "#0D0B14",
+        },
+        particles: {
+          type: "particles",
+          color: "#8A42FF",
+          sensitivity: 1,
+          smoothing: 0.8,
+          secondaryColor: "#00D1FF",
+          backgroundColor: "#0D0B14",
+          particleCount: 100,
+        },
+      },
     });
 
   // File-based audio
@@ -184,7 +222,7 @@ export default function Index() {
       case "filePlayer":
         return (
           <div className="relative h-screen overflow-hidden">
-            <PlayerView
+            <MultiPlayerView
               mode="file"
               fileName={fileName}
               audioState={audioState}
@@ -196,12 +234,12 @@ export default function Index() {
               onSeek={seek}
               onVolumeChange={setVolume}
               onSettingsClick={() => console.log("Settings clicked")}
-              visualizationConfig={visualizationConfig}
-              onVisualizationConfigChange={setVisualizationConfig}
+              multiVisualizationConfig={multiVisualizationConfig}
+              onMultiVisualizationConfigChange={setMultiVisualizationConfig}
             />
-            <VisualizationModeSwitcher
-              config={visualizationConfig}
-              onConfigChange={setVisualizationConfig}
+            <MultiVisualizationController
+              config={multiVisualizationConfig}
+              onConfigChange={setMultiVisualizationConfig}
               isVisible={true}
             />
           </div>
@@ -210,7 +248,7 @@ export default function Index() {
       case "systemPlayer":
         return (
           <div className="relative h-screen overflow-hidden">
-            <PlayerView
+            <MultiPlayerView
               mode="system"
               audioData={systemAudioData}
               isPlaying={isCapturing}
@@ -218,12 +256,12 @@ export default function Index() {
               onBack={handleBack}
               onStop={handleStop}
               onSettingsClick={() => console.log("Settings clicked")}
-              visualizationConfig={visualizationConfig}
-              onVisualizationConfigChange={setVisualizationConfig}
+              multiVisualizationConfig={multiVisualizationConfig}
+              onMultiVisualizationConfigChange={setMultiVisualizationConfig}
             />
-            <VisualizationModeSwitcher
-              config={visualizationConfig}
-              onConfigChange={setVisualizationConfig}
+            <MultiVisualizationController
+              config={multiVisualizationConfig}
+              onConfigChange={setMultiVisualizationConfig}
               isVisible={true}
             />
           </div>
