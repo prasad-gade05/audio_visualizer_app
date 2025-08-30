@@ -1,14 +1,24 @@
 # Audio Visualizer
 
-This is a web-based audio visualizer that allows you to visualize audio from either an uploaded file or your system's audio output in real-time.
+This is a web-based audio visualization tool built with React, Vite, and shadcn/ui. It allows users to upload audio files, capture system audio, and visualize the audio in different ways, including a 3D globe and a traditional audio visualizer.
 
 ## Features
 
-- **File-based Visualization:** Upload your own audio files (MP3, WAV, OGG, M4A) and see them visualized.
-- **System Audio Capture:** Capture and visualize any audio playing on your computer, such as music from streaming services, game audio, or video soundtracks.
-- **Real-time Visualization:** The visualization reacts instantly to the audio input.
-- **Playback Controls:** For file-based audio, you have standard playback controls like play, pause, seek, and volume control.
-- **Modern UI:** A sleek and user-friendly interface built with React, shadcn/ui, and Tailwind CSS.
+*   **File Upload:** Upload your own audio files to visualize.
+*   **System Audio Capture:** Capture and visualize audio directly from your system's output.
+*   **Multiple Visualization Modes:** Switch between different visualization styles.
+*   **3D Audio Globe:** A unique 3D visualization of audio data.
+*   **Modern UI:** Built with shadcn/ui and Tailwind CSS for a clean and responsive user interface.
+
+## Technologies Used
+
+*   **Frontend:** [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/), [Vite](https://vitejs.dev/)
+*   **UI Components:** [shadcn/ui](https://ui.shadcn.com/)
+*   **Styling:** [Tailwind CSS](https://tailwindcss.com/)
+*   **Routing:** [React Router DOM](https://reactrouter.com/)
+*   **State Management:** [Zustand](https://zustand-demo.pmnd.rs/)
+*   **Data Fetching:** [TanStack Query](https://tanstack.com/query/latest)
+*   **Linting:** [ESLint](https://eslint.org/)
 
 ## Getting Started
 
@@ -16,65 +26,61 @@ These instructions will get you a copy of the project up and running on your loc
 
 ### Prerequisites
 
-- Node.js and pnpm installed on your system.
+You need to have [Node.js](https://nodejs.org/) and [pnpm](https://pnpm.io/) installed on your system.
 
 ### Installation
 
-1.  Clone the repo:
-    ```sh
-    git clone https://github.com/prasad-gade05/audio-visualizer.git
+1.  Clone the repository:
+    ```bash
+    git clone https://github.com/your-username/your-repo-name.git
     ```
-2.  Install the dependencies:
-    ```sh
+2.  Navigate to the project directory:
+    ```bash
+    cd your-repo-name
+    ```
+3.  Install the dependencies:
+    ```bash
     pnpm install
     ```
-3.  Start the development server:
-    ```sh
-    pnpm run dev
-    ```
-    The application will be available at `http://localhost:5173`.
 
-## Usage
+### Running the Application
 
-1.  **File Upload Mode:**
+To start the development server, run the following command:
 
-    - Click on the "File Upload" tab.
-    - Drag and drop an audio file or click to select a file from your computer.
-    - Once the file is loaded, use the playback controls to play, pause, and seek through the audio.
-    - The visualizer will react to the audio in real-time.
+```bash
+pnpm dev
+```
 
-2.  **System Audio Mode:**
-    - Click on the "System Audio" tab.
-    - Click the "Start Capture" button. Your browser will ask for permission to capture your screen's audio.
-    - Once you grant permission, any audio playing on your system will be visualized.
-    - To stop the visualization, click the "Stop Capture" button.
+This will start the application in development mode. Open [http://localhost:5173](http://localhost:5173) to view it in the browser.
 
-## Technologies Used
+## Available Scripts
 
-- **Frontend:**
-  - [React](https://reactjs.org/) - A JavaScript library for building user interfaces.
-  - [Vite](https://vitejs.dev/) - A fast build tool and development server.
-  - [TypeScript](https://www.typescriptlang.org/) - A typed superset of JavaScript.
-  - [shadcn/ui](https://ui.shadcn.com/) - A collection of re-usable components built with Radix UI and Tailwind CSS.
-  - [Tailwind CSS](https://tailwindcss.com/) - A utility-first CSS framework.
-  - [Zustand](https://github.com/pmndrs/zustand) - A small, fast and scalable bearbones state-management solution.
-  - [React Router](https://reactrouter.com/) - For routing and navigation.
-- **Backend:**
-  - [Supabase](https://supabase.io/) - An open source Firebase alternative.
+In the project directory, you can run:
+
+*   `pnpm dev`: Runs the app in the development mode.
+*   `pnpm build`: Builds the app for production to the `dist` folder.
+*   `pnpm lint`: Lints the source code for errors.
+*   `pnpm preview`: Serves the production build locally for preview.
 
 ## Project Structure
 
 ```
-├── public/           # Static assets
+.
+├── public/
 ├── src/
-│   ├── components/   # UI components
-│   ├── hooks/        # Custom React hooks
-│   ├── lib/          # Utility functions
-│   ├── pages/        # Application pages
-│   └── types/        # TypeScript types
+│   ├── components/
+│   │   ├── ui/
+│   │   ├── AudioControls.tsx
+│   │   ├── AudioGlobe3D.tsx
+│   │   ├── AudioVisualizer.tsx
+│   │   ├── FileUpload.tsx
+│   │   └── ...
+│   ├── hooks/
+│   ├── lib/
+│   ├── pages/
+│   └── types/
 ├── .gitignore
-├── index.html
 ├── package.json
 ├── README.md
-└── vite.config.ts
+└── ...
 ```
