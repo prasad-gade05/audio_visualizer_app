@@ -1,7 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import {
   ArrowLeft,
-  Settings,
   Play,
   Pause,
   Volume2,
@@ -26,7 +25,6 @@ interface MultiPlayerViewProps {
   onSeek?: (time: number) => void;
   onVolumeChange?: (volume: number) => void;
   onStop?: () => void;
-  onSettingsClick: () => void;
   multiVisualizationConfig: MultiVisualizationConfig;
   onMultiVisualizationConfigChange: (config: MultiVisualizationConfig) => void;
 }
@@ -44,7 +42,6 @@ export const MultiPlayerView = ({
   onSeek,
   onVolumeChange,
   onStop,
-  onSettingsClick,
   multiVisualizationConfig,
   onMultiVisualizationConfigChange,
 }: MultiPlayerViewProps) => {
@@ -100,7 +97,7 @@ export const MultiPlayerView = ({
       }}
     >
       {/* Full-screen Multi-Visualization Background */}
-      <div className="absolute inset-0 z-0" style={{ bottom: "80px" }}>
+      <div className="absolute inset-0 z-0" style={{ bottom: "120px" }}>
         <MultiAudioVisualizer
           audioData={audioData}
           isPlaying={isPlaying}
@@ -144,17 +141,6 @@ export const MultiPlayerView = ({
               Multi-Visualization Mode
             </p>
           </div>
-
-          {/* Settings Button */}
-          <button
-            onClick={onSettingsClick}
-            className="glass-interactive p-3 hover:scale-105 smooth-transition flex-shrink-0"
-          >
-            <Settings
-              className="w-5 h-5"
-              style={{ color: "var(--color-text-primary)" }}
-            />
-          </button>
         </div>
       </div>
 

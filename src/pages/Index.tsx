@@ -231,7 +231,6 @@ export default function Index() {
             onPause={pause}
             onSeek={seek}
             onVolumeChange={setVolume}
-            onSettingsClick={() => console.log("Settings clicked")}
             multiVisualizationConfig={multiVisualizationConfig}
             onMultiVisualizationConfigChange={setMultiVisualizationConfig}
           />
@@ -246,7 +245,6 @@ export default function Index() {
             isCapturing={isCapturing}
             onBack={handleBack}
             onStop={handleStop}
-            onSettingsClick={() => console.log("Settings clicked")}
             multiVisualizationConfig={multiVisualizationConfig}
             onMultiVisualizationConfigChange={setMultiVisualizationConfig}
           />
