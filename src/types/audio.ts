@@ -7,7 +7,7 @@ export interface AudioData {
 }
 
 export interface VisualizationConfig {
-  type: 'bars' | 'circular' | 'waveform' | 'particles';
+  type: "bars" | "circular" | "waveform" | "particles";
   color: string;
   sensitivity: number;
   smoothing: number;

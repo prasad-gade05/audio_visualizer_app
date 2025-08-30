@@ -5,19 +5,20 @@
 @layer base {
   :root {
     /* Aurora Theme Colors */
-    --color-background: #0D0B14; /* Deep, near-black purple */
+    --color-background: #0d0b14; /* Deep, near-black purple */
     --color-surface-1: rgba(22, 19, 33, 0.6); /* For primary containers */
     --color-surface-2: rgba(36, 32, 51, 0.7); /* For interactive elements */
-    --color-primary: #8A42FF; /* Vibrant purple for accents */
-    --color-secondary: #00D1FF; /* Bright cyan for glows and highlights */
-    --color-tertiary: #FF55E1; /* Hot pink for secondary highlights */
-    --color-text-primary: #F0F0F5;
-    --color-text-secondary: #A09CB0;
-    --color-text-disabled: #6D6A7B;
+    --color-primary: #8a42ff; /* Vibrant purple for accents */
+    --color-secondary: #00d1ff; /* Bright cyan for glows and highlights */
+    --color-tertiary: #ff55e1; /* Hot pink for secondary highlights */
+    --color-text-primary: #f0f0f5;
+    --color-text-secondary: #a09cb0;
+    --color-text-disabled: #6d6a7b;
     --color-border: rgba(138, 66, 255, 0.2);
 
     /* Typography */
-    --font-family-sans: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --font-family-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
+      Roboto, Helvetica, Arial, sans-serif;
     --font-size-base: 16px;
     --font-size-sm: 14px;
     --font-size-lg: 24px;
@@ -78,17 +79,17 @@
 
   .dark {
     /* Aurora theme is always dark, so we use the same colors */
-    --color-background: #0D0B14;
+    --color-background: #0d0b14;
     --color-surface-1: rgba(22, 19, 33, 0.6);
     --color-surface-2: rgba(36, 32, 51, 0.7);
-    --color-primary: #8A42FF;
-    --color-secondary: #00D1FF;
-    --color-tertiary: #FF55E1;
-    --color-text-primary: #F0F0F5;
-    --color-text-secondary: #A09CB0;
-    --color-text-disabled: #6D6A7B;
+    --color-primary: #8a42ff;
+    --color-secondary: #00d1ff;
+    --color-tertiary: #ff55e1;
+    --color-text-primary: #f0f0f5;
+    --color-text-secondary: #a09cb0;
+    --color-text-disabled: #6d6a7b;
     --color-border: rgba(138, 66, 255, 0.2);
-    
+
     /* Original Tailwind dark mode tokens */
     --background: 222.2 84% 4.9%;
     --foreground: 210 40% 98%;
@@ -126,7 +127,8 @@
   }
 
   /* Hide scrollbars globally */
-  html, body {
+  html,
+  body {
     scrollbar-width: none; /* Firefox */
     -ms-overflow-style: none; /* Internet Explorer 10+ */
   }
@@ -146,15 +148,29 @@
 
   /* Aurora background animation keyframes */
   @keyframes aurora-float {
-    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-    33% { transform: translate(30px, -30px) rotate(120deg); }
-    66% { transform: translate(-20px, 20px) rotate(240deg); }
+    0%,
+    100% {
+      transform: translate(0px, 0px) rotate(0deg);
+    }
+    33% {
+      transform: translate(30px, -30px) rotate(120deg);
+    }
+    66% {
+      transform: translate(-20px, 20px) rotate(240deg);
+    }
   }
 
   @keyframes aurora-float-alt {
-    0%, 100% { transform: translate(0px, 0px) rotate(0deg); }
-    33% { transform: translate(-30px, 30px) rotate(-120deg); }
-    66% { transform: translate(20px, -20px) rotate(-240deg); }
+    0%,
+    100% {
+      transform: translate(0px, 0px) rotate(0deg);
+    }
+    33% {
+      transform: translate(-30px, 30px) rotate(-120deg);
+    }
+    66% {
+      transform: translate(20px, -20px) rotate(-240deg);
+    }
   }
 
   /* Glassmorphism utilities */
@@ -194,7 +210,7 @@
   }
 
   .app-layout::before {
-    content: '';
+    content: "";
     position: absolute;
     top: -50%;
     left: -50%;
@@ -212,7 +228,7 @@
   }
 
   .app-layout::after {
-    content: '';
+    content: "";
     position: absolute;
     top: -50%;
     right: -50%;
