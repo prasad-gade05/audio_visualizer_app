@@ -11,6 +11,13 @@ export interface VisualizationConfig {
   color: string;
   sensitivity: number;
   smoothing: number;
+  secondaryColor?: string;
+  backgroundColor?: string;
+  barCount?: number;
+  particleCount?: number;
+  particleSpeed?: number;
+  radius?: number;
+  intensity?: number;
 }
 
 export interface AudioState {

@@ -1,15 +1,27 @@
 import { useState } from 'react';
+import { LandingView } from '@/components/LandingView';
+import { PlayerView } from '@/components/PlayerView';
+import { VisualizationModeSwitcher } from '@/components/VisualizationModeSwitcher';
 import { FileUpload } from '@/components/FileUpload';
 import { SystemAudioCapture } from '@/components/SystemAudioCapture';
-import { AudioVisualizer } from '@/components/AudioVisualizer';
-import { AudioControls } from '@/components/AudioControls';
 import { useAudioAnalyzer } from '@/hooks/useAudioAnalyzer';
 import { useSystemAudio } from '@/hooks/useSystemAudio';
-import { Card } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Music, Headphones, Upload, Monitor } from 'lucide-react';
+import { VisualizationConfig } from '@/types/audio';
+
+type AppView = 'landing' | 'fileUpload' | 'systemAudio' | 'filePlayer' | 'systemPlayer';
 
 export default function Index() {
+  const [currentView, setCurrentView] = useState<AppView>('landing');
+  const [fileName, setFileName] = useState<string>('');
+  const [visualizationConfig, setVisualizationConfig] = useState<VisualizationConfig>({
+    type: 'bars',
+    color: '#8A42FF',
+    sensitivity: 1,
+    smoothing: 0.8,
+    secondaryColor: '#00D1FF',
+    backgroundColor: '#0D0B14',
+  });
+
   // File-based audio
   const {
     audioState,
@@ -31,149 +43,186 @@ export default function Index() {
     stopSystemAudioCapture,
   } = useSystemAudio();
 
-  const [fileName, setFileName] = useState<string>('');
-  const [activeTab, setActiveTab] = useState<string>('file');
+  const handleFileUploadClick = () => {
+    setCurrentView('fileUpload');
+  };
+
+  const handleSystemAudioClick = () => {
+    if (isSupported) {
+      setCurrentView('systemAudio');
+    } else {
+      // Show error dialog or handle unsupported case
+      alert('System audio capture is not supported in your browser. Please use Chrome or Edge with HTTPS.');
+    }
+  };
 
   const handleFileSelect = async (file: File) => {
     setFileName(file.name);
     await initializeAudio(file);
-    setActiveTab('file');
+    setCurrentView('filePlayer');
   };
 
-  // Determine which audio data to use for visualization
-  const currentAudioData = activeTab === 'system' && isCapturing ? systemAudioData : fileAudioData;
-  const isPlaying = activeTab === 'system' ? isCapturing : audioState.isPlaying;
+  const handleSystemAudioStart = async () => {
+    try {
+      await startSystemAudioCapture();
+      setCurrentView('systemPlayer');
+    } catch (err) {
+      // Error handling is done in the hook
+    }
+  };
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-indigo-900 p-6">
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <Card className="p-6 bg-white/10 backdrop-blur-md border-white/20 text-white">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-blue-500 rounded-full flex items-center justify-center">
-              <Headphones className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">
-                Audio Visualizer
-              </h1>
-              <p className="text-blue-200 mt-1">
-                Upload audio files or capture system audio for real-time visualizations
-              </p>
+  const handleBack = () => {
+    if (currentView === 'filePlayer' || currentView === 'systemPlayer') {
+      setCurrentView('landing');
+    } else {
+      setCurrentView('landing');
+    }
+  };
+
+  const handleStop = () => {
+    stopSystemAudioCapture();
+    setCurrentView('landing');
+  };
+
+  const renderView = () => {
+    switch (currentView) {
+      case 'landing':
+        return (
+          <LandingView
+            onFileUploadClick={handleFileUploadClick}
+            onSystemAudioClick={handleSystemAudioClick}
+          />
+        );
+
+      case 'fileUpload':
+        return (
+          <div className="min-h-screen flex items-center justify-center p-6 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <style>{`
+              .scrollable-container::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
+            <div className="w-full max-w-2xl">
+              <div className="glass p-8 mb-6">
+                <h2 
+                  className="text-2xl font-bold mb-6 text-center"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  Upload Audio File
+                </h2>
+                <FileUpload 
+                  onFileSelect={handleFileSelect} 
+                  isLoaded={audioState.isLoaded} 
+                />
+                {fileName && (
+                  <div className="mt-4 p-4 glass-interactive text-center">
+                    <p style={{ color: 'var(--color-text-primary)' }}>
+                      Selected: <strong>{fileName}</strong>
+                    </p>
+                  </div>
+                )}
+              </div>
+              <div className="text-center">
+                <button
+                  onClick={handleBack}
+                  className="glass-interactive px-6 py-3"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  ← Back to Home
+                </button>
+              </div>
             </div>
           </div>
-        </Card>
+        );
 
-        {/* Audio Source Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-2 bg-white/10 backdrop-blur-md border-white/20">
-            <TabsTrigger value="file" className="flex items-center gap-2 data-[state=active]:bg-white/20">
-              <Upload className="w-4 h-4" />
-              File Upload
-            </TabsTrigger>
-            <TabsTrigger value="system" className="flex items-center gap-2 data-[state=active]:bg-white/20">
-              <Monitor className="w-4 h-4" />
-              System Audio
-            </TabsTrigger>
-          </TabsList>
+      case 'systemAudio':
+        return (
+          <div className="min-h-screen flex items-center justify-center p-6 overflow-y-auto" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+            <div className="w-full max-w-2xl">
+              <div className="glass p-8 mb-6">
+                <h2 
+                  className="text-2xl font-bold mb-6 text-center"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  System Audio Capture
+                </h2>
+                <SystemAudioCapture
+                  isCapturing={isCapturing}
+                  isSupported={isSupported}
+                  error={error}
+                  onStart={handleSystemAudioStart}
+                  onStop={stopSystemAudioCapture}
+                />
+              </div>
+              <div className="text-center">
+                <button
+                  onClick={handleBack}
+                  className="glass-interactive px-6 py-3"
+                  style={{ color: 'var(--color-text-primary)' }}
+                >
+                  ← Back to Home
+                </button>
+              </div>
+            </div>
+          </div>
+        );
 
-          <TabsContent value="file" className="space-y-4 mt-6">
-            {/* File Upload */}
-            <FileUpload onFileSelect={handleFileSelect} isLoaded={audioState.isLoaded} />
-
-            {/* Current File Info */}
-            {fileName && (
-              <Card className="p-4 bg-white/10 backdrop-blur-md border-white/20 text-white">
-                <div className="flex items-center gap-3">
-                  <Music className="w-5 h-5 text-blue-400" />
-                  <span className="font-medium">{fileName}</span>
-                  {audioState.duration > 0 && (
-                    <span className="text-blue-200 text-sm">
-                      ({Math.floor(audioState.duration / 60)}:{(audioState.duration % 60).toFixed(0).padStart(2, '0')})
-                    </span>
-                  )}
-                </div>
-              </Card>
-            )}
-
-            {/* Audio Controls */}
-            {audioState.isLoaded && (
-              <AudioControls
-                audioState={audioState}
-                onPlay={play}
-                onPause={pause}
-                onSeek={seek}
-                onVolumeChange={setVolume}
-              />
-            )}
-          </TabsContent>
-
-          <TabsContent value="system" className="space-y-4 mt-6">
-            {/* System Audio Capture */}
-            <SystemAudioCapture
-              isCapturing={isCapturing}
-              isSupported={isSupported}
-              error={error}
-              onStart={startSystemAudioCapture}
-              onStop={stopSystemAudioCapture}
+      case 'filePlayer':
+        return (
+          <div className="relative h-screen overflow-hidden">
+            <PlayerView
+              mode="file"
+              fileName={fileName}
+              audioState={audioState}
+              audioData={fileAudioData}
+              isPlaying={audioState.isPlaying}
+              onBack={handleBack}
+              onPlay={play}
+              onPause={pause}
+              onSeek={seek}
+              onVolumeChange={setVolume}
+              onSettingsClick={() => console.log('Settings clicked')}
+              visualizationConfig={visualizationConfig}
+              onVisualizationConfigChange={setVisualizationConfig}
             />
-          </TabsContent>
-        </Tabs>
+            <VisualizationModeSwitcher
+              config={visualizationConfig}
+              onConfigChange={setVisualizationConfig}
+              isVisible={true}
+            />
+          </div>
+        );
 
-        {/* Audio Visualizer */}
-        {(audioState.isLoaded || isCapturing) && (
-          <AudioVisualizer 
-            audioData={currentAudioData} 
-            isPlaying={isPlaying} 
-          />
-        )}
+      case 'systemPlayer':
+        return (
+          <div className="relative h-screen overflow-hidden">
+            <PlayerView
+              mode="system"
+              audioData={systemAudioData}
+              isPlaying={isCapturing}
+              isCapturing={isCapturing}
+              onBack={handleBack}
+              onStop={handleStop}
+              onSettingsClick={() => console.log('Settings clicked')}
+              visualizationConfig={visualizationConfig}
+              onVisualizationConfigChange={setVisualizationConfig}
+            />
+            <VisualizationModeSwitcher
+              config={visualizationConfig}
+              onConfigChange={setVisualizationConfig}
+              isVisible={true}
+            />
+          </div>
+        );
 
-        {/* Instructions */}
-        {!audioState.isLoaded && !isCapturing && (
-          <Card className="p-6 bg-white/5 backdrop-blur-md border-white/10 text-white">
-            <h3 className="text-lg font-semibold mb-3 text-blue-300">How to use:</h3>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <h4 className="font-medium text-blue-200 mb-2 flex items-center gap-2">
-                  <Upload className="w-4 h-4" />
-                  File Upload Mode
-                </h4>
-                <ul className="space-y-2 text-blue-100 text-sm">
-                  <li className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                    Upload an audio file (MP3, WAV, OGG, M4A)
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-blue-400 rounded-full"></span>
-                    Control playback with built-in controls
-                  </li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-medium text-blue-200 mb-2 flex items-center gap-2">
-                  <Monitor className="w-4 h-4" />
-                  System Audio Mode
-                </h4>
-                <ul className="space-y-2 text-blue-100 text-sm">
-                  <li className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
-                    Capture any audio playing on your system
-                  </li>
-                  <li className="flex items-center gap-2">
-                    <span className="w-2 h-2 bg-purple-400 rounded-full"></span>
-                    Visualize music, videos, games in real-time
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <div className="mt-4 p-3 bg-blue-500/20 rounded-lg">
-              <p className="text-blue-100 text-sm">
-                Choose from 4 visualization modes and enjoy real-time audio visualization!
-              </p>
-            </div>
-          </Card>
-        )}
-      </div>
-    </div>
+      default:
+        return null;
+    }
+  };
+
+  return (
+    <>
+      {renderView()}
+    </>
   );
 }

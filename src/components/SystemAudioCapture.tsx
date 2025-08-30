@@ -20,31 +20,49 @@ export const SystemAudioCapture = ({
 }: SystemAudioCaptureProps) => {
   if (!isSupported) {
     return (
-      <Alert className="border-yellow-200 bg-yellow-50">
-        <AlertCircle className="h-4 w-4 text-yellow-600" />
-        <AlertDescription className="text-yellow-800">
-          System audio capture requires Chrome or Edge browser with HTTPS. Please make sure you're using a supported browser and accessing the site securely.
-        </AlertDescription>
-      </Alert>
+      <div className="glass-interactive p-6">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 mt-1" style={{ color: 'var(--color-tertiary)' }} />
+          <div>
+            <h4 className="font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+              Browser Not Supported
+            </h4>
+            <p style={{ color: 'var(--color-text-secondary)' }}>
+              System audio capture requires Chrome or Edge browser with HTTPS. Please make sure you're using a supported browser and accessing the site securely.
+            </p>
+          </div>
+        </div>
+      </div>
     );
   }
 
   return (
-    <Card className="p-4 bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
+    <div className="glass-interactive p-6">
+      <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center gap-4">
+          <div 
+            className="w-12 h-12 rounded-full flex items-center justify-center"
+            style={{
+              background: isCapturing 
+                ? `linear-gradient(135deg, var(--color-secondary), var(--color-tertiary))`
+                : `linear-gradient(135deg, var(--color-primary), var(--color-secondary))`,
+              boxShadow: 'var(--box-shadow-glow-sm)'
+            }}
+          >
             {isCapturing ? (
-              <MonitorSpeaker className="w-5 h-5 text-purple-600" />
+              <MonitorSpeaker className="w-6 h-6 text-white" />
             ) : (
-              <Monitor className="w-5 h-5 text-purple-600" />
+              <Monitor className="w-6 h-6 text-white" />
             )}
           </div>
           <div>
-            <h3 className="font-semibold text-purple-900">
+            <h3 
+              className="font-semibold text-lg"
+              style={{ color: 'var(--color-text-primary)' }}
+            >
               {isCapturing ? 'Capturing System Audio' : 'System Audio Capture'}
             </h3>
-            <p className="text-sm text-purple-700">
+            <p style={{ color: 'var(--color-text-secondary)' }}>
               {isCapturing 
                 ? 'Visualizing audio from your system in real-time'
                 : 'Capture and visualize any audio playing on your system'
@@ -53,18 +71,22 @@ export const SystemAudioCapture = ({
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           {isCapturing && (
-            <div className="flex items-center gap-2 px-3 py-1 bg-purple-200 rounded-full">
+            <div className="flex items-center gap-2 px-3 py-1 glass rounded-full">
               <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-              <span className="text-sm font-medium text-purple-800">Live</span>
+              <span className="text-sm font-medium" style={{ color: 'var(--color-text-primary)' }}>
+                Live
+              </span>
             </div>
           )}
           
-          <Button
-            variant={isCapturing ? "destructive" : "default"}
+          <button
             onClick={isCapturing ? onStop : onStart}
-            className={isCapturing ? "" : "bg-purple-600 hover:bg-purple-700"}
+            className={`glass-interactive px-6 py-3 hover:scale-105 smooth-transition ${
+              isCapturing ? 'hover:bg-red-500/20' : ''
+            }`}
+            style={{ color: 'var(--color-text-primary)' }}
           >
             {isCapturing ? (
               <>
@@ -77,28 +99,37 @@ export const SystemAudioCapture = ({
                 Start Capture
               </>
             )}
-          </Button>
+          </button>
         </div>
       </div>
 
       {error && (
-        <Alert className="mt-3 border-red-200 bg-red-50">
-          <AlertCircle className="h-4 w-4 text-red-600" />
-          <AlertDescription className="text-red-800">
-            {error}
-          </AlertDescription>
-        </Alert>
+        <div className="glass-interactive p-4 mt-4">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 mt-1" style={{ color: 'var(--color-tertiary)' }} />
+            <div>
+              <h4 className="font-medium mb-1" style={{ color: 'var(--color-text-primary)' }}>
+                Error
+              </h4>
+              <p style={{ color: 'var(--color-text-secondary)' }}>
+                {error}
+              </p>
+            </div>
+          </div>
+        </div>
       )}
 
       {!isCapturing && !error && (
-        <div className="space-y-3 mt-3">
-          <div className="p-3 bg-purple-100 rounded-lg">
-            <div className="flex items-start gap-2">
-              <Info className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-purple-800">
-                <p className="font-medium mb-1">How to capture system audio:</p>
-                <ol className="list-decimal list-inside space-y-1 text-xs">
-                  <li>Click "Start Capture" below</li>
+        <div className="space-y-4 mt-4">
+          <div className="glass p-4">
+            <div className="flex items-start gap-3">
+              <Info className="w-5 h-5 mt-1" style={{ color: 'var(--color-secondary)' }} />
+              <div>
+                <h4 className="font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                  How to capture system audio:
+                </h4>
+                <ol className="list-decimal list-inside space-y-1 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
+                  <li>Click "Start Capture" above</li>
                   <li>In the browser dialog, select your entire screen or a specific window</li>
                   <li><strong>Important:</strong> Check the "Share system audio" or "Share audio" checkbox</li>
                   <li>Click "Share" to start capturing</li>
@@ -107,12 +138,14 @@ export const SystemAudioCapture = ({
             </div>
           </div>
           
-          <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-            <div className="flex items-start gap-2">
-              <Monitor className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
-              <div className="text-sm text-blue-800">
-                <p className="font-medium mb-1">Requirements:</p>
-                <ul className="list-disc list-inside space-y-1 text-xs">
+          <div className="glass p-4">
+            <div className="flex items-start gap-3">
+              <Monitor className="w-5 h-5 mt-1" style={{ color: 'var(--color-primary)' }} />
+              <div>
+                <h4 className="font-medium mb-2" style={{ color: 'var(--color-text-primary)' }}>
+                  Requirements:
+                </h4>
+                <ul className="list-disc list-inside space-y-1 text-sm" style={{ color: 'var(--color-text-secondary)' }}>
                   <li>Chrome or Edge browser (recommended)</li>
                   <li>HTTPS connection (secure site)</li>
                   <li>Permission to share screen with audio</li>
@@ -122,6 +155,6 @@ export const SystemAudioCapture = ({
           </div>
         </div>
       )}
-    </Card>
+    </div>
   );
 };

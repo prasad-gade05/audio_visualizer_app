@@ -39,18 +39,19 @@ export const FileUpload = ({ onFileSelect, isLoaded }: FileUploadProps) => {
 
   if (isLoaded) {
     return (
-      <Card className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200">
+      <div className="glass-interactive p-6">
         <div className="flex items-center gap-3">
-          <Music className="w-6 h-6 text-blue-600" />
-          <span className="text-blue-800 font-medium">Audio file loaded successfully</span>
-          <Button
-            variant="outline"
-            size="sm"
+          <Music className="w-6 h-6" style={{ color: 'var(--color-primary)' }} />
+          <span className="font-medium" style={{ color: 'var(--color-text-primary)' }}>
+            Audio file loaded successfully
+          </span>
+          <button
             onClick={triggerFileInput}
-            className="ml-auto"
+            className="ml-auto glass-interactive px-4 py-2 hover:scale-105 smooth-transition"
+            style={{ color: 'var(--color-text-primary)' }}
           >
             Change File
-          </Button>
+          </button>
         </div>
         <input
           id="audio-upload"
@@ -59,33 +60,53 @@ export const FileUpload = ({ onFileSelect, isLoaded }: FileUploadProps) => {
           onChange={handleFileChange}
           className="hidden"
         />
-      </Card>
+      </div>
     );
   }
 
   return (
-    <Card 
-      className="p-8 border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors cursor-pointer"
+    <div 
+      className="glass-interactive p-12 cursor-pointer group hover:scale-105 smooth-transition"
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onClick={triggerFileInput}
     >
-      <div className="flex flex-col items-center gap-4 text-center">
-        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center">
-          <Upload className="w-8 h-8 text-blue-600" />
+      <div className="flex flex-col items-center gap-6 text-center">
+        <div 
+          className="w-20 h-20 rounded-full flex items-center justify-center group-hover:scale-110 smooth-transition"
+          style={{
+            background: `linear-gradient(135deg, var(--color-primary), var(--color-secondary))`,
+            boxShadow: 'var(--box-shadow-glow-sm)'
+          }}
+        >
+          <Upload className="w-10 h-10 text-white" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-gray-900">Upload Audio File</h3>
-          <p className="text-gray-600 mt-1">
+          <h3 
+            className="text-xl font-semibold mb-3"
+            style={{ color: 'var(--color-text-primary)' }}
+          >
+            Upload Audio File
+          </h3>
+          <p 
+            className="mb-2"
+            style={{ color: 'var(--color-text-secondary)' }}
+          >
             Drag and drop an audio file here, or click to browse
           </p>
-          <p className="text-sm text-gray-500 mt-2">
+          <p 
+            className="text-sm"
+            style={{ color: 'var(--color-text-disabled)' }}
+          >
             Supports MP3, WAV, OGG, M4A formats
           </p>
         </div>
-        <Button variant="outline" className="mt-2">
+        <button 
+          className="glass-interactive px-6 py-3 hover:scale-105 smooth-transition"
+          style={{ color: 'var(--color-text-primary)' }}
+        >
           Choose File
-        </Button>
+        </button>
       </div>
       <input
         id="audio-upload"
@@ -94,6 +115,6 @@ export const FileUpload = ({ onFileSelect, isLoaded }: FileUploadProps) => {
         onChange={handleFileChange}
         className="hidden"
       />
-    </Card>
+    </div>
   );
 };

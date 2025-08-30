@@ -17,7 +17,7 @@ export const useSystemAudio = () => {
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
 
   const [isCapturing, setIsCapturing] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
@@ -116,10 +116,6 @@ export const useSystemAudio = () => {
         );
       }
 
-      console.log(
-        "Successfully obtained media stream with audio tracks:",
-        stream.getAudioTracks().length
-      );
       streamRef.current = stream;
 
       // Create audio context
@@ -132,35 +128,22 @@ export const useSystemAudio = () => {
       }
 
       const audioContext = new AudioContextClass();
-      console.log(
-        "Created audio context with sample rate:",
-        audioContext.sampleRate
-      );
       audioContextRef.current = audioContext;
 
       // Create analyzer
       const analyzer = audioContext.createAnalyser();
       analyzer.fftSize = 2048;
       analyzer.smoothingTimeConstant = 0.8;
-      console.log(
-        "Created analyzer with fftSize:",
-        analyzer.fftSize,
-        "frequencyBinCount:",
-        analyzer.frequencyBinCount
-      );
       analyzerRef.current = analyzer;
 
       // Connect stream to analyzer
       const source = audioContext.createMediaStreamSource(stream);
-      console.log("Created media stream source");
       sourceRef.current = source;
       source.connect(analyzer);
-      console.log("Connected source to analyzer");
 
       // Wait for audio context to be running
       if (audioContext.state === "suspended") {
         await audioContext.resume();
-        console.log("Resumed audio context");
       }
 
       // Set capturing state first
@@ -168,7 +151,6 @@ export const useSystemAudio = () => {
 
       // Start visualization after a small delay to ensure everything is connected
       setTimeout(() => {
-        console.log("Starting visualization after setup delay");
         if (analyzerRef.current && audioContextRef.current) {
           startVisualization();
         }
@@ -179,7 +161,6 @@ export const useSystemAudio = () => {
         stopSystemAudioCapture();
       });
     } catch (error: unknown) {
-      console.error("Error accessing system audio:", error);
       const errorMessage =
         error instanceof Error ? error.message : "Unknown error";
 
@@ -211,8 +192,6 @@ export const useSystemAudio = () => {
   }, []);
 
   const stopSystemAudioCapture = useCallback(() => {
-    console.log("Stopping system audio capture");
-
     // Stop animation first
     if (animationRef.current) {
       cancelAnimationFrame(animationRef.current);
@@ -222,7 +201,6 @@ export const useSystemAudio = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => {
         track.stop();
-        console.log("Stopped track:", track.kind);
       });
       streamRef.current = null;
     }
@@ -230,13 +208,11 @@ export const useSystemAudio = () => {
     if (sourceRef.current) {
       sourceRef.current.disconnect();
       sourceRef.current = null;
-      console.log("Disconnected audio source");
     }
 
     if (audioContextRef.current) {
       audioContextRef.current.close();
       audioContextRef.current = null;
-      console.log("Closed audio context");
     }
 
     analyzerRef.current = null;
@@ -245,27 +221,17 @@ export const useSystemAudio = () => {
   }, []);
 
   const startVisualization = useCallback(() => {
-    console.log("startVisualization called");
-
     if (!analyzerRef.current) {
-      console.error("No analyzer available for visualization");
       return;
     }
 
     if (!audioContextRef.current) {
-      console.error("No audio context available for visualization");
       return;
     }
 
     const analyzer = analyzerRef.current;
     const audioContext = audioContextRef.current;
     const bufferLength = analyzer.frequencyBinCount;
-
-    console.log("Starting system audio visualization with:", {
-      bufferLength,
-      sampleRate: audioContext.sampleRate,
-      state: audioContext.state,
-    });
 
     // Use a flag to control the animation loop instead of React state
     let shouldContinue = true;
@@ -278,16 +244,6 @@ export const useSystemAudio = () => {
         !audioContextRef.current ||
         !streamRef.current
       ) {
-        console.log(
-          "Stopping visualization - shouldContinue:",
-          shouldContinue,
-          "analyzer:",
-          !!analyzer,
-          "audioContext:",
-          !!audioContextRef.current,
-          "stream:",
-          !!streamRef.current
-        );
         return;
       }
 
@@ -297,22 +253,6 @@ export const useSystemAudio = () => {
 
       analyzer.getByteFrequencyData(frequencyData);
       analyzer.getByteTimeDomainData(timeData);
-
-      // Debug: Check if we're getting actual data (reduce logging frequency)
-      const freqSum = frequencyData.reduce((sum, val) => sum + val, 0);
-      const timeSum = timeData.reduce((sum, val) => sum + val, 0);
-      const maxFreq = Math.max(...frequencyData);
-
-      // Only log when we have significant data or every 60 frames (once per second at 60fps)
-      if (freqSum > 100 || Math.random() < 0.016) {
-        console.log("Audio data frame:", {
-          freqSum,
-          timeSum,
-          maxFreq,
-          bufferLength,
-          contextState: audioContextRef.current?.state,
-        });
-      }
 
       setAudioData({
         frequencyData,

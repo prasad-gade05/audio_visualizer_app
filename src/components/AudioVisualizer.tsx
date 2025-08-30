@@ -8,22 +8,34 @@ import { BarChart3, Circle, Waves, Sparkles } from "lucide-react";
 interface AudioVisualizerProps {
   audioData: AudioData;
   isPlaying: boolean;
+  fullScreen?: boolean;
+  config?: VisualizationConfig;
+  onConfigChange?: (config: VisualizationConfig) => void;
 }
 
 export const AudioVisualizer = ({
   audioData,
   isPlaying,
+  fullScreen = false,
+  config: externalConfig,
+  onConfigChange,
 }: AudioVisualizerProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | null>(null);
 
-  const [config, setConfig] = useState<VisualizationConfig>({
+  const [internalConfig, setInternalConfig] = useState<VisualizationConfig>({
     type: "bars",
-    color: "#3b82f6",
+    color: "#8A42FF",
     sensitivity: 1,
     smoothing: 0.8,
+    secondaryColor: "#00D1FF",
+    backgroundColor: "#0D0B14",
   });
+
+  // Use external config if provided, otherwise use internal config
+  const config = externalConfig || internalConfig;
+  const setConfig = onConfigChange || setInternalConfig;
 
   const visualizationTypes = [
     { type: "bars" as const, icon: BarChart3, label: "Frequency Bars" },
@@ -38,11 +50,17 @@ export const AudioVisualizer = ({
     width: number,
     height: number
   ) => {
-    const barCount = 64;
+    const barCount = config.barCount || 64;
     const barWidth = width / barCount;
     const dataStep = Math.floor(data.length / barCount);
 
-    ctx.clearRect(0, 0, width, height);
+    // Clear with custom background if in full screen
+    if (fullScreen && config.backgroundColor) {
+      ctx.fillStyle = config.backgroundColor;
+      ctx.fillRect(0, 0, width, height);
+    } else {
+      ctx.clearRect(0, 0, width, height);
+    }
 
     for (let i = 0; i < barCount; i++) {
       const value = data[i * dataStep] / 255;
@@ -55,7 +73,7 @@ export const AudioVisualizer = ({
         height - barHeight
       );
       gradient.addColorStop(0, config.color);
-      gradient.addColorStop(1, config.color + "40");
+      gradient.addColorStop(1, config.secondaryColor || config.color + "40");
 
       ctx.fillStyle = gradient;
       ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, barHeight);
@@ -70,16 +88,23 @@ export const AudioVisualizer = ({
   ) => {
     const centerX = width / 2;
     const centerY = height / 2;
-    const radius = Math.min(width, height) / 4;
+    const baseRadius = Math.min(width, height) / 6;
+    const radius = baseRadius * (config.radius || 1);
     const barCount = 128;
     const angleStep = (Math.PI * 2) / barCount;
 
-    ctx.clearRect(0, 0, width, height);
+    // Clear with custom background if in full screen
+    if (fullScreen && config.backgroundColor) {
+      ctx.fillStyle = config.backgroundColor;
+      ctx.fillRect(0, 0, width, height);
+    } else {
+      ctx.clearRect(0, 0, width, height);
+    }
 
     for (let i = 0; i < barCount; i++) {
       const value = data[i] / 255;
       const angle = i * angleStep;
-      const barLength = value * radius * config.sensitivity;
+      const barLength = value * radius * config.sensitivity * (config.intensity || 1);
 
       const startX = centerX + Math.cos(angle) * radius;
       const startY = centerY + Math.sin(angle) * radius;
@@ -88,7 +113,7 @@ export const AudioVisualizer = ({
 
       const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
       gradient.addColorStop(0, config.color + "80");
-      gradient.addColorStop(1, config.color);
+      gradient.addColorStop(1, config.secondaryColor || config.color);
 
       ctx.strokeStyle = gradient;
       ctx.lineWidth = 3;
@@ -105,10 +130,16 @@ export const AudioVisualizer = ({
     width: number,
     height: number
   ) => {
-    ctx.clearRect(0, 0, width, height);
+    // Clear with custom background if in full screen
+    if (fullScreen && config.backgroundColor) {
+      ctx.fillStyle = config.backgroundColor;
+      ctx.fillRect(0, 0, width, height);
+    } else {
+      ctx.clearRect(0, 0, width, height);
+    }
 
     ctx.strokeStyle = config.color;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = fullScreen ? 3 : 2;
     ctx.beginPath();
 
     const sliceWidth = width / data.length;
@@ -128,6 +159,28 @@ export const AudioVisualizer = ({
     }
 
     ctx.stroke();
+
+    // Add secondary waveform if secondary color is defined
+    if (config.secondaryColor) {
+      ctx.strokeStyle = config.secondaryColor;
+      ctx.lineWidth = fullScreen ? 2 : 1;
+      ctx.beginPath();
+      
+      x = 0;
+      for (let i = 0; i < data.length; i++) {
+        const v = (data[i] / 128.0) * config.sensitivity * 0.7;
+        const y = height - (v * height) / 2;
+
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+
+        x += sliceWidth;
+      }
+      ctx.stroke();
+    }
   };
 
   const drawParticles = (
@@ -136,10 +189,16 @@ export const AudioVisualizer = ({
     width: number,
     height: number
   ) => {
-    ctx.clearRect(0, 0, width, height);
+    // Clear with custom background if in full screen
+    if (fullScreen && config.backgroundColor) {
+      ctx.fillStyle = config.backgroundColor;
+      ctx.fillRect(0, 0, width, height);
+    } else {
+      ctx.clearRect(0, 0, width, height);
+    }
 
-    // Increased particle count for more density
-    const baseParticleCount = 200;
+    // Use configurable particle count
+    const baseParticleCount = config.particleCount || (fullScreen ? 400 : 200);
     const avgFrequency = data.reduce((sum, val) => sum + val, 0) / data.length;
 
     // Make particle count responsive to audio intensity
@@ -165,16 +224,16 @@ export const AudioVisualizer = ({
           (lowFreq / 255) * Math.min(width, height) * 0.3 * config.sensitivity;
         x = width / 2 + Math.cos(angle) * distance;
         y = height / 2 + Math.sin(angle) * distance;
-        size = Math.max(2, (lowFreq / 255) * 15 * config.sensitivity);
+        size = Math.max(2, (lowFreq / 255) * (fullScreen ? 20 : 15) * config.sensitivity);
         alpha = Math.max(0.3, (lowFreq / 255) * 0.9);
-        color = `hsla(240, 80%, 60%, ${alpha})`;
+        color = config.color;
       } else if (particleType === 1) {
         // Mid frequency particles - medium size, scattered
         x = Math.random() * width;
         y = Math.random() * height;
-        size = Math.max(1, (midFreq / 255) * 12 * config.sensitivity);
+        size = Math.max(1, (midFreq / 255) * (fullScreen ? 16 : 12) * config.sensitivity);
         alpha = Math.max(0.2, (midFreq / 255) * 0.8);
-        color = `hsla(180, 70%, 50%, ${alpha})`;
+        color = config.secondaryColor || config.color;
       } else {
         // High frequency particles - small, fast, edge-focused
         const edge = Math.floor(Math.random() * 4);
@@ -196,35 +255,62 @@ export const AudioVisualizer = ({
             y = Math.random() * height;
             break;
         }
-        size = Math.max(0.5, (highFreq / 255) * 8 * config.sensitivity);
+        size = Math.max(0.5, (highFreq / 255) * (fullScreen ? 12 : 8) * config.sensitivity);
         alpha = Math.max(0.1, (highFreq / 255) * 0.7);
-        color = `hsla(60, 90%, 70%, ${alpha})`;
+        color = config.secondaryColor || config.color;
       }
 
       // Add glow effect for brighter particles
-      if (alpha > 0.5) {
+      if (alpha > 0.5 && fullScreen) {
         ctx.shadowColor = color;
         ctx.shadowBlur = size * 2;
       } else {
         ctx.shadowBlur = 0;
       }
 
-      ctx.fillStyle = color;
+      // Convert hex color to rgba
+      const hexToRgb = (hex: string) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result
+          ? {
+              r: parseInt(result[1], 16),
+              g: parseInt(result[2], 16),
+              b: parseInt(result[3], 16),
+            }
+          : { r: 138, g: 66, b: 255 };
+      };
+
+      const rgb = hexToRgb(color);
+      ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
       ctx.beginPath();
       ctx.arc(x, y, size, 0, Math.PI * 2);
       ctx.fill();
     }
 
     // Add connecting lines between nearby particles for network effect
-    if (avgFrequency > 50) {
+    if (avgFrequency > 50 && fullScreen) {
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = `hsla(200, 50%, 50%, ${Math.min(
+      
+      // Convert hex color to rgba helper function
+      const hexToRgb = (hex: string) => {
+        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+        return result
+          ? {
+              r: parseInt(result[1], 16),
+              g: parseInt(result[2], 16),
+              b: parseInt(result[3], 16),
+            }
+          : { r: 138, g: 66, b: 255 };
+      };
+      
+      const rgb = hexToRgb(config.color);
+      ctx.strokeStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${Math.min(
         0.3,
         (avgFrequency / 255) * 0.5
       )})`;
       ctx.lineWidth = 1;
 
-      const connectionDistance = 80;
+      const connectionDistance = fullScreen ? 120 : 80;
       const maxConnections = Math.floor(dynamicParticleCount / 10);
 
       for (let i = 0; i < maxConnections; i++) {
@@ -251,11 +337,15 @@ export const AudioVisualizer = ({
     const rect = container.getBoundingClientRect();
     const dpr = window.devicePixelRatio || 1;
 
-    canvas.width = rect.width * dpr;
-    canvas.height = rect.height * dpr;
+    // Ensure canvas fits exactly within container bounds
+    const width = Math.max(rect.width, 100);
+    const height = Math.max(rect.height, 100);
 
-    canvas.style.width = rect.width + "px";
-    canvas.style.height = rect.height + "px";
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+
+    canvas.style.width = width + "px";
+    canvas.style.height = height + "px";
 
     const ctx = canvas.getContext("2d");
     if (ctx) {
@@ -271,14 +361,16 @@ export const AudioVisualizer = ({
     if (!ctx) return;
 
     const render = () => {
-      const rect = canvas.getBoundingClientRect();
-      const width = rect.width;
-      const height = rect.height;
+      const canvas = canvasRef.current;
+      const container = containerRef.current;
+      if (!canvas || !container) return;
+      
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
 
-      // Debug logging
-      if (audioData.frequencyData.length === 0) {
-        console.log("No frequency data available yet");
-      }
+      const rect = container.getBoundingClientRect();
+      const width = Math.max(rect.width, 100);
+      const height = Math.max(rect.height, 100);
 
       if (!isPlaying) {
         ctx.clearRect(0, 0, width, height);
@@ -342,7 +434,25 @@ export const AudioVisualizer = ({
     };
   }, []);
 
-  return (
+  return fullScreen ? (
+    // Full-screen mode for PlayerView
+    <div
+      ref={containerRef}
+      className="absolute inset-0 w-full h-full overflow-hidden"
+    >
+      <canvas ref={canvasRef} className="absolute inset-0 w-full h-full object-contain" />
+
+      {!isPlaying && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center" style={{ color: 'var(--color-text-secondary)' }}>
+            <Waves className="w-20 h-20 mx-auto mb-6 opacity-50" />
+            <p className="text-2xl font-medium">Play audio to see visualization</p>
+          </div>
+        </div>
+      )}
+    </div>
+  ) : (
+    // Card mode for embedded view
     <Card className="p-6 bg-black/90 border-gray-800 overflow-hidden">
       <div className="space-y-4">
         {/* Visualization Type Selector */}
@@ -352,7 +462,7 @@ export const AudioVisualizer = ({
               key={type}
               variant={config.type === type ? "default" : "outline"}
               size="sm"
-              onClick={() => setConfig((prev) => ({ ...prev, type }))}
+              onClick={() => setConfig ? setConfig({ ...config, type }) : {}}
               className="flex items-center gap-2"
             >
               <Icon className="w-4 h-4" />
