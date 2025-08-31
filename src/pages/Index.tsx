@@ -24,7 +24,7 @@ export default function Index() {
         circular: true,
         waveform: true,
         particles: true,
-        "mirrored-waveform": false,
+        "mirrored-waveform": true,
       },
       configs: {
         bars: {
