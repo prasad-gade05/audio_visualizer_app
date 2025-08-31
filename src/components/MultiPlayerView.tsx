@@ -97,7 +97,7 @@ export const MultiPlayerView = ({
       }}
     >
       {/* Full-screen Multi-Visualization Background */}
-      <div className="absolute inset-0 z-0" style={{ bottom: "120px" }}>
+      <div className="absolute inset-0 z-0" style={{ bottom: "80px" }}>
         <MultiAudioVisualizer
           audioData={audioData}
           isPlaying={isPlaying}

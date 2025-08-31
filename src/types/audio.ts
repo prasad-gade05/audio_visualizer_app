@@ -7,7 +7,7 @@ export interface AudioData {
 }
 
 export interface VisualizationConfig {
-  type: "bars" | "circular" | "waveform" | "particles";
+  type: "bars" | "circular" | "waveform" | "particles" | "mirrored-waveform";
   color: string;
   sensitivity: number;
   smoothing: number;
@@ -26,12 +26,14 @@ export interface MultiVisualizationConfig {
     circular: boolean;
     waveform: boolean;
     particles: boolean;
+    "mirrored-waveform": boolean;
   };
   configs: {
     bars: VisualizationConfig;
     circular: VisualizationConfig;
     waveform: VisualizationConfig;
     particles: VisualizationConfig;
+    "mirrored-waveform": VisualizationConfig;
   };
 }
 

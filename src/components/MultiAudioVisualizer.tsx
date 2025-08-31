@@ -21,11 +21,13 @@ export const MultiAudioVisualizer = ({
     circular: HTMLCanvasElement | null;
     waveform: HTMLCanvasElement | null;
     particles: HTMLCanvasElement | null;
+    "mirrored-waveform": HTMLCanvasElement | null;
   }>({
     bars: null,
     circular: null,
     waveform: null,
     particles: null,
+    "mirrored-waveform": null,
   });
   const animationRef = useRef<number | null>(null);
 
@@ -37,19 +39,21 @@ export const MultiAudioVisualizer = ({
   const getGridLayout = (count: number) => {
     switch (count) {
       case 1:
-        return { gridCols: "grid-cols-1", aspectRatio: "auto" };
+        return { gridCols: "grid-cols-1", rows: "grid-rows-1", aspectRatio: "16:9" };
       case 2:
-        return { gridCols: "grid-cols-2", aspectRatio: "auto" };
+        return { gridCols: "grid-cols-2", rows: "grid-rows-1", aspectRatio: "4:3" };
       case 3:
-        return { gridCols: "grid-cols-2", aspectRatio: "auto" }; // 2x2 grid with one empty
+        return { gridCols: "grid-cols-2", rows: "grid-rows-2", aspectRatio: "auto" }; // 2x2 grid with one empty
       case 4:
-        return { gridCols: "grid-cols-2", aspectRatio: "auto" };
+        return { gridCols: "grid-cols-2", rows: "grid-rows-2", aspectRatio: "1:1" };
+      case 5:
+        return { gridCols: "grid-cols-3", rows: "grid-rows-2", aspectRatio: "auto" }; // 3x2 grid with one empty
       default:
-        return { gridCols: "grid-cols-1", aspectRatio: "auto" };
+        return { gridCols: "grid-cols-2", rows: "grid-rows-2", aspectRatio: "auto" };
     }
   };
 
-  const { gridCols, aspectRatio } = getGridLayout(enabledVisualizations.length);
+  const { gridCols, rows, aspectRatio } = getGridLayout(enabledVisualizations.length);
 
   // Drawing functions
   const drawBars = (
@@ -263,6 +267,57 @@ export const MultiAudioVisualizer = ({
     }
   };
 
+  const drawMirroredWaveform = (
+    ctx: CanvasRenderingContext2D,
+    data: Uint8Array,
+    width: number,
+    height: number,
+    config: MultiVisualizationConfig["configs"]["mirrored-waveform"]
+  ) => {
+    // Clear canvas with black background
+    ctx.fillStyle = config.backgroundColor || "#000000";
+    ctx.fillRect(0, 0, width, height);
+
+    if (!data || data.length === 0) return;
+
+    const centerY = height / 2;
+    const barWidth = width / data.length;
+    
+    // Create horizontal gradient
+    const gradient = ctx.createLinearGradient(0, 0, width, 0);
+    gradient.addColorStop(0, "#FFA500"); // Orange
+    gradient.addColorStop(0.2, "#FFFF00"); // Yellow
+    gradient.addColorStop(0.4, "#FFFF00"); // Yellow
+    gradient.addColorStop(0.5, "#FF00FF"); // Magenta/Pink
+    gradient.addColorStop(0.6, "#FF00FF"); // Magenta
+    gradient.addColorStop(0.8, "#0000FF"); // Deep Blue
+    gradient.addColorStop(1, "#FF0000"); // Red
+    
+    ctx.fillStyle = gradient;
+
+    // Calculate overall volume for dynamic intensity
+    const avgAmplitude = data.reduce((sum, val) => sum + Math.abs(val - 128), 0) / data.length;
+    const intensityMultiplier = Math.max(0.3, Math.min(2.0, avgAmplitude / 64)) * config.sensitivity;
+
+    // Draw mirrored bars
+    for (let i = 0; i < data.length; i++) {
+      // Normalize amplitude from 0-255 to -1 to 1
+      const amplitude = (data[i] - 128) / 128;
+      
+      // Calculate bar height with intensity modulation
+      const barHeight = Math.abs(amplitude) * (height / 2) * intensityMultiplier;
+      
+      // Calculate x position
+      const x = i * barWidth;
+      
+      // Draw upper bar (extending upward from center)
+      ctx.fillRect(x, centerY - barHeight, barWidth, barHeight);
+      
+      // Draw lower bar (extending downward from center)
+      ctx.fillRect(x, centerY, barWidth, barHeight);
+    }
+  };
+
   const resizeCanvas = (type: keyof typeof canvasRefs.current) => {
     const canvas = canvasRefs.current[type];
     if (!canvas) return;
@@ -345,6 +400,15 @@ export const MultiAudioVisualizer = ({
               config.configs.particles
             );
             break;
+          case "mirrored-waveform":
+            drawMirroredWaveform(
+              ctx,
+              audioData.timeData,
+              width,
+              height,
+              config.configs["mirrored-waveform"]
+            );
+            break;
         }
       });
 
@@ -402,13 +466,20 @@ export const MultiAudioVisualizer = ({
       ref={containerRef}
       className="absolute inset-0 w-full h-full overflow-hidden"
     >
-      <div className={`grid ${gridCols} gap-2 h-full w-full p-4`}>
+      <div className={`grid ${gridCols} ${rows} gap-2 h-full w-full p-4`}>
         {enabledVisualizations.map((type, index) => {
-          // For 3 visualizations, make the third one span both columns
-          const spanClass =
-            enabledVisualizations.length === 3 && index === 2
-              ? "col-span-2"
-              : "";
+          // Handle spanning for different grid layouts
+          let spanClass = "";
+          
+          if (enabledVisualizations.length === 3 && index === 2) {
+            // For 3 visualizations, make the third one span both columns
+            spanClass = "col-span-2";
+          } else if (enabledVisualizations.length === 5) {
+            // For 5 visualizations in 3x2 grid, make the last one span columns 2-3 in the second row
+            if (index === 4) {
+              spanClass = "col-span-2";
+            }
+          }
 
           return (
             <div

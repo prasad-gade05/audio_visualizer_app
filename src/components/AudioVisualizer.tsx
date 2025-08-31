@@ -3,7 +3,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AudioData, VisualizationConfig } from "@/types/audio";
-import { BarChart3, Circle, Waves, Sparkles } from "lucide-react";
+import { BarChart3, Circle, Waves, Sparkles, Activity } from "lucide-react";
 
 interface AudioVisualizerProps {
   audioData: AudioData;
@@ -42,6 +42,7 @@ export const AudioVisualizer = ({
     { type: "circular" as const, icon: Circle, label: "Circular" },
     { type: "waveform" as const, icon: Waves, label: "Waveform" },
     { type: "particles" as const, icon: Sparkles, label: "Particles" },
+    { type: "mirrored-waveform" as const, icon: Activity, label: "Mirrored Waveform" },
   ];
 
   const drawBars = (
@@ -339,6 +340,61 @@ export const AudioVisualizer = ({
     }
   };
 
+  const drawMirroredWaveform = (
+    ctx: CanvasRenderingContext2D,
+    data: Uint8Array,
+    width: number,
+    height: number
+  ) => {
+    // Clear canvas with black background
+    if (fullScreen && config.backgroundColor) {
+      ctx.fillStyle = config.backgroundColor;
+      ctx.fillRect(0, 0, width, height);
+    } else {
+      ctx.fillStyle = "#000000";
+      ctx.fillRect(0, 0, width, height);
+    }
+
+    if (!data || data.length === 0) return;
+
+    const centerY = height / 2;
+    const barWidth = width / data.length;
+    
+    // Create horizontal gradient
+    const gradient = ctx.createLinearGradient(0, 0, width, 0);
+    gradient.addColorStop(0, "#FFA500"); // Orange
+    gradient.addColorStop(0.2, "#FFFF00"); // Yellow
+    gradient.addColorStop(0.4, "#FFFF00"); // Yellow
+    gradient.addColorStop(0.5, "#FF00FF"); // Magenta/Pink
+    gradient.addColorStop(0.6, "#FF00FF"); // Magenta
+    gradient.addColorStop(0.8, "#0000FF"); // Deep Blue
+    gradient.addColorStop(1, "#FF0000"); // Red
+    
+    ctx.fillStyle = gradient;
+
+    // Calculate overall volume for dynamic intensity
+    const avgAmplitude = data.reduce((sum, val) => sum + Math.abs(val - 128), 0) / data.length;
+    const intensityMultiplier = Math.max(0.3, Math.min(2.0, avgAmplitude / 64)) * config.sensitivity;
+
+    // Draw mirrored bars
+    for (let i = 0; i < data.length; i++) {
+      // Normalize amplitude from 0-255 to -1 to 1
+      const amplitude = (data[i] - 128) / 128;
+      
+      // Calculate bar height with intensity modulation
+      const barHeight = Math.abs(amplitude) * (height / 2) * intensityMultiplier;
+      
+      // Calculate x position
+      const x = i * barWidth;
+      
+      // Draw upper bar (extending upward from center)
+      ctx.fillRect(x, centerY - barHeight, barWidth, barHeight);
+      
+      // Draw lower bar (extending downward from center)
+      ctx.fillRect(x, centerY, barWidth, barHeight);
+    }
+  };
+
   const resizeCanvas = () => {
     const canvas = canvasRef.current;
     const container = containerRef.current;
@@ -406,6 +462,9 @@ export const AudioVisualizer = ({
           break;
         case "particles":
           drawParticles(ctx, audioData.frequencyData, width, height);
+          break;
+        case "mirrored-waveform":
+          drawMirroredWaveform(ctx, audioData.timeData, width, height);
           break;
       }
 

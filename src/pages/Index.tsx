@@ -24,6 +24,7 @@ export default function Index() {
         circular: true,
         waveform: true,
         particles: true,
+        "mirrored-waveform": false,
       },
       configs: {
         bars: {
@@ -61,6 +62,14 @@ export default function Index() {
           secondaryColor: "#00D1FF",
           backgroundColor: "#0D0B14",
           particleCount: 100,
+        },
+        "mirrored-waveform": {
+          type: "mirrored-waveform",
+          color: "#FFA500",
+          sensitivity: 1,
+          smoothing: 0.8,
+          secondaryColor: "#FF0000",
+          backgroundColor: "#000000",
         },
       },
     });

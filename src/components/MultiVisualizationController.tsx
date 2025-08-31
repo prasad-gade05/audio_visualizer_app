@@ -1,4 +1,4 @@
-import { BarChart3, Circle, Waves, Sparkles, Eye, EyeOff } from "lucide-react";
+import { BarChart3, Circle, Waves, Sparkles, Eye, EyeOff, Activity } from "lucide-react";
 import { MultiVisualizationConfig } from "@/types/audio";
 
 interface MultiVisualizationControllerProps {
@@ -12,6 +12,7 @@ const visualizationTypes = [
   { type: "circular" as const, icon: Circle, label: "Circular" },
   { type: "waveform" as const, icon: Waves, label: "Waveform" },
   { type: "particles" as const, icon: Sparkles, label: "Particles" },
+  { type: "mirrored-waveform" as const, icon: Activity, label: "Mirrored Waveform" },
 ];
 
 export const MultiVisualizationController = ({
