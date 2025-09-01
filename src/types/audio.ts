@@ -20,6 +20,11 @@ export interface VisualizationConfig {
   intensity?: number;
 }
 
+export interface VisualizationPosition {
+  gridSlot: number; // 0-based index for grid position
+  zIndex: number;
+}
+
 export interface MultiVisualizationConfig {
   enabled: {
     bars: boolean;
@@ -27,6 +32,13 @@ export interface MultiVisualizationConfig {
     waveform: boolean;
     particles: boolean;
     "mirrored-waveform": boolean;
+  };
+  positions: {
+    bars: VisualizationPosition;
+    circular: VisualizationPosition;
+    waveform: VisualizationPosition;
+    particles: VisualizationPosition;
+    "mirrored-waveform": VisualizationPosition;
   };
   configs: {
     bars: VisualizationConfig;

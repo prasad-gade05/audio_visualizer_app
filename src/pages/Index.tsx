@@ -26,6 +26,13 @@ export default function Index() {
         particles: true,
         "mirrored-waveform": true,
       },
+      positions: {
+        bars: { gridSlot: 0, zIndex: 1 },
+        circular: { gridSlot: 1, zIndex: 2 },
+        waveform: { gridSlot: 2, zIndex: 3 },
+        particles: { gridSlot: 3, zIndex: 4 },
+        "mirrored-waveform": { gridSlot: 4, zIndex: 5 },
+      },
       configs: {
         bars: {
           type: "bars",

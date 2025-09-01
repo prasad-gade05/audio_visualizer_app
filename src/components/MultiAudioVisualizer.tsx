@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { AudioData, MultiVisualizationConfig } from "@/types/audio";
 import { Waves } from "lucide-react";
+import { GridDraggableVisualizationItem } from "./GridDraggableVisualizationItem";
+import { DragInstructions } from "./DragInstructions";
 
 interface MultiAudioVisualizerProps {
   audioData: AudioData;
@@ -16,6 +18,7 @@ export const MultiAudioVisualizer = ({
   onConfigChange,
 }: MultiAudioVisualizerProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
+  const [showInstructions, setShowInstructions] = useState(true);
   const canvasRefs = useRef<{
     bars: HTMLCanvasElement | null;
     circular: HTMLCanvasElement | null;
@@ -36,6 +39,132 @@ export const MultiAudioVisualizer = ({
     .filter(([_, enabled]) => enabled)
     .map(([type, _]) => type as keyof typeof config.enabled);
 
+  // Validate and fix any duplicate grid slots
+  useEffect(() => {
+    const positions = config.positions;
+    const usedSlots = new Set<number>();
+    const duplicates: string[] = [];
+    
+    // Find duplicates
+    Object.entries(positions).forEach(([type, position]) => {
+      if (config.enabled[type as keyof typeof config.enabled]) {
+        if (usedSlots.has(position.gridSlot)) {
+          duplicates.push(type);
+        } else {
+          usedSlots.add(position.gridSlot);
+        }
+      }
+    });
+    
+    // Fix duplicates by reassigning to next available slots
+    if (duplicates.length > 0) {
+      console.warn(`Found duplicate grid slots, fixing:`, duplicates);
+      
+      const newPositions = { ...positions };
+      let nextAvailableSlot = 0;
+      
+      duplicates.forEach(duplicateType => {
+        // Find next available slot
+        while (usedSlots.has(nextAvailableSlot)) {
+          nextAvailableSlot++;
+        }
+        
+        newPositions[duplicateType as keyof typeof positions] = {
+          ...newPositions[duplicateType as keyof typeof positions],
+          gridSlot: nextAvailableSlot,
+        };
+        
+        usedSlots.add(nextAvailableSlot);
+        nextAvailableSlot++;
+      });
+      
+      if (onConfigChange) {
+        onConfigChange({
+          ...config,
+          positions: newPositions,
+        });
+      }
+    }
+  }, [config.enabled, config.positions, onConfigChange]);
+
+  // Hide instructions after 8 seconds or on first interaction
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowInstructions(false);
+    }, 8000);
+
+    const handleInteraction = () => {
+      setShowInstructions(false);
+      clearTimeout(timer);
+    };
+
+    document.addEventListener('mousedown', handleInteraction);
+    document.addEventListener('touchstart', handleInteraction);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', handleInteraction);
+      document.removeEventListener('touchstart', handleInteraction);
+    };
+  }, []);
+
+  // Handle position changes (grid slot swapping)
+  const handlePositionChange = (type: string, newGridSlot: number) => {
+    setShowInstructions(false); // Hide instructions on first drag
+    if (onConfigChange) {
+      onConfigChange({
+        ...config,
+        positions: {
+          ...config.positions,
+          [type]: {
+            ...config.positions[type as keyof typeof config.positions],
+            gridSlot: newGridSlot,
+          },
+        },
+      });
+    }
+  };
+
+  // Handle grid slot swapping between two visualizations
+  const handleGridSlotSwap = (draggedType: string, targetType: string) => {
+    setShowInstructions(false); // Hide instructions on first drag
+    if (onConfigChange) {
+      const draggedPosition = config.positions[draggedType as keyof typeof config.positions];
+      const targetPosition = config.positions[targetType as keyof typeof config.positions];
+      
+      if (draggedPosition && targetPosition) {
+        // Ensure we're not swapping identical slots (safety check)
+        if (draggedPosition.gridSlot === targetPosition.gridSlot) {
+          console.warn(`Attempted to swap identical grid slots (${draggedPosition.gridSlot}) - ignoring swap`);
+          return;
+        }
+        
+        // Swap the grid slots in a single atomic operation
+        onConfigChange({
+          ...config,
+          positions: {
+            ...config.positions,
+            [draggedType]: {
+              ...draggedPosition,
+              gridSlot: targetPosition.gridSlot,
+            },
+            [targetType]: {
+              ...targetPosition,
+              gridSlot: draggedPosition.gridSlot,
+            },
+          },
+        });
+      }
+    }
+  };
+
+  // Sort visualizations by grid slot for consistent ordering
+  const sortedVisualizations = [...enabledVisualizations].sort((a, b) => {
+    const slotA = config.positions[a]?.gridSlot ?? 0;
+    const slotB = config.positions[b]?.gridSlot ?? 0;
+    return slotA - slotB;
+  });
+
   const getGridLayout = (count: number) => {
     switch (count) {
       case 1:
@@ -53,7 +182,7 @@ export const MultiAudioVisualizer = ({
     }
   };
 
-  const { gridCols, rows, aspectRatio } = getGridLayout(enabledVisualizations.length);
+  const { gridCols, rows, aspectRatio } = getGridLayout(sortedVisualizations.length);
 
   // Drawing functions
   const drawBars = (
@@ -347,7 +476,7 @@ export const MultiAudioVisualizer = ({
     if (!isPlaying) return;
 
     const render = () => {
-      enabledVisualizations.forEach((type) => {
+      sortedVisualizations.forEach((type) => {
         const canvas = canvasRefs.current[type];
         if (!canvas) return;
 
@@ -423,11 +552,11 @@ export const MultiAudioVisualizer = ({
         animationRef.current = null;
       }
     };
-  }, [audioData, isPlaying, config, enabledVisualizations]);
+  }, [audioData, isPlaying, config, sortedVisualizations]);
 
   useEffect(() => {
     const handleResize = () => {
-      enabledVisualizations.forEach((type) => {
+      sortedVisualizations.forEach((type) => {
         resizeCanvas(type);
       });
     };
@@ -435,14 +564,14 @@ export const MultiAudioVisualizer = ({
     window.addEventListener("resize", handleResize);
 
     // Initial resize
-    enabledVisualizations.forEach((type) => {
+    sortedVisualizations.forEach((type) => {
       resizeCanvas(type);
     });
 
     return () => {
       window.removeEventListener("resize", handleResize);
     };
-  }, [enabledVisualizations]);
+  }, [sortedVisualizations]);
 
   if (enabledVisualizations.length === 0) {
     return (
@@ -466,15 +595,21 @@ export const MultiAudioVisualizer = ({
       ref={containerRef}
       className="absolute inset-0 w-full h-full overflow-hidden"
     >
+      {/* Drag Instructions */}
+      <DragInstructions isVisible={showInstructions && enabledVisualizations.length > 1} />
+      
       <div className={`grid ${gridCols} ${rows} gap-2 h-full w-full p-4`}>
-        {enabledVisualizations.map((type, index) => {
+        {sortedVisualizations.map((type, index) => {
+          const position = config.positions[type];
+          if (!position) return null;
+
           // Handle spanning for different grid layouts
           let spanClass = "";
           
-          if (enabledVisualizations.length === 3 && index === 2) {
+          if (sortedVisualizations.length === 3 && index === 2) {
             // For 3 visualizations, make the third one span both columns
             spanClass = "col-span-2";
-          } else if (enabledVisualizations.length === 5) {
+          } else if (sortedVisualizations.length === 5) {
             // For 5 visualizations in 3x2 grid, make the last one span columns 2-3 in the second row
             if (index === 4) {
               spanClass = "col-span-2";
@@ -482,9 +617,18 @@ export const MultiAudioVisualizer = ({
           }
 
           return (
-            <div
+            <GridDraggableVisualizationItem
               key={type}
-              className={`relative overflow-hidden rounded-lg bg-black/20 border border-white/10 flex-1 min-h-0 ${spanClass}`}
+              type={type}
+              position={position}
+              isPlaying={isPlaying}
+              onPositionChange={handlePositionChange}
+              onGridSlotSwap={handleGridSlotSwap}
+              gridSlot={position.gridSlot}
+              gridCols={gridCols}
+              gridRows={rows}
+              spanClass={spanClass}
+              allTypes={sortedVisualizations}
             >
               <canvas
                 ref={(el) => {
@@ -492,18 +636,7 @@ export const MultiAudioVisualizer = ({
                 }}
                 className="absolute inset-0 w-full h-full"
               />
-              {!isPlaying && (
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div
-                    className="text-center"
-                    style={{ color: "var(--color-text-secondary)" }}
-                  >
-                    <Waves className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                    <p className="text-sm font-medium capitalize">{type}</p>
-                  </div>
-                </div>
-              )}
-            </div>
+            </GridDraggableVisualizationItem>
           );
         })}
       </div>

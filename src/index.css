@@ -200,6 +200,61 @@
     transition: all var(--transition-speed);
   }
 
+  /* Enhanced drag and drop animations */
+  @keyframes drag-pulse {
+    0%, 100% {
+      transform: scale(1);
+      box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
+    }
+    50% {
+      transform: scale(1.02);
+      box-shadow: 0 0 0 10px rgba(59, 130, 246, 0);
+    }
+  }
+
+  @keyframes drop-zone-glow {
+    0%, 100% {
+      border-color: rgba(59, 130, 246, 0.4);
+      background-color: rgba(59, 130, 246, 0.05);
+    }
+    50% {
+      border-color: rgba(59, 130, 246, 0.8);
+      background-color: rgba(59, 130, 246, 0.15);
+    }
+  }
+
+  @keyframes drag-ghost {
+    0% {
+      opacity: 0.8;
+      transform: rotate(0deg) scale(1);
+    }
+    100% {
+      opacity: 0.6;
+      transform: rotate(2deg) scale(0.98);
+    }
+  }
+
+  .drag-active {
+    animation: drag-ghost 0.3s ease-out forwards;
+  }
+
+  .drop-zone-active {
+    animation: drop-zone-glow 1.5s infinite;
+  }
+
+  .drag-handle-active {
+    animation: drag-pulse 2s infinite;
+  }
+
+  /* Custom scale utilities */
+  .scale-101 {
+    transform: scale(1.01);
+  }
+
+  .scale-102 {
+    transform: scale(1.02);
+  }
+
   /* Immersive App Layout */
   .app-layout {
     position: relative;
