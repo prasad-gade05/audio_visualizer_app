@@ -5,6 +5,7 @@ import { viteSourceLocator } from "@metagptx/vite-plugin-source-locator";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
+  base: "/audio_visualizer_app/",
   plugins: [
     viteSourceLocator({
       prefix: "mgx",
