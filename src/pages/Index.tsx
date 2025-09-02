@@ -3,16 +3,20 @@ import { LandingView } from "@/components/LandingView";
 import { MultiPlayerView } from "@/components/MultiPlayerView";
 import { FileUpload } from "@/components/FileUpload";
 import { SystemAudioCapture } from "@/components/SystemAudioCapture";
+import { MicrophoneCapture } from "@/components/MicrophoneCapture";
 import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
 import { useSystemAudio } from "@/hooks/useSystemAudio";
+import { useMicrophoneAudio } from "@/hooks/useMicrophoneAudio";
 import { MultiVisualizationConfig } from "@/types/audio";
 
 type AppView =
   | "landing"
   | "fileUpload"
   | "systemAudio"
+  | "microphoneAudio"
   | "filePlayer"
-  | "systemPlayer";
+  | "systemPlayer"
+  | "microphonePlayer";
 
 export default function Index() {
   const [currentView, setCurrentView] = useState<AppView>("landing");
@@ -102,6 +106,21 @@ export default function Index() {
     stopSystemAudioCapture,
   } = useSystemAudio();
 
+  // Microphone audio capture
+  const {
+    audioData: microphoneAudioData,
+    isCapturing: isMicrophoneCapturing,
+    isSupported: isMicrophoneSupported,
+    error: microphoneError,
+    microphoneLevel,
+    sensitivity,
+    noiseGate,
+    startMicrophoneCapture,
+    stopMicrophoneCapture,
+    setSensitivity,
+    setNoiseGate,
+  } = useMicrophoneAudio();
+
   const handleFileUploadClick = () => {
     setCurrentView("fileUpload");
   };
@@ -113,6 +132,16 @@ export default function Index() {
       // Show error dialog or handle unsupported case
       alert(
         "System audio capture is not supported in your browser. Please use Chrome or Edge with HTTPS."
+      );
+    }
+  };
+
+  const handleMicrophoneClick = () => {
+    if (isMicrophoneSupported) {
+      setCurrentView("microphoneAudio");
+    } else {
+      alert(
+        "Microphone access is not supported in your browser. Please use a modern browser with HTTPS."
       );
     }
   };
@@ -132,8 +161,17 @@ export default function Index() {
     }
   };
 
+  const handleMicrophoneStart = async () => {
+    try {
+      await startMicrophoneCapture();
+      setCurrentView("microphonePlayer");
+    } catch (err) {
+      // Error handling is done in the hook
+    }
+  };
+
   const handleBack = () => {
-    if (currentView === "filePlayer" || currentView === "systemPlayer") {
+    if (currentView === "filePlayer" || currentView === "systemPlayer" || currentView === "microphonePlayer") {
       setCurrentView("landing");
     } else {
       setCurrentView("landing");
@@ -145,6 +183,11 @@ export default function Index() {
     setCurrentView("landing");
   };
 
+  const handleMicrophoneStop = () => {
+    stopMicrophoneCapture();
+    setCurrentView("landing");
+  };
+
   const renderView = () => {
     switch (currentView) {
       case "landing":
@@ -152,6 +195,7 @@ export default function Index() {
           <LandingView
             onFileUploadClick={handleFileUploadClick}
             onSystemAudioClick={handleSystemAudioClick}
+            onMicrophoneClick={handleMicrophoneClick}
           />
         );
 
@@ -234,6 +278,46 @@ export default function Index() {
           </div>
         );
 
+      case "microphoneAudio":
+        return (
+          <div
+            className="min-h-screen flex items-center justify-center p-6 overflow-y-auto"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            <div className="w-full max-w-2xl">
+              <div className="glass p-8 mb-6">
+                <h2
+                  className="text-2xl font-bold mb-6 text-center"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
+                  Microphone Input
+                </h2>
+                <MicrophoneCapture
+                  isCapturing={isMicrophoneCapturing}
+                  isSupported={isMicrophoneSupported}
+                  error={microphoneError}
+                  microphoneLevel={microphoneLevel}
+                  sensitivity={sensitivity}
+                  noiseGate={noiseGate}
+                  onStart={handleMicrophoneStart}
+                  onStop={stopMicrophoneCapture}
+                  onSensitivityChange={setSensitivity}
+                  onNoiseGateChange={setNoiseGate}
+                />
+              </div>
+              <div className="text-center">
+                <button
+                  onClick={handleBack}
+                  className="glass-interactive px-6 py-3"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
+                  ← Back to Home
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+
       case "filePlayer":
         return (
           <MultiPlayerView
@@ -261,6 +345,25 @@ export default function Index() {
             isCapturing={isCapturing}
             onBack={handleBack}
             onStop={handleStop}
+            multiVisualizationConfig={multiVisualizationConfig}
+            onMultiVisualizationConfigChange={setMultiVisualizationConfig}
+          />
+        );
+
+      case "microphonePlayer":
+        return (
+          <MultiPlayerView
+            mode="microphone"
+            audioData={microphoneAudioData}
+            isPlaying={isMicrophoneCapturing}
+            isCapturing={isMicrophoneCapturing}
+            microphoneLevel={microphoneLevel}
+            sensitivity={sensitivity}
+            noiseGate={noiseGate}
+            onBack={handleBack}
+            onStop={handleMicrophoneStop}
+            onSensitivityChange={setSensitivity}
+            onNoiseGateChange={setNoiseGate}
             multiVisualizationConfig={multiVisualizationConfig}
             onMultiVisualizationConfigChange={setMultiVisualizationConfig}
           />

@@ -6,6 +6,7 @@ import {
   Volume2,
   SkipBack,
   SkipForward,
+  Mic,
 } from "lucide-react";
 import { MultiAudioVisualizer } from "./MultiAudioVisualizer";
 import { MultiVisualizationController } from "./MultiVisualizationController";
@@ -13,18 +14,23 @@ import { AudioState, AudioData, MultiVisualizationConfig } from "@/types/audio";
 import { Slider } from "@/components/ui/slider";
 
 interface MultiPlayerViewProps {
-  mode: "file" | "system";
+  mode: "file" | "system" | "microphone";
   fileName?: string;
   audioState?: AudioState;
   audioData: AudioData;
   isPlaying: boolean;
   isCapturing?: boolean;
+  microphoneLevel?: number;
+  sensitivity?: number;
+  noiseGate?: number;
   onBack: () => void;
   onPlay?: () => void;
   onPause?: () => void;
   onSeek?: (time: number) => void;
   onVolumeChange?: (volume: number) => void;
   onStop?: () => void;
+  onSensitivityChange?: (value: number) => void;
+  onNoiseGateChange?: (value: number) => void;
   multiVisualizationConfig: MultiVisualizationConfig;
   onMultiVisualizationConfigChange: (config: MultiVisualizationConfig) => void;
 }
@@ -36,12 +42,17 @@ export const MultiPlayerView = ({
   audioData,
   isPlaying,
   isCapturing,
+  microphoneLevel,
+  sensitivity,
+  noiseGate,
   onBack,
   onPlay,
   onPause,
   onSeek,
   onVolumeChange,
   onStop,
+  onSensitivityChange,
+  onNoiseGateChange,
   multiVisualizationConfig,
   onMultiVisualizationConfigChange,
 }: MultiPlayerViewProps) => {
@@ -115,7 +126,7 @@ export const MultiPlayerView = ({
         <div className="glass flex items-center gap-4 p-4 min-w-72">
           {/* Back Button */}
           <button
-            onClick={mode === "system" && isCapturing ? onStop : onBack}
+            onClick={(mode === "system" || mode === "microphone") && isCapturing ? onStop : onBack}
             className="glass-interactive p-3 hover:scale-105 smooth-transition flex-shrink-0"
           >
             <ArrowLeft
@@ -132,13 +143,17 @@ export const MultiPlayerView = ({
             >
               {mode === "file"
                 ? `Now Playing: ${fileName || "Unknown Track"}`
-                : "Capturing System Audio"}
+                : mode === "system"
+                ? "Capturing System Audio"
+                : "Recording Microphone"}
             </p>
             <p
               className="text-sm mt-1"
               style={{ color: "var(--color-text-secondary)" }}
             >
-              Multi-Visualization Mode
+              {mode === "microphone" && microphoneLevel !== undefined
+                ? `Level: ${Math.round(microphoneLevel * 100)}% | Multi-Visualization Mode`
+                : "Multi-Visualization Mode"}
             </p>
           </div>
         </div>
@@ -246,6 +261,101 @@ export const MultiPlayerView = ({
                     </div>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Microphone Controls (Only for microphone mode) */}
+      {mode === "microphone" && sensitivity !== undefined && noiseGate !== undefined && (
+        <div
+          className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 z-20 transition-opacity duration-300 ${
+            controlsVisible ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          <div className="glass p-6 min-w-96">
+            {/* Microphone Level Display */}
+            <div className="space-y-3 mb-6">
+              <div className="flex justify-between items-center">
+                <span
+                  className="text-sm font-medium"
+                  style={{ color: "var(--color-text-primary)" }}
+                >
+                  Microphone Level
+                </span>
+                <span
+                  className="text-sm"
+                  style={{ color: "var(--color-text-secondary)" }}
+                >
+                  {Math.round((microphoneLevel || 0) * 100)}%
+                </span>
+              </div>
+              <div className="w-full h-2 bg-black/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full transition-all duration-100"
+                  style={{
+                    width: `${(microphoneLevel || 0) * 100}%`,
+                    background: `linear-gradient(90deg, 
+                      ${(microphoneLevel || 0) > 0.8 ? '#ef4444' : 
+                        (microphoneLevel || 0) > 0.5 ? '#f59e0b' : '#10b981'}`,
+                  }}
+                />
+              </div>
+            </div>
+
+            {/* Microphone Controls */}
+            <div className="space-y-4">
+              {/* Sensitivity Control */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label
+                    className="text-sm font-medium"
+                    style={{ color: "var(--color-text-primary)" }}
+                  >
+                    Sensitivity
+                  </label>
+                  <span
+                    className="text-sm"
+                    style={{ color: "var(--color-text-secondary)" }}
+                  >
+                    {Math.round(sensitivity * 100)}%
+                  </span>
+                </div>
+                <Slider
+                  value={[sensitivity]}
+                  onValueChange={(value) => onSensitivityChange && onSensitivityChange(value[0])}
+                  min={0.1}
+                  max={3}
+                  step={0.1}
+                  className="w-full"
+                />
+              </div>
+
+              {/* Noise Gate Control */}
+              <div className="space-y-2">
+                <div className="flex justify-between items-center">
+                  <label
+                    className="text-sm font-medium"
+                    style={{ color: "var(--color-text-primary)" }}
+                  >
+                    Noise Gate
+                  </label>
+                  <span
+                    className="text-sm"
+                    style={{ color: "var(--color-text-secondary)" }}
+                  >
+                    {Math.round(noiseGate * 100)}%
+                  </span>
+                </div>
+                <Slider
+                  value={[noiseGate]}
+                  onValueChange={(value) => onNoiseGateChange && onNoiseGateChange(value[0])}
+                  min={0}
+                  max={0.5}
+                  step={0.01}
+                  className="w-full"
+                />
               </div>
             </div>
           </div>

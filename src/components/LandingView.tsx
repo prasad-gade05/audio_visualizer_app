@@ -1,11 +1,12 @@
-import { Upload, Monitor, Headphones } from 'lucide-react';
+import { Upload, Monitor, Mic, Headphones } from 'lucide-react';
 
 interface LandingViewProps {
   onFileUploadClick: () => void;
   onSystemAudioClick: () => void;
+  onMicrophoneClick: () => void;
 }
 
-export const LandingView = ({ onFileUploadClick, onSystemAudioClick }: LandingViewProps) => {
+export const LandingView = ({ onFileUploadClick, onSystemAudioClick, onMicrophoneClick }: LandingViewProps) => {
   return (
     <div className="min-h-screen flex items-center justify-center p-6">
       <div className="w-full max-w-4xl">
@@ -44,63 +45,93 @@ export const LandingView = ({ onFileUploadClick, onSystemAudioClick }: LandingVi
         </div>
 
         {/* Choice Cards */}
-        <div className="grid md:grid-cols-2 gap-6">
+        <div className="grid md:grid-cols-3 gap-6">
           {/* File Upload Card */}
           <div 
-            className="glass-interactive p-8 cursor-pointer group"
+            className="glass-interactive p-6 cursor-pointer group"
             onClick={onFileUploadClick}
           >
             <div className="text-center">
               <div 
-                className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 smooth-transition"
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 smooth-transition"
                 style={{
                   background: `linear-gradient(135deg, var(--color-primary), var(--color-tertiary))`,
                   boxShadow: '0 0 20px rgba(138, 66, 255, 0.3)'
                 }}
               >
-                <Upload className="w-10 h-10 text-white" />
+                <Upload className="w-8 h-8 text-white" />
               </div>
               <h3 
-                className="text-2xl font-semibold mb-4"
+                className="text-xl font-semibold mb-3"
                 style={{ color: 'var(--color-text-primary)' }}
               >
                 Visualize a File
               </h3>
               <p 
-                className="text-base leading-relaxed"
+                className="text-sm leading-relaxed"
                 style={{ color: 'var(--color-text-secondary)' }}
               >
-                Upload an audio file (MP3, WAV, etc.) and see it come to life with beautiful visualizations
+                Upload an audio file and see it come to life with beautiful visualizations
               </p>
             </div>
           </div>
 
           {/* System Audio Card */}
           <div 
-            className="glass-interactive p-8 cursor-pointer group"
+            className="glass-interactive p-6 cursor-pointer group"
             onClick={onSystemAudioClick}
           >
             <div className="text-center">
               <div 
-                className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 smooth-transition"
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 smooth-transition"
                 style={{
                   background: `linear-gradient(135deg, var(--color-secondary), var(--color-tertiary))`,
                   boxShadow: '0 0 20px rgba(0, 209, 255, 0.3)'
                 }}
               >
-                <Monitor className="w-10 h-10 text-white" />
+                <Monitor className="w-8 h-8 text-white" />
               </div>
               <h3 
-                className="text-2xl font-semibold mb-4"
+                className="text-xl font-semibold mb-3"
                 style={{ color: 'var(--color-text-primary)' }}
               >
                 Capture System Audio
               </h3>
               <p 
-                className="text-base leading-relaxed"
+                className="text-sm leading-relaxed"
                 style={{ color: 'var(--color-text-secondary)' }}
               >
                 Visualize any sound playing on your computer in real-time
+              </p>
+            </div>
+          </div>
+
+          {/* Microphone Card */}
+          <div 
+            className="glass-interactive p-6 cursor-pointer group"
+            onClick={onMicrophoneClick}
+          >
+            <div className="text-center">
+              <div 
+                className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 smooth-transition"
+                style={{
+                  background: `linear-gradient(135deg, var(--color-tertiary), var(--color-primary))`,
+                  boxShadow: '0 0 20px rgba(255, 85, 225, 0.3)'
+                }}
+              >
+                <Mic className="w-8 h-8 text-white" />
+              </div>
+              <h3 
+                className="text-xl font-semibold mb-3"
+                style={{ color: 'var(--color-text-primary)' }}
+              >
+                Microphone Input
+              </h3>
+              <p 
+                className="text-sm leading-relaxed"
+                style={{ color: 'var(--color-text-secondary)' }}
+              >
+                Record and visualize live audio from your microphone
               </p>
             </div>
           </div>
