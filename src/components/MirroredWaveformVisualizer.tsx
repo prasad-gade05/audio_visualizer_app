@@ -45,8 +45,8 @@ export const MirroredWaveformVisualizer = ({
     canvasWidth: number,
     canvasHeight: number
   ) => {
-    // Clear canvas with black background
-    ctx.fillStyle = "#000000";
+    // Clear canvas with dark background
+    ctx.fillStyle = "#0d0b14";
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
     if (!timeData || timeData.length === 0) return;
@@ -90,7 +90,7 @@ export const MirroredWaveformVisualizer = ({
 
     if (!isPlaying) {
       // Clear canvas when not playing
-      ctx.fillStyle = "#000000";
+      ctx.fillStyle = "#0d0b14";
       ctx.fillRect(0, 0, canvas.width, canvas.height);
       return;
     }
@@ -120,7 +120,7 @@ export const MirroredWaveformVisualizer = ({
       // Clear canvas when stopped
       const ctx = canvas.getContext("2d");
       if (ctx) {
-        ctx.fillStyle = "#000000";
+        ctx.fillStyle = "#0d0b14";
         ctx.fillRect(0, 0, width, height);
       }
     }
@@ -149,7 +149,7 @@ export const MirroredWaveformVisualizer = ({
         style={{
           width: `${width}px`,
           height: `${height}px`,
-          background: "#000000",
+          background: "#0d0b14",
         }}
       />
     </div>

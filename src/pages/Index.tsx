@@ -29,6 +29,7 @@ export default function Index() {
         waveform: true,
         particles: true,
         "mirrored-waveform": true,
+        analytics: true,
       },
       positions: {
         bars: { gridSlot: 0, zIndex: 1 },
@@ -36,6 +37,7 @@ export default function Index() {
         waveform: { gridSlot: 2, zIndex: 3 },
         particles: { gridSlot: 3, zIndex: 4 },
         "mirrored-waveform": { gridSlot: 4, zIndex: 5 },
+        analytics: { gridSlot: 5, zIndex: 6 },
       },
       configs: {
         bars: {
@@ -80,7 +82,15 @@ export default function Index() {
           sensitivity: 1,
           smoothing: 0.8,
           secondaryColor: "#FF0000",
-          backgroundColor: "#000000",
+          backgroundColor: "#0d0b14",
+        },
+        analytics: {
+          type: "analytics",
+          color: "#8A42FF",
+          sensitivity: 1,
+          smoothing: 0.8,
+          secondaryColor: "#00D1FF",
+          backgroundColor: "#0d0b14",
         },
       },
     });

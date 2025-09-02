@@ -3,6 +3,7 @@ import { AudioData, MultiVisualizationConfig } from "@/types/audio";
 import { Waves } from "lucide-react";
 import { GridDraggableVisualizationItem } from "./GridDraggableVisualizationItem";
 import { DragInstructions } from "./DragInstructions";
+import { AdvancedAudioAnalytics } from "./AdvancedAudioAnalytics";
 
 interface MultiAudioVisualizerProps {
   audioData: AudioData;
@@ -25,12 +26,14 @@ export const MultiAudioVisualizer = ({
     waveform: HTMLCanvasElement | null;
     particles: HTMLCanvasElement | null;
     "mirrored-waveform": HTMLCanvasElement | null;
+    analytics: HTMLCanvasElement | null;
   }>({
     bars: null,
     circular: null,
     waveform: null,
     particles: null,
     "mirrored-waveform": null,
+    analytics: null,
   });
   const animationRef = useRef<number | null>(null);
 
@@ -177,6 +180,8 @@ export const MultiAudioVisualizer = ({
         return { gridCols: "grid-cols-2", rows: "grid-rows-2", aspectRatio: "1:1" };
       case 5:
         return { gridCols: "grid-cols-3", rows: "grid-rows-2", aspectRatio: "auto" }; // 3x2 grid with one empty
+      case 6:
+        return { gridCols: "grid-cols-3", rows: "grid-rows-2", aspectRatio: "auto" }; // 3x2 grid
       default:
         return { gridCols: "grid-cols-2", rows: "grid-rows-2", aspectRatio: "auto" };
     }
@@ -477,7 +482,11 @@ export const MultiAudioVisualizer = ({
 
     const render = () => {
       sortedVisualizations.forEach((type) => {
-        const canvas = canvasRefs.current[type];
+        // Skip analytics visualization as it's not canvas-based
+        if (type === "analytics") return;
+        
+        const canvasType = type as Exclude<typeof type, "analytics">;
+        const canvas = canvasRefs.current[canvasType];
         if (!canvas) return;
 
         const ctx = canvas.getContext("2d");
@@ -492,7 +501,7 @@ export const MultiAudioVisualizer = ({
 
         if (audioData.frequencyData.length === 0) return;
 
-        switch (type) {
+        switch (canvasType) {
           case "bars":
             drawBars(
               ctx,
@@ -557,7 +566,10 @@ export const MultiAudioVisualizer = ({
   useEffect(() => {
     const handleResize = () => {
       sortedVisualizations.forEach((type) => {
-        resizeCanvas(type);
+        // Skip analytics visualization as it's not canvas-based
+        if (type === "analytics") return;
+        const canvasType = type as Exclude<typeof type, "analytics">;
+        resizeCanvas(canvasType as keyof typeof canvasRefs.current);
       });
     };
 
@@ -565,7 +577,10 @@ export const MultiAudioVisualizer = ({
 
     // Initial resize
     sortedVisualizations.forEach((type) => {
-      resizeCanvas(type);
+      // Skip analytics visualization as it's not canvas-based
+      if (type === "analytics") return;
+      const canvasType = type as Exclude<typeof type, "analytics">;
+      resizeCanvas(canvasType as keyof typeof canvasRefs.current);
     });
 
     return () => {
@@ -630,12 +645,23 @@ export const MultiAudioVisualizer = ({
               spanClass={spanClass}
               allTypes={sortedVisualizations}
             >
-              <canvas
-                ref={(el) => {
-                  canvasRefs.current[type] = el;
-                }}
-                className="absolute inset-0 w-full h-full"
-              />
+              {type === "analytics" ? (
+                <AdvancedAudioAnalytics
+                  audioData={audioData}
+                  isPlaying={isPlaying}
+                  className="w-full h-full"
+                />
+              ) : (
+                <canvas
+                  ref={(el) => {
+                    if (type !== "analytics") {
+                      const canvasType = type as Exclude<typeof type, "analytics">;
+                      canvasRefs.current[canvasType] = el;
+                    }
+                  }}
+                  className="absolute inset-0 w-full h-full"
+                />
+              )}
             </GridDraggableVisualizationItem>
           );
         })}
