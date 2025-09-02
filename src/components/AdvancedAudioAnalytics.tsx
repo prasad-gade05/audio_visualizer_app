@@ -198,18 +198,18 @@ export const AdvancedAudioAnalytics = ({
       }}
     >
       <div className="h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-700/50">
-        <div className="p-3 text-white min-h-full">
+        <div className="p-2 text-white min-h-full">
           {/* Peak Frequency, RMS Level, and LIVE in one line */}
-          <div className="grid grid-cols-3 gap-2 mb-4">
+          <div className="grid grid-cols-3 gap-2 mb-2">
             <div>
-              <div className="text-gray-400 text-[11px] mb-0.5">Peak Frequency</div>
-              <div className="text-lg font-mono font-medium text-white">{metrics.peakFrequency}Hz</div>
+              <div className="text-gray-400 text-[9px] mb-0.5">Peak Frequency</div>
+              <div className="text-sm font-mono font-medium text-white">{metrics.peakFrequency}Hz</div>
             </div>
             <div>
-              <div className="text-gray-400 text-[11px] mb-0.5">RMS Level</div>
-              <div className="flex items-center gap-1.5">
-                <span className="text-lg font-mono font-medium text-white">{metrics.rmsLevel}dB</span>
-                <span className={`text-[10px] ${
+              <div className="text-gray-400 text-[9px] mb-0.5">RMS Level</div>
+              <div className="flex items-center gap-1">
+                <span className="text-sm font-mono font-medium text-white">{metrics.rmsLevel}dB</span>
+                <span className={`text-[8px] ${
                   metrics.trend === 'Rising' ? 'text-green-400' : 
                   metrics.trend === 'Falling' ? 'text-red-400' : 
                   'text-gray-400'
@@ -219,18 +219,18 @@ export const AdvancedAudioAnalytics = ({
               </div>
             </div>
             <div className="flex justify-end items-start">
-              <div className="bg-green-500/20 text-green-400 px-1.5 py-0.5 rounded text-[10px] font-medium border border-green-500/30">
+              <div className="bg-green-500/20 text-green-400 px-1 py-0.5 rounded text-[8px] font-medium border border-green-500/30">
                 LIVE
               </div>
             </div>
           </div>
 
           {/* Spectral Analysis */}
-          <div className="mb-4">
-            <div className="text-white text-sm font-medium mb-2">Spectral Analysis</div>
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-gray-400 text-[11px]">Brightness</span>
-              <div className="flex gap-3 text-[10px] font-mono text-gray-300">
+          <div className="mb-2">
+            <div className="text-white text-xs font-medium mb-1">Spectral Analysis</div>
+            <div className="flex justify-between items-center mb-0.5">
+              <span className="text-gray-400 text-[9px]">Brightness</span>
+              <div className="flex gap-2 text-[8px] font-mono text-gray-300">
                 <span>5847Hz</span>
                 <span className="text-gray-500">Spread</span>
                 <span>5502Hz</span>
@@ -239,53 +239,53 @@ export const AdvancedAudioAnalytics = ({
             <ProgressBar 
               value={metrics.brightness} 
               color="linear-gradient(90deg, #FFA500 0%, #FFD700 50%, #FFFF00 100%)" 
-              height="h-1.5"
+              height="h-1"
             />
           </div>
 
           {/* Quality Assessment */}
-          <div className="mb-4">
-            <div className="text-white text-sm font-medium mb-2">Quality Assessment</div>
-            <div className="grid grid-cols-2 gap-x-4 gap-y-2">
+          <div className="mb-2">
+            <div className="text-white text-xs font-medium mb-1">Quality Assessment</div>
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1">
               <div>
-                <div className="flex justify-between text-[11px] mb-0.5">
+                <div className="flex justify-between text-[9px] mb-0.5">
                   <span className="text-gray-400">Clarity</span>
                   <span className="font-mono text-gray-300">{metrics.clarity}%</span>
                 </div>
-                <ProgressBar value={metrics.clarity} color="#4F46E5" height="h-1" />
+                <ProgressBar value={metrics.clarity} color="#4F46E5" height="h-0.5" />
               </div>
               <div>
-                <div className="flex justify-between text-[11px] mb-0.5">
+                <div className="flex justify-between text-[9px] mb-0.5">
                   <span className="text-gray-400">Richness</span>
                   <span className="font-mono text-gray-300">{metrics.richness}%</span>
                 </div>
-                <ProgressBar value={metrics.richness} color="#7C3AED" height="h-1" />
+                <ProgressBar value={metrics.richness} color="#7C3AED" height="h-0.5" />
               </div>
               <div>
-                <div className="flex justify-between text-[11px] mb-0.5">
+                <div className="flex justify-between text-[9px] mb-0.5">
                   <span className="text-gray-400">Presence</span>
                   <span className="font-mono text-gray-300">{metrics.presence}%</span>
                 </div>
-                <ProgressBar value={metrics.presence} color="#F59E0B" height="h-1" />
+                <ProgressBar value={metrics.presence} color="#F59E0B" height="h-0.5" />
               </div>
               <div>
-                <div className="flex justify-between text-[11px] mb-0.5">
+                <div className="flex justify-between text-[9px] mb-0.5">
                   <span className="text-gray-400">Brightness</span>
                   <span className="font-mono text-gray-300">100%</span>
                 </div>
-                <ProgressBar value={100} color="#EC4899" height="h-1" />
+                <ProgressBar value={100} color="#EC4899" height="h-0.5" />
               </div>
             </div>
           </div>
 
           {/* Audio Profile */}
-          <div className="mb-4">
-            <div className="text-white text-sm font-medium mb-2">Audio Profile</div>
-            <div className="flex gap-1.5 flex-wrap">
+          <div className="mb-2">
+            <div className="text-white text-xs font-medium mb-1">Audio Profile</div>
+            <div className="flex gap-1 flex-wrap">
               {metrics.profile.map((tag, index) => (
                 <span 
                   key={index} 
-                  className="bg-cyan-500/15 text-cyan-400 px-2 py-0.5 rounded-full text-[10px] border border-cyan-500/30 font-medium"
+                  className="bg-cyan-500/15 text-cyan-400 px-1.5 py-0.5 rounded-full text-[8px] border border-cyan-500/30 font-medium"
                 >
                   {tag}
                 </span>
@@ -294,65 +294,65 @@ export const AdvancedAudioAnalytics = ({
           </div>
 
           {/* Frequency Distribution */}
-          <div className="mb-4">
-            <div className="flex justify-between items-center mb-2">
-              <span className="text-white text-sm font-medium">Frequency Distribution</span>
-              <span className="text-gray-400 text-[10px]">Stability: {metrics.stability}%</span>
+          <div className="mb-2">
+            <div className="flex justify-between items-center mb-1">
+              <span className="text-white text-xs font-medium">Frequency Distribution</span>
+              <span className="text-gray-400 text-[8px]">Stability: {metrics.stability}%</span>
             </div>
             
-            <div className="space-y-2">
+            <div className="space-y-1">
               <div>
-                <div className="flex justify-between text-[11px] mb-0.5">
+                <div className="flex justify-between text-[9px] mb-0.5">
                   <span className="text-gray-400">Bass</span>
-                  <div className="flex gap-3 font-mono text-gray-300">
+                  <div className="flex gap-2 font-mono text-gray-300">
                     <span>{metrics.bassLevel}%</span>
                     <span className="text-gray-500">20-250Hz</span>
                   </div>
                 </div>
-                <ProgressBar value={metrics.bassLevel} color="#8B5CF6" height="h-1.5" />
+                <ProgressBar value={metrics.bassLevel} color="#8B5CF6" height="h-1" />
               </div>
               
               <div>
-                <div className="flex justify-between text-[11px] mb-0.5">
+                <div className="flex justify-between text-[9px] mb-0.5">
                   <span className="text-gray-400">Mid</span>
-                  <div className="flex gap-3 font-mono text-gray-300">
+                  <div className="flex gap-2 font-mono text-gray-300">
                     <span>{metrics.midLevel}%</span>
                     <span className="text-gray-500">250-4kHz</span>
                   </div>
                 </div>
-                <ProgressBar value={metrics.midLevel} color="#10B981" height="h-1.5" />
+                <ProgressBar value={metrics.midLevel} color="#10B981" height="h-1" />
               </div>
               
               <div>
-                <div className="flex justify-between text-[11px] mb-0.5">
+                <div className="flex justify-between text-[9px] mb-0.5">
                   <span className="text-gray-400">Treble</span>
-                  <div className="flex gap-3 font-mono text-gray-300">
+                  <div className="flex gap-2 font-mono text-gray-300">
                     <span>{metrics.trebleLevel}%</span>
                     <span className="text-gray-500">4-20kHz</span>
                   </div>
                 </div>
-                <ProgressBar value={metrics.trebleLevel} color="#06B6D4" height="h-1.5" />
+                <ProgressBar value={metrics.trebleLevel} color="#06B6D4" height="h-1" />
               </div>
             </div>
           </div>
 
           {/* Bottom Statistics */}
-          <div className="grid grid-cols-4 gap-2 text-center border-t border-white/10 pt-2.5">
+          <div className="grid grid-cols-4 gap-1 text-center border-t border-white/10 pt-1.5">
             <div>
-              <div className="text-gray-400 text-[9px] mb-0.5">Range:</div>
-              <div className="text-[11px] font-mono text-gray-300">{metrics.dynamicRange}dB</div>
+              <div className="text-gray-400 text-[8px] mb-0.5">Range:</div>
+              <div className="text-[9px] font-mono text-gray-300">{metrics.dynamicRange}dB</div>
             </div>
             <div>
-              <div className="text-gray-400 text-[9px] mb-0.5">Active:</div>
-              <div className="text-[11px] font-mono text-gray-300">{metrics.activeFrequencies}/1024</div>
+              <div className="text-gray-400 text-[8px] mb-0.5">Active:</div>
+              <div className="text-[9px] font-mono text-gray-300">{metrics.activeFrequencies}/1024</div>
             </div>
             <div>
-              <div className="text-gray-400 text-[9px] mb-0.5">Stability:</div>
-              <div className="text-[11px] font-mono text-gray-300">{metrics.stability}%</div>
+              <div className="text-gray-400 text-[8px] mb-0.5">Stability:</div>
+              <div className="text-[9px] font-mono text-gray-300">{metrics.stability}%</div>
             </div>
             <div>
-              <div className="text-gray-400 text-[9px] mb-0.5">ZCR:</div>
-              <div className="text-[11px] font-mono text-gray-300">{metrics.zcr}%</div>
+              <div className="text-gray-400 text-[8px] mb-0.5">ZCR:</div>
+              <div className="text-[9px] font-mono text-gray-300">{metrics.zcr}%</div>
             </div>
           </div>
         </div>
