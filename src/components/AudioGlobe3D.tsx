@@ -589,6 +589,93 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
       onWheel={handleWheel}
-    />
+    >
+      {/* Add comprehensive graph scales and legend overlay */}
+      <div className="absolute top-2 left-2 z-20 bg-black/30 backdrop-blur-sm rounded px-2 py-1 text-xs text-white/80 font-mono">
+        3D Audio Globe
+      </div>
+      
+      {/* Audio reactivity indicators with labels */}
+      {isPlaying && (
+        <div className="absolute top-2 right-2 z-20">
+          <div className="bg-black/30 backdrop-blur-sm rounded px-2 py-1">
+            <div className="flex gap-2 items-center">
+              <div className="flex flex-col items-center">
+                <div 
+                  className="w-3 h-3 rounded-full bg-purple-500 animate-pulse"
+                  style={{ 
+                    opacity: processAudioData().bass > 0.3 ? 1 : 0.3,
+                    transform: `scale(${1 + processAudioData().bass * 2})`
+                  }}
+                />
+                <span className="text-xs text-white/70 mt-1">Bass</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div 
+                  className="w-3 h-3 rounded-full bg-pink-500 animate-pulse"
+                  style={{ 
+                    opacity: processAudioData().mid > 0.3 ? 1 : 0.3,
+                    transform: `scale(${1 + processAudioData().mid * 2})`
+                  }}
+                />
+                <span className="text-xs text-white/70 mt-1">Mid</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div 
+                  className="w-3 h-3 rounded-full bg-cyan-500 animate-pulse"
+                  style={{ 
+                    opacity: processAudioData().treble > 0.3 ? 1 : 0.3,
+                    transform: `scale(${1 + processAudioData().treble * 2})`
+                  }}
+                />
+                <span className="text-xs text-white/70 mt-1">Treble</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+      
+      {/* Legend for 3D visualization */}
+      <div className="absolute bottom-2 left-2 z-20">
+        <div className="bg-black/30 backdrop-blur-sm rounded px-2 py-1 text-xs">
+          <div className="font-bold text-white/90 mb-1">3D Globe Legend</div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-purple-500"></div>
+              <span className="text-white/70">Particles</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-white/50"></div>
+              <span className="text-white/70">Wireframe</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded-full bg-blue-500/50"></div>
+              <span className="text-white/70">Atmosphere</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      {/* Scale indicators for 3D visualization */}
+      <div className="absolute bottom-2 right-2 z-20">
+        <div className="bg-black/30 backdrop-blur-sm rounded px-2 py-1 text-xs">
+          <div className="font-bold text-white/90 mb-1">Scale</div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="text-white/70">Size:</span>
+              <span className="text-white/90">
+                {isPlaying ? (1 + processAudioData().overall * 0.15).toFixed(2) + "x" : "1.00x"}
+              </span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-white/70">Freq:</span>
+              <span className="text-white/90">
+                {isPlaying ? Math.round(processAudioData().avgFrequency) : "0"}Hz
+              </span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   );
 };

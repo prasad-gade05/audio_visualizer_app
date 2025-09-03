@@ -297,6 +297,101 @@ export const CosmicParticleField = ({
       ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
       ctx.fill();
     });
+
+    // Add comprehensive graph scales and legend overlay
+    // Draw audio reactivity indicators
+    const bassLevel = bassRef.current;
+    const midLevel = midRef.current;
+    const trebleLevel = trebleRef.current;
+    
+    // Draw frequency distribution bars at top
+    const barWidth = 40;
+    const barHeight = 5;
+    const barSpacing = 8;
+    const barY = 10;
+    const barX = dimensions.width - (barWidth * 3 + barSpacing * 2) - 10;
+    
+    // Bass bar (purple)
+    ctx.fillStyle = "rgba(138, 66, 255, 0.3)";
+    ctx.fillRect(barX, barY, barWidth, barHeight);
+    ctx.fillStyle = "#8A42FF";
+    ctx.fillRect(barX, barY, barWidth * bassLevel, barHeight);
+    
+    // Mid bar (pink)
+    ctx.fillStyle = "rgba(255, 0, 255, 0.3)";
+    ctx.fillRect(barX + barWidth + barSpacing, barY, barWidth, barHeight);
+    ctx.fillStyle = "#FF00FF";
+    ctx.fillRect(barX + barWidth + barSpacing, barY, barWidth * midLevel, barHeight);
+    
+    // Treble bar (cyan)
+    ctx.fillStyle = "rgba(0, 255, 255, 0.3)";
+    ctx.fillRect(barX + (barWidth + barSpacing) * 2, barY, barWidth, barHeight);
+    ctx.fillStyle = "#00FFFF";
+    ctx.fillRect(barX + (barWidth + barSpacing) * 2, barY, barWidth * trebleLevel, barHeight);
+    
+    // Draw labels for frequency bars
+    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+    ctx.font = "8px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("B", barX + barWidth/2, barY + barHeight + 8);
+    ctx.fillText("M", barX + barWidth + barSpacing + barWidth/2, barY + barHeight + 8);
+    ctx.fillText("T", barX + (barWidth + barSpacing) * 2 + barWidth/2, barY + barHeight + 8);
+    
+    // Draw particle count indicator
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.font = "bold 10px monospace";
+    ctx.textAlign = "right";
+    ctx.fillText(`Particles: ${particles.length}`, dimensions.width - 10, barY + barHeight + 20);
+    
+    // Draw legend
+    const legendX = 10;
+    const legendY = 10;
+    
+    // Legend background
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(legendX - 5, legendY - 10, 100, 50);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(legendX - 5, legendY - 10, 100, 50);
+    
+    // Legend title
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.font = "bold 9px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("Particle Field", legendX, legendY);
+    
+    // Legend items
+    ctx.font = "8px monospace";
+    ctx.fillStyle = "#8A42FF";
+    ctx.fillText("• Bass Particles", legendX, legendY + 12);
+    ctx.fillStyle = "#FF00FF";
+    ctx.fillText("• Mid Particles", legendX, legendY + 22);
+    ctx.fillStyle = "#00FFFF";
+    ctx.fillText("• Treble Particles", legendX, legendY + 32);
+    
+    // Draw scale indicators
+    const scaleX = dimensions.width - 110;
+    const scaleY = dimensions.height - 40;
+    
+    // Scale background
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(scaleX - 5, scaleY - 10, 100, 35);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(scaleX - 5, scaleY - 10, 100, 35);
+    
+    // Scale title
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.font = "bold 9px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("Reactivity", scaleX, scaleY);
+    
+    // Scale items
+    ctx.font = "8px monospace";
+    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+    ctx.fillText(`Bass: ${(bassLevel * 100).toFixed(0)}%`, scaleX, scaleY + 12);
+    ctx.fillText(`Mid: ${(midLevel * 100).toFixed(0)}%`, scaleX, scaleY + 22);
+    ctx.fillText(`Treble: ${(trebleLevel * 100).toFixed(0)}%`, scaleX, scaleY + 32);
   };
 
   const animate = (currentTime: number) => {

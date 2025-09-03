@@ -220,6 +220,87 @@ export const MultiAudioVisualizer = ({
       ctx.fillStyle = gradient;
       ctx.fillRect(i * barWidth, height - barHeight, barWidth - 1, barHeight);
     }
+
+    // Add graph scales and legend for multi-visualization mode
+    // Find peak frequency
+    let maxValue = 0;
+    let peakIndex = 0;
+    for (let i = 0; i < data.length; i++) {
+      if (data[i] > maxValue) {
+        maxValue = data[i];
+        peakIndex = i;
+      }
+    }
+    
+    // Draw peak frequency indicator
+    const peakPosition = (peakIndex / data.length) * width;
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.moveTo(peakPosition - 3, height - 8);
+    ctx.lineTo(peakPosition + 3, height - 8);
+    ctx.lineTo(peakPosition, height - 2);
+    ctx.closePath();
+    ctx.fill();
+    
+    // Draw minimal frequency scale
+    ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+    ctx.font = "8px monospace";
+    ctx.textAlign = "center";
+    
+    // Draw scale marks at key frequencies (100Hz, 1kHz, 10kHz)
+    const frequencies = [100, 1000, 10000];
+    frequencies.forEach(freq => {
+      const bin = Math.floor((freq / 22050) * data.length);
+      const position = (bin / data.length) * width;
+      if (position < width) {
+        ctx.fillText(freq >= 1000 ? `${freq/1000}k` : `${freq}`, position, height - 2);
+      }
+    });
+    
+    // Draw small RMS level indicator
+    let rmsSum = 0;
+    for (let i = 0; i < data.length; i++) {
+      const normalized = data[i] / 255;
+      rmsSum += normalized * normalized;
+    }
+    const rms = Math.sqrt(rmsSum / data.length);
+    
+    // Draw small RMS meter with scale
+    const meterWidth = 40;
+    const meterHeight = 4;
+    const meterX = width - meterWidth - 5;
+    const meterY = 5;
+    
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(meterX, meterY, meterWidth, meterHeight);
+    
+    ctx.fillStyle = config.color;
+    ctx.fillRect(meterX, meterY, meterWidth * rms, meterHeight);
+    
+    // Draw meter scale
+    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+    ctx.textAlign = "center";
+    ctx.font = "6px monospace";
+    ctx.fillText("0", meterX, meterY + meterHeight + 6);
+    ctx.fillText("1", meterX + meterWidth, meterY + meterHeight + 6);
+    
+    // Draw legend
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(5, 5, 60, 25);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(5, 5, 60, 25);
+    
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.font = "bold 8px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("Freq. Bars", 8, 15);
+    
+    ctx.font = "6px monospace";
+    ctx.fillStyle = config.color;
+    ctx.fillText("• Current", 8, 22);
+    ctx.fillStyle = config.secondaryColor || config.color + "40";
+    ctx.fillText("• Gradient", 8, 29);
   };
 
   const drawCircular = (
@@ -261,6 +342,74 @@ export const MultiAudioVisualizer = ({
       ctx.lineTo(endX, endY);
       ctx.stroke();
     }
+
+    // Add graph scales and legend for multi-visualization mode
+    // Find peak frequency
+    let maxValue = 0;
+    let peakIndex = 0;
+    for (let i = 0; i < data.length; i++) {
+      if (data[i] > maxValue) {
+        maxValue = data[i];
+        peakIndex = i;
+      }
+    }
+    
+    // Draw compass-style peak indicator
+    const peakAngle = (peakIndex / data.length) * Math.PI * 2;
+    const indicatorRadius = radius + 15;
+    const indicatorX = centerX + Math.cos(peakAngle) * indicatorRadius;
+    const indicatorY = centerY + Math.sin(peakAngle) * indicatorRadius;
+    
+    ctx.fillStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.arc(indicatorX, indicatorY, 3, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw center pulse indicator
+    const avgValue = data.reduce((sum, val) => sum + val, 0) / data.length / 255;
+    const pulseRadius = 3 + avgValue * 5;
+    
+    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+    ctx.beginPath();
+    ctx.arc(centerX, centerY, pulseRadius, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Draw angular scale marks
+    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+    ctx.font = "6px monospace";
+    ctx.textAlign = "center";
+    
+    const scaleMarks = [
+      { angle: 0, label: "0°" },
+      { angle: Math.PI/2, label: "90°" },
+      { angle: Math.PI, label: "180°" },
+      { angle: Math.PI*1.5, label: "270°" }
+    ];
+    
+    scaleMarks.forEach(mark => {
+      const scaleRadius = radius + 10;
+      const x = centerX + Math.cos(mark.angle) * scaleRadius;
+      const y = centerY + Math.sin(mark.angle) * scaleRadius;
+      ctx.fillText(mark.label, x, y + 3);
+    });
+    
+    // Draw legend
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(5, 5, 60, 25);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(5, 5, 60, 25);
+    
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.font = "bold 8px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("Radial", 8, 15);
+    
+    ctx.font = "6px monospace";
+    ctx.fillStyle = config.color + "80";
+    ctx.fillText("• Inner", 8, 22);
+    ctx.fillStyle = config.secondaryColor || config.color;
+    ctx.fillText("• Outer", 8, 29);
   };
 
   const drawWaveform = (
@@ -314,6 +463,84 @@ export const MultiAudioVisualizer = ({
         x += sliceWidth;
       }
       ctx.stroke();
+    }
+
+    // Add graph scales and legend for multi-visualization mode
+    // Draw small amplitude scale
+    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+    ctx.font = "6px monospace";
+    ctx.textAlign = "right";
+    
+    const amplitudeMarks = [
+      { value: 1.0, label: "+1" },
+      { value: 0, label: "0" },
+      { value: -1.0, label: "-1" }
+    ];
+    
+    amplitudeMarks.forEach(mark => {
+      const y = (height / 2) - (mark.value * height / 2);
+      ctx.fillText(mark.label, 15, y + 2);
+    });
+    
+    // Draw small time scale
+    ctx.textAlign = "center";
+    const timeMarks = [
+      { position: 0, label: "0s" },
+      { position: 0.5, label: "0.5s" },
+      { position: 1, label: "1s" }
+    ];
+    
+    timeMarks.forEach(mark => {
+      const x = mark.position * width;
+      ctx.fillText(mark.label, x, height - 2);
+    });
+    
+    // Draw small RMS level indicator
+    let rmsSum = 0;
+    for (let i = 0; i < data.length; i++) {
+      const normalized = (data[i] - 128) / 128;
+      rmsSum += normalized * normalized;
+    }
+    const rms = Math.sqrt(rmsSum / data.length);
+    
+    // Draw small RMS meter with scale
+    const meterWidth = 40;
+    const meterHeight = 4;
+    const meterX = width - meterWidth - 5;
+    const meterY = 5;
+    
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(meterX, meterY, meterWidth, meterHeight);
+    
+    ctx.fillStyle = config.color;
+    ctx.fillRect(meterX, meterY, meterWidth * rms, meterHeight);
+    
+    // Draw meter scale
+    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+    ctx.textAlign = "center";
+    ctx.font = "6px monospace";
+    ctx.fillText("0", meterX, meterY + meterHeight + 6);
+    ctx.fillText("1", meterX + meterWidth, meterY + meterHeight + 6);
+    
+    // Draw legend
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(5, 5, 60, 25);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(5, 5, 60, 25);
+    
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.font = "bold 8px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("Waveform", 8, 15);
+    
+    ctx.font = "6px monospace";
+    ctx.fillStyle = config.color;
+    ctx.fillText("• Primary", 8, 22);
+    
+    if (config.secondaryColor) {
+      ctx.fillStyle = config.secondaryColor;
+      ctx.fillText("• Secondary", 8, 29);
     }
   };
 
@@ -399,6 +626,60 @@ export const MultiAudioVisualizer = ({
       ctx.arc(x, y, size, 0, Math.PI * 2);
       ctx.fill();
     }
+
+    // Add graph scales and legend for multi-visualization mode
+    // Draw particle count indicator
+    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.font = "8px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(`${dynamicParticleCount}`, 5, 15);
+    
+    // Draw small frequency distribution bars
+    const bassLevel = lowFreq / 255;
+    const midLevel = midFreq / 255;
+    const trebleLevel = highFreq / 255;
+    
+    // Draw tiny bars for each frequency band
+    const barWidth = 20;
+    const barHeight = 3;
+    const barSpacing = 3;
+    const barY = 5;
+    
+    // Bass bar (purple)
+    ctx.fillStyle = "rgba(138, 66, 255, 0.3)";
+    ctx.fillRect(5, barY, barWidth, barHeight);
+    ctx.fillStyle = "#8A42FF";
+    ctx.fillRect(5, barY, barWidth * bassLevel, barHeight);
+    
+    // Mid bar (green)
+    ctx.fillStyle = "rgba(0, 255, 128, 0.3)";
+    ctx.fillRect(5, barY + barHeight + barSpacing, barWidth, barHeight);
+    ctx.fillStyle = "#00FF80";
+    ctx.fillRect(5, barY + barHeight + barSpacing, barWidth * midLevel, barHeight);
+    
+    // Treble bar (cyan)
+    ctx.fillStyle = "rgba(0, 209, 255, 0.3)";
+    ctx.fillRect(5, barY + (barHeight + barSpacing) * 2, barWidth, barHeight);
+    ctx.fillStyle = "#00D1FF";
+    ctx.fillRect(5, barY + (barHeight + barSpacing) * 2, barWidth * trebleLevel, barHeight);
+    
+    // Draw legend
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(width - 65, 5, 60, 25);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(width - 65, 5, 60, 25);
+    
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.font = "bold 8px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("Particles", width - 62, 15);
+    
+    ctx.font = "6px monospace";
+    ctx.fillStyle = "#8A42FF";
+    ctx.fillText("• Bass", width - 62, 22);
+    ctx.fillStyle = "#00FF80";
+    ctx.fillText("• Mid", width - 62, 29);
   };
 
   const drawMirroredWaveform = (
@@ -450,6 +731,63 @@ export const MultiAudioVisualizer = ({
       // Draw lower bar (extending downward from center)
       ctx.fillRect(x, centerY, barWidth, barHeight);
     }
+
+    // Add graph scales and legend for multi-visualization mode
+    // Draw dynamic range indicator
+    const minValue = Math.min(...Array.from(data));
+    const maxValue = Math.max(...Array.from(data));
+    const dynamicRange = maxValue - minValue;
+    
+    ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
+    ctx.font = "8px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText(`${Math.round(dynamicRange)}`, 5, 15);
+    
+    // Draw small intensity meter
+    const meterWidth = 40;
+    const meterHeight = 4;
+    const meterX = width - meterWidth - 5;
+    const meterY = 5;
+    
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(meterX, meterY, meterWidth, meterHeight);
+    
+    ctx.fillStyle = "#FF00FF";
+    ctx.fillRect(meterX, meterY, meterWidth * intensityMultiplier / 2, meterHeight);
+    
+    // Draw meter scale
+    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+    ctx.textAlign = "center";
+    ctx.font = "6px monospace";
+    ctx.fillText("0", meterX, meterY + meterHeight + 6);
+    ctx.fillText("1", meterX + meterWidth, meterY + meterHeight + 6);
+    
+    // Draw legend
+    ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+    ctx.fillRect(5, height - 30, 70, 25);
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.lineWidth = 1;
+    ctx.strokeRect(5, height - 30, 70, 25);
+    
+    ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+    ctx.font = "bold 8px monospace";
+    ctx.textAlign = "left";
+    ctx.fillText("Mirrored", 8, height - 20);
+    
+    // Draw small gradient legend
+    const gradientLegendWidth = 30;
+    const gradientLegendHeight = 3;
+    const gradientLegendX = 8;
+    const gradientLegendY = height - 12;
+    
+    // Create horizontal gradient for legend
+    const legendGradient = ctx.createLinearGradient(gradientLegendX, 0, gradientLegendX + gradientLegendWidth, 0);
+    legendGradient.addColorStop(0, "#FFA500"); // Orange
+    legendGradient.addColorStop(0.5, "#FF00FF"); // Magenta
+    legendGradient.addColorStop(1, "#0000FF"); // Blue
+    
+    ctx.fillStyle = legendGradient;
+    ctx.fillRect(gradientLegendX, gradientLegendY, gradientLegendWidth, gradientLegendHeight);
   };
 
   const resizeCanvas = (type: keyof typeof canvasRefs.current) => {

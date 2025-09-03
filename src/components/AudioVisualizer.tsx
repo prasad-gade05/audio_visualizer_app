@@ -79,6 +79,152 @@ export const AudioVisualizer = ({
       ctx.fillStyle = gradient;
       ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, barHeight);
     }
+
+    // Add comprehensive graph scales and legend
+    if (!fullScreen) {
+      // Find peak frequency
+      let maxValue = 0;
+      let peakIndex = 0;
+      for (let i = 0; i < data.length; i++) {
+        if (data[i] > maxValue) {
+          maxValue = data[i];
+          peakIndex = i;
+        }
+      }
+      
+      // Draw peak frequency indicator
+      const peakPosition = (peakIndex / data.length) * width;
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.moveTo(peakPosition - 5, height - 15);
+      ctx.lineTo(peakPosition + 5, height - 15);
+      ctx.lineTo(peakPosition, height - 5);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Draw frequency scale (logarithmic) at bottom
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.font = "10px monospace";
+      ctx.textAlign = "center";
+      
+      // Draw scale marks at key frequencies (20Hz, 100Hz, 1kHz, 10kHz, 20kHz)
+      const frequencies = [20, 100, 1000, 10000, 20000];
+      frequencies.forEach(freq => {
+        const bin = Math.floor((freq / 22050) * data.length);
+        const position = (bin / data.length) * width;
+        if (position < width && position > 0) {
+          // Draw tick mark
+          ctx.beginPath();
+          ctx.moveTo(position, height - 20);
+          ctx.lineTo(position, height - 15);
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          
+          // Draw frequency label
+          ctx.fillText(freq >= 1000 ? `${freq/1000}k` : `${freq}`, position, height - 5);
+        }
+      });
+      
+      // Draw frequency axis label
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.fillText("Frequency (Hz)", width / 2, height - 2);
+      
+      // Draw amplitude scale on the left
+      ctx.textAlign = "right";
+      const amplitudeMarks = [
+        { value: 1.0, label: "100%" },
+        { value: 0.75, label: "75%" },
+        { value: 0.5, label: "50%" },
+        { value: 0.25, label: "25%" },
+        { value: 0, label: "0%" }
+      ];
+      
+      amplitudeMarks.forEach(mark => {
+        const y = height - (mark.value * (height - 30)); // 30px margin for frequency scale
+        // Draw tick mark
+        ctx.beginPath();
+        ctx.moveTo(5, y);
+        ctx.lineTo(10, y);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // Draw amplitude label
+        ctx.fillText(mark.label, 0, y + 4);
+      });
+      
+      // Draw amplitude axis label (rotated)
+      ctx.save();
+      ctx.translate(15, height / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.fillText("Amplitude", 0, 0);
+      ctx.restore();
+      
+      // Draw legend
+      const legendX = width - 120;
+      const legendY = 20;
+      
+      // Legend background
+      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+      ctx.fillRect(legendX - 5, legendY - 15, 120, 60);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(legendX - 5, legendY - 15, 120, 60);
+      
+      // Legend title
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.font = "bold 11px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText("Frequency Bars", legendX, legendY);
+      
+      // Legend items
+      ctx.font = "10px monospace";
+      ctx.fillStyle = config.color;
+      ctx.fillText("• Current", legendX, legendY + 15);
+      ctx.fillStyle = config.secondaryColor || config.color + "40";
+      ctx.fillText("• Gradient", legendX, legendY + 28);
+      
+      // Draw RMS level indicator
+      let rmsSum = 0;
+      for (let i = 0; i < data.length; i++) {
+        const normalized = data[i] / 255;
+        rmsSum += normalized * normalized;
+      }
+      const rms = Math.sqrt(rmsSum / data.length);
+      
+      // Draw RMS meter with scale
+      const meterWidth = 80;
+      const meterHeight = 10;
+      const meterX = legendX;
+      const meterY = legendY + 35;
+      
+      // Meter background
+      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+      ctx.fillRect(meterX, meterY, meterWidth, meterHeight);
+      
+      // Meter fill
+      ctx.fillStyle = config.color;
+      ctx.fillRect(meterX, meterY, meterWidth * rms, meterHeight);
+      
+      // Meter border
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(meterX, meterY, meterWidth, meterHeight);
+      
+      // Meter label
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.textAlign = "left";
+      ctx.fillText("RMS:", meterX, meterY - 2);
+      
+      // Meter scale
+      ctx.textAlign = "center";
+      ctx.fillText("0", meterX, meterY + meterHeight + 10);
+      ctx.fillText("1", meterX + meterWidth, meterY + meterHeight + 10);
+    }
   };
 
   const drawCircular = (
@@ -123,6 +269,155 @@ export const AudioVisualizer = ({
       ctx.moveTo(startX, startY);
       ctx.lineTo(endX, endY);
       ctx.stroke();
+    }
+
+    // Add comprehensive graph scales and legend for circular visualization
+    if (!fullScreen) {
+      // Find peak frequency
+      let maxValue = 0;
+      let peakIndex = 0;
+      for (let i = 0; i < data.length; i++) {
+        if (data[i] > maxValue) {
+          maxValue = data[i];
+          peakIndex = i;
+        }
+      }
+      
+      // Draw compass-style peak indicator
+      const peakAngle = (peakIndex / data.length) * Math.PI * 2;
+      const indicatorRadius = radius + 40;
+      const indicatorX = centerX + Math.cos(peakAngle) * indicatorRadius;
+      const indicatorY = centerY + Math.sin(peakAngle) * indicatorRadius;
+      
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.arc(indicatorX, indicatorY, 5, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw center pulse indicator
+      const avgValue = data.reduce((sum, val) => sum + val, 0) / data.length / 255;
+      const pulseRadius = 5 + avgValue * 15;
+      
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, pulseRadius, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Draw angular scale with labels
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.font = "10px monospace";
+      ctx.textAlign = "center";
+      
+      // Draw scale marks at cardinal directions
+      const scaleMarks = [
+        { angle: 0, label: "0° (20Hz)" },
+        { angle: Math.PI/2, label: "90° (5.5kHz)" },
+        { angle: Math.PI, label: "180° (11kHz)" },
+        { angle: Math.PI*1.5, label: "270° (16.5kHz)" }
+      ];
+      
+      scaleMarks.forEach(mark => {
+        const scaleRadius = radius + 25;
+        const x = centerX + Math.cos(mark.angle) * scaleRadius;
+        const y = centerY + Math.sin(mark.angle) * scaleRadius;
+        
+        // Draw tick mark
+        ctx.beginPath();
+        ctx.moveTo(
+          centerX + Math.cos(mark.angle) * (radius + 20),
+          centerY + Math.sin(mark.angle) * (radius + 20)
+        );
+        ctx.lineTo(
+          centerX + Math.cos(mark.angle) * (radius + 25),
+          centerY + Math.sin(mark.angle) * (radius + 25)
+        );
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // Draw label
+        ctx.fillText(mark.label, x, y + 4);
+      });
+      
+      // Draw radial amplitude scale
+      const amplitudeLevels = [0.2, 0.4, 0.6, 0.8, 1.0];
+      amplitudeLevels.forEach(level => {
+        const levelRadius = radius * level;
+        
+        // Draw concentric circle
+        ctx.beginPath();
+        ctx.arc(centerX, centerY, levelRadius, 0, Math.PI * 2);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        
+        // Draw amplitude label
+        if (level === 1.0) {
+          ctx.textAlign = "left";
+          ctx.fillText(`${Math.round(level * 100)}%`, centerX + levelRadius + 5, centerY - 2);
+        }
+      });
+      
+      // Draw legend
+      const legendX = width - 120;
+      const legendY = 20;
+      
+      // Legend background
+      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+      ctx.fillRect(legendX - 5, legendY - 15, 120, 60);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(legendX - 5, legendY - 15, 120, 60);
+      
+      // Legend title
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.font = "bold 11px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText("Radial Display", legendX, legendY);
+      
+      // Legend items
+      ctx.font = "10px monospace";
+      ctx.fillStyle = config.color + "80";
+      ctx.fillText("• Inner", legendX, legendY + 15);
+      ctx.fillStyle = config.secondaryColor || config.color;
+      ctx.fillText("• Outer", legendX, legendY + 28);
+      
+      // Draw RMS level indicator
+      let rmsSum = 0;
+      for (let i = 0; i < data.length; i++) {
+        const normalized = data[i] / 255;
+        rmsSum += normalized * normalized;
+      }
+      const rms = Math.sqrt(rmsSum / data.length);
+      
+      // Draw RMS meter with scale
+      const meterWidth = 80;
+      const meterHeight = 10;
+      const meterX = legendX;
+      const meterY = legendY + 35;
+      
+      // Meter background
+      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+      ctx.fillRect(meterX, meterY, meterWidth, meterHeight);
+      
+      // Meter fill
+      ctx.fillStyle = config.color;
+      ctx.fillRect(meterX, meterY, meterWidth * rms, meterHeight);
+      
+      // Meter border
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(meterX, meterY, meterWidth, meterHeight);
+      
+      // Meter label
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.textAlign = "left";
+      ctx.fillText("RMS:", meterX, meterY - 2);
+      
+      // Meter scale
+      ctx.textAlign = "center";
+      ctx.fillText("0", meterX, meterY + meterHeight + 10);
+      ctx.fillText("1", meterX + meterWidth, meterY + meterHeight + 10);
     }
   };
 
@@ -182,6 +477,139 @@ export const AudioVisualizer = ({
         x += sliceWidth;
       }
       ctx.stroke();
+    }
+
+    // Add comprehensive graph scales and legend for waveform visualization
+    if (!fullScreen) {
+      // Draw amplitude scale on the left
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.font = "10px monospace";
+      ctx.textAlign = "right";
+      
+      // Draw amplitude scale marks
+      const amplitudeMarks = [
+        { value: 1.0, label: "+1" },
+        { value: 0.5, label: "+0.5" },
+        { value: 0, label: "0" },
+        { value: -0.5, label: "-0.5" },
+        { value: -1.0, label: "-1" }
+      ];
+      
+      amplitudeMarks.forEach(mark => {
+        const y = (height / 2) - (mark.value * height / 2);
+        // Draw tick mark
+        ctx.beginPath();
+        ctx.moveTo(32, y);
+        ctx.lineTo(38, y);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // Draw amplitude label
+        ctx.fillText(mark.label, 30, y + 4);
+      });
+      
+      // Draw amplitude axis label
+      ctx.save();
+      ctx.translate(15, height / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.fillText("Amplitude", 0, 0);
+      ctx.restore();
+      
+      // Draw time scale at bottom
+      ctx.textAlign = "center";
+      const timeMarks = [
+        { position: 0, label: "0s" },
+        { position: 0.25, label: "0.25s" },
+        { position: 0.5, label: "0.5s" },
+        { position: 0.75, label: "0.75s" },
+        { position: 1, label: "1s" }
+      ];
+      
+      timeMarks.forEach(mark => {
+        const x = mark.position * width;
+        // Draw tick mark
+        ctx.beginPath();
+        ctx.moveTo(x, height - 12);
+        ctx.lineTo(x, height - 8);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // Draw time label
+        ctx.fillText(mark.label, x, height - 5);
+      });
+      
+      // Draw time axis label
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.fillText("Time (seconds)", width / 2, height - 2);
+      
+      // Draw legend
+      const legendX = width - 120;
+      const legendY = 20;
+      
+      // Legend background
+      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+      ctx.fillRect(legendX - 5, legendY - 15, 120, 60);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(legendX - 5, legendY - 15, 120, 60);
+      
+      // Legend title
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.font = "bold 11px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText("Waveform", legendX, legendY);
+      
+      // Legend items
+      ctx.font = "10px monospace";
+      ctx.fillStyle = config.color;
+      ctx.fillText("• Primary", legendX, legendY + 15);
+      
+      if (config.secondaryColor) {
+        ctx.fillStyle = config.secondaryColor;
+        ctx.fillText("• Secondary", legendX, legendY + 28);
+      }
+      
+      // Draw RMS level indicator
+      let rmsSum = 0;
+      for (let i = 0; i < data.length; i++) {
+        const normalized = (data[i] - 128) / 128;
+        rmsSum += normalized * normalized;
+      }
+      const rms = Math.sqrt(rmsSum / data.length);
+      
+      // Draw RMS meter with scale
+      const meterWidth = 80;
+      const meterHeight = 10;
+      const meterX = legendX;
+      const meterY = legendY + 35;
+      
+      // Meter background
+      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+      ctx.fillRect(meterX, meterY, meterWidth, meterHeight);
+      
+      // Meter fill
+      ctx.fillStyle = config.color;
+      ctx.fillRect(meterX, meterY, meterWidth * rms, meterHeight);
+      
+      // Meter border
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(meterX, meterY, meterWidth, meterHeight);
+      
+      // Meter label
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.textAlign = "left";
+      ctx.fillText("RMS:", meterX, meterY - 2);
+      
+      // Meter scale
+      ctx.textAlign = "center";
+      ctx.fillText("0", meterX, meterY + meterHeight + 10);
+      ctx.fillText("1", meterX + meterWidth, meterY + meterHeight + 10);
     }
   };
 
@@ -338,6 +766,92 @@ export const AudioVisualizer = ({
         }
       }
     }
+
+    // Add comprehensive graph scales and legend for particles visualization
+    if (!fullScreen) {
+      // Draw particle count indicator
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.font = "bold 12px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText(`Particles: ${dynamicParticleCount}`, 10, 20);
+      
+      // Draw frequency band distribution with legend
+      const bassLevel = lowFreq / 255;
+      const midLevel = midFreq / 255;
+      const trebleLevel = highFreq / 255;
+      
+      // Draw frequency distribution bars with scale
+      const barWidth = 100;
+      const barHeight = 12;
+      const barSpacing = 8;
+      const barY = 35;
+      
+      // Bass bar (purple)
+      ctx.fillStyle = "rgba(138, 66, 255, 0.3)";
+      ctx.fillRect(10, barY, barWidth, barHeight);
+      ctx.fillStyle = "#8A42FF";
+      ctx.fillRect(10, barY, barWidth * bassLevel, barHeight);
+      
+      // Mid bar (green)
+      ctx.fillStyle = "rgba(0, 255, 128, 0.3)";
+      ctx.fillRect(10, barY + barHeight + barSpacing, barWidth, barHeight);
+      ctx.fillStyle = "#00FF80";
+      ctx.fillRect(10, barY + barHeight + barSpacing, barWidth * midLevel, barHeight);
+      
+      // Treble bar (cyan)
+      ctx.fillStyle = "rgba(0, 209, 255, 0.3)";
+      ctx.fillRect(10, barY + (barHeight + barSpacing) * 2, barWidth, barHeight);
+      ctx.fillStyle = "#00D1FF";
+      ctx.fillRect(10, barY + (barHeight + barSpacing) * 2, barWidth * trebleLevel, barHeight);
+      
+      // Draw labels with scale
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.font = "10px monospace";
+      ctx.textAlign = "right";
+      ctx.fillText("Bass (20-250Hz)", 8, barY + barHeight - 2);
+      ctx.fillText("Mid (250-4kHz)", 8, barY + barHeight + barSpacing + barHeight - 2);
+      ctx.fillText("Treble (4-20kHz)", 8, barY + (barHeight + barSpacing) * 2 + barHeight - 2);
+      
+      // Draw scale for frequency bars
+      ctx.textAlign = "center";
+      ctx.fillText("0%", 10, barY + (barHeight + barSpacing) * 3 + 15);
+      ctx.fillText("100%", 10 + barWidth, barY + (barHeight + barSpacing) * 3 + 15);
+      
+      // Draw legend
+      const legendX = width - 120;
+      const legendY = 20;
+      
+      // Legend background
+      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+      ctx.fillRect(legendX - 5, legendY - 15, 120, 75);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(legendX - 5, legendY - 15, 120, 75);
+      
+      // Legend title
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.font = "bold 11px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText("Particle System", legendX, legendY);
+      
+      // Legend items
+      ctx.font = "10px monospace";
+      ctx.fillStyle = "#8A42FF";
+      ctx.fillText("• Bass Particles", legendX, legendY + 15);
+      ctx.fillStyle = "#00FF80";
+      ctx.fillText("• Mid Particles", legendX, legendY + 28);
+      ctx.fillStyle = "#00D1FF";
+      ctx.fillText("• Treble Particles", legendX, legendY + 41);
+      
+      // Draw connection lines indicator
+      ctx.fillStyle = config.color;
+      ctx.beginPath();
+      ctx.moveTo(legendX, legendY + 50);
+      ctx.lineTo(legendX + 20, legendY + 50);
+      ctx.stroke();
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.fillText("• Connections", legendX + 25, legendY + 52);
+    }
   };
 
   const drawMirroredWaveform = (
@@ -392,6 +906,173 @@ export const AudioVisualizer = ({
       
       // Draw lower bar (extending downward from center)
       ctx.fillRect(x, centerY, barWidth, barHeight);
+    }
+
+    // Add comprehensive graph scales and legend for mirrored waveform
+    if (!fullScreen) {
+      // Draw dynamic range indicator
+      const minValue = Math.min(...Array.from(data));
+      const maxValue = Math.max(...Array.from(data));
+      const dynamicRange = maxValue - minValue;
+      
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.font = "bold 12px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText(`Range: ${Math.round(dynamicRange)}`, 10, 20);
+      
+      // Draw peak hold indicator
+      let peakValue = 0;
+      for (let i = 0; i < data.length; i++) {
+        const amplitude = Math.abs(data[i] - 128);
+        if (amplitude > peakValue) {
+          peakValue = amplitude;
+        }
+      }
+      
+      const peakHeight = (peakValue / 128) * (height / 2);
+      ctx.fillStyle = "#FF0000";
+      ctx.fillRect(0, centerY - peakHeight, 3, 3);
+      ctx.fillRect(0, centerY + peakHeight - 3, 3, 3);
+      
+      // Draw frequency scale at bottom
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.font = "10px monospace";
+      ctx.textAlign = "center";
+      
+      // Draw scale marks at key frequencies (20Hz, 100Hz, 1kHz, 10kHz, 20kHz)
+      const frequencies = [20, 100, 1000, 10000, 20000];
+      frequencies.forEach(freq => {
+        const bin = Math.floor((freq / 22050) * data.length);
+        const position = (bin / data.length) * width;
+        if (position < width && position > 0) {
+          // Draw tick mark
+          ctx.beginPath();
+          ctx.moveTo(position, height - 20);
+          ctx.lineTo(position, height - 15);
+          ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+          ctx.lineWidth = 1;
+          ctx.stroke();
+          
+          // Draw frequency label
+          ctx.fillText(freq >= 1000 ? `${freq/1000}k` : `${freq}`, position, height - 5);
+        }
+      });
+      
+      // Draw frequency axis label
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.fillText("Frequency (Hz)", width / 2, height - 2);
+      
+      // Draw amplitude scale on the left
+      ctx.textAlign = "right";
+      const amplitudeMarks = [
+        { value: 1.0, label: "+1" },
+        { value: 0.5, label: "+0.5" },
+        { value: 0, label: "0" },
+        { value: -0.5, label: "-0.5" },
+        { value: -1.0, label: "-1" }
+      ];
+      
+      amplitudeMarks.forEach(mark => {
+        const y = centerY - (mark.value * centerY);
+        // Draw tick mark
+        ctx.beginPath();
+        ctx.moveTo(5, y);
+        ctx.lineTo(10, y);
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+        ctx.lineWidth = 1;
+        ctx.stroke();
+        
+        // Draw amplitude label
+        ctx.fillText(mark.label, 0, y + 4);
+      });
+      
+      // Draw amplitude axis label (rotated)
+      ctx.save();
+      ctx.translate(15, height / 2);
+      ctx.rotate(-Math.PI / 2);
+      ctx.textAlign = "center";
+      ctx.fillStyle = "rgba(255, 255, 255, 0.6)";
+      ctx.fillText("Amplitude", 0, 0);
+      ctx.restore();
+      
+      // Draw legend
+      const legendX = width - 120;
+      const legendY = 20;
+      
+      // Legend background
+      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+      ctx.fillRect(legendX - 5, legendY - 15, 120, 60);
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(legendX - 5, legendY - 15, 120, 60);
+      
+      // Legend title
+      ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
+      ctx.font = "bold 11px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText("Mirrored Bars", legendX, legendY);
+      
+      // Draw gradient legend
+      const gradientLegendWidth = 80;
+      const gradientLegendHeight = 10;
+      const gradientLegendX = legendX;
+      const gradientLegendY = legendY + 20;
+      
+      // Create horizontal gradient for legend
+      const legendGradient = ctx.createLinearGradient(gradientLegendX, 0, gradientLegendX + gradientLegendWidth, 0);
+      legendGradient.addColorStop(0, "#FFA500"); // Orange
+      legendGradient.addColorStop(0.2, "#FFFF00"); // Yellow
+      legendGradient.addColorStop(0.4, "#FFFF00"); // Yellow
+      legendGradient.addColorStop(0.5, "#FF00FF"); // Magenta/Pink
+      legendGradient.addColorStop(0.6, "#FF00FF"); // Magenta
+      legendGradient.addColorStop(0.8, "#0000FF"); // Deep Blue
+      legendGradient.addColorStop(1, "#FF0000"); // Red
+      
+      ctx.fillStyle = legendGradient;
+      ctx.fillRect(gradientLegendX, gradientLegendY, gradientLegendWidth, gradientLegendHeight);
+      
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(gradientLegendX, gradientLegendY, gradientLegendWidth, gradientLegendHeight);
+      
+      // Draw gradient labels
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.font = "8px monospace";
+      ctx.textAlign = "center";
+      ctx.fillText("Orange", gradientLegendX + 10, gradientLegendY + gradientLegendHeight + 10);
+      ctx.fillText("Yellow", gradientLegendX + 30, gradientLegendY + gradientLegendHeight + 10);
+      ctx.fillText("Magenta", gradientLegendX + 50, gradientLegendY + gradientLegendHeight + 10);
+      ctx.fillText("Blue", gradientLegendX + 70, gradientLegendY + gradientLegendHeight + 10);
+      
+      // Draw intensity meter
+      const meterWidth = 80;
+      const meterHeight = 10;
+      const meterX = legendX;
+      const meterY = legendY + 45;
+      
+      // Meter background
+      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+      ctx.fillRect(meterX, meterY, meterWidth, meterHeight);
+      
+      // Meter fill
+      ctx.fillStyle = "#FF00FF";
+      ctx.fillRect(meterX, meterY, meterWidth * intensityMultiplier / 2, meterHeight);
+      
+      // Meter border
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+      ctx.lineWidth = 1;
+      ctx.strokeRect(meterX, meterY, meterWidth, meterHeight);
+      
+      // Meter label
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.textAlign = "left";
+      ctx.fillText("Intensity:", meterX, meterY - 2);
+      
+      // Meter scale
+      ctx.textAlign = "center";
+      ctx.fillText("0", meterX, meterY + meterHeight + 10);
+      ctx.fillText("1", meterX + meterWidth, meterY + meterHeight + 10);
     }
   };
 
