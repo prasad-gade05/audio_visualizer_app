@@ -1,4 +1,4 @@
-# Audio Visualizer
+# Audio Visualizer - [Demo](https://prasad-gade05.github.io/audio_visualizer_app/)
 
 This is a web-based audio visualization tool built with React, Vite, and shadcn/ui. It allows users to upload audio files, capture system audio, and visualize the audio in different ways, including a 3D globe and a traditional audio visualizer.
 
