@@ -25,9 +25,9 @@ export default function Index() {
     useState<MultiVisualizationConfig>({
       enabled: {
         bars: true,
-        circular: false,
+        circular: true,
         waveform: true,
-        particles: true,
+        particles: false,
         "mirrored-waveform": true,
         "3d-globe": true,
         analytics: true,

@@ -1,10 +1,22 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import { AudioData, MultiVisualizationConfig } from "@/types/audio";
 import { Waves } from "lucide-react";
 import { GridDraggableVisualizationItem } from "./GridDraggableVisualizationItem";
 import { DragInstructions } from "./DragInstructions";
 import { AdvancedAudioAnalytics } from "./AdvancedAudioAnalytics";
 import { AudioGlobe3D } from "./AudioGlobe3D";
+
+// Helper function moved outside to avoid recreation
+const hexToRgb = (hex: string) => {
+  const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+  return result
+    ? {
+        r: parseInt(result[1], 16),
+        g: parseInt(result[2], 16),
+        b: parseInt(result[3], 16),
+      }
+    : { r: 138, g: 66, b: 255 };
+};
 
 interface MultiAudioVisualizerProps {
   audioData: AudioData;
@@ -39,11 +51,28 @@ export const MultiAudioVisualizer = ({
     analytics: null,
   });
   const animationRef = useRef<number | null>(null);
+  const lastResizeRef = useRef<{ [key: string]: { width: number; height: number } }>({});
+  const gradientCacheRef = useRef<{ [key: string]: CanvasGradient }>({});
+  const contextCacheRef = useRef<{ [key: string]: CanvasRenderingContext2D | null }>({});
 
   // Get enabled visualizations
-  const enabledVisualizations = Object.entries(config.enabled)
+  const enabledVisualizations = useMemo(() => Object.entries(config.enabled)
     .filter(([_, enabled]) => enabled)
-    .map(([type, _]) => type as keyof typeof config.enabled);
+    .map(([type, _]) => type as keyof typeof config.enabled), [config.enabled]);
+
+  // Clear caches when visualizations are toggled
+  useEffect(() => {
+    // Clear context and gradient caches for disabled visualizations
+    Object.keys(config.enabled).forEach((type) => {
+      if (!config.enabled[type as keyof typeof config.enabled]) {
+        delete contextCacheRef.current[type];
+        delete lastResizeRef.current[type];
+        // Clear gradients for this type
+        const gradientKeys = Object.keys(gradientCacheRef.current).filter(k => k.startsWith(type));
+        gradientKeys.forEach(key => delete gradientCacheRef.current[key]);
+      }
+    });
+  }, [config.enabled]);
 
   // Validate and fix any duplicate grid slots
   useEffect(() => {
@@ -165,11 +194,11 @@ export const MultiAudioVisualizer = ({
   };
 
   // Sort visualizations by grid slot for consistent ordering
-  const sortedVisualizations = [...enabledVisualizations].sort((a, b) => {
+  const sortedVisualizations = useMemo(() => [...enabledVisualizations].sort((a, b) => {
     const slotA = config.positions[a]?.gridSlot ?? 0;
     const slotB = config.positions[b]?.gridSlot ?? 0;
     return slotA - slotB;
-  });
+  }), [enabledVisualizations, config.positions]);
 
   const getGridLayout = (count: number) => {
     switch (count) {
@@ -202,6 +231,11 @@ export const MultiAudioVisualizer = ({
     height: number,
     config: MultiVisualizationConfig["configs"]["bars"]
   ) => {
+    // Validate canvas dimensions
+    if (!isFinite(width) || !isFinite(height) || width <= 0 || height <= 0) {
+      return;
+    }
+
     const barCount = config.barCount || 32;
     const barWidth = width / barCount;
     const dataStep = Math.floor(data.length / barCount);
@@ -209,22 +243,25 @@ export const MultiAudioVisualizer = ({
     ctx.fillStyle = config.backgroundColor || "#0D0B14";
     ctx.fillRect(0, 0, width, height);
 
+    // Optimization: Cache gradient for reuse
+    const gradientKey = `bars-${width}-${height}-${config.color}-${config.secondaryColor}`;
+    let gradient = gradientCacheRef.current[gradientKey];
+    if (!gradient) {
+      gradient = ctx.createLinearGradient(0, height, 0, 0);
+      gradient.addColorStop(0, config.color);
+      gradient.addColorStop(1, config.secondaryColor || config.color + "40");
+      gradientCacheRef.current[gradientKey] = gradient;
+    }
+    ctx.fillStyle = gradient;
+
+    // Batch draw operations
+    ctx.beginPath();
     for (let i = 0; i < barCount; i++) {
       const value = data[i * dataStep] / 255;
       const barHeight = value * height * config.sensitivity;
-
-      const gradient = ctx.createLinearGradient(
-        0,
-        height,
-        0,
-        height - barHeight
-      );
-      gradient.addColorStop(0, config.color);
-      gradient.addColorStop(1, config.secondaryColor || config.color + "40");
-
-      ctx.fillStyle = gradient;
-      ctx.fillRect(i * barWidth, height - barHeight, barWidth - 1, barHeight);
+      ctx.rect(i * barWidth, height - barHeight, barWidth - 1, barHeight);
     }
+    ctx.fill();
 
     // Add graph scales and legend for multi-visualization mode
     // Find peak frequency
@@ -317,14 +354,28 @@ export const MultiAudioVisualizer = ({
   ) => {
     const centerX = width / 2;
     const centerY = height / 2;
-    const baseRadius = Math.min(width, height) / 4; // Increased from /8 to /4
+    const baseRadius = Math.min(width, height) / 4; 
     const radius = baseRadius * (config.radius || 1);
     const barCount = 64;
     const angleStep = (Math.PI * 2) / barCount;
 
+    // Validate canvas dimensions
+    if (!isFinite(width) || !isFinite(height) || width <= 0 || height <= 0 || !isFinite(radius)) {
+      return;
+    }
+
     ctx.fillStyle = config.backgroundColor || "#0D0B14";
     ctx.fillRect(0, 0, width, height);
 
+    // Pre-calculate colors once
+    const colorStart = config.color + "80";
+    const colorEnd = config.secondaryColor || config.color;
+
+    ctx.lineWidth = 2;
+
+    // Use batch path operations for better performance
+    const paths: { startX: number; startY: number; endX: number; endY: number; }[] = [];
+    
     for (let i = 0; i < barCount; i++) {
       const value = data[i] / 255;
       const angle = i * angleStep;
@@ -336,17 +387,25 @@ export const MultiAudioVisualizer = ({
       const endX = centerX + Math.cos(angle) * (radius + barLength);
       const endY = centerY + Math.sin(angle) * (radius + barLength);
 
-      const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
-      gradient.addColorStop(0, config.color + "80");
-      gradient.addColorStop(1, config.secondaryColor || config.color);
+      // Validate coordinates
+      if (!isFinite(startX) || !isFinite(startY) || !isFinite(endX) || !isFinite(endY)) {
+        continue;
+      }
 
+      paths.push({ startX, startY, endX, endY });
+    }
+
+    // Draw all paths with gradients (unavoidable for radial effect)
+    paths.forEach(({ startX, startY, endX, endY }) => {
+      const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
+      gradient.addColorStop(0, colorStart);
+      gradient.addColorStop(1, colorEnd);
       ctx.strokeStyle = gradient;
-      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(startX, startY);
       ctx.lineTo(endX, endY);
       ctx.stroke();
-    }
+    });
 
     // Add graph scales and legend for multi-visualization mode
     // Find peak frequency
@@ -424,48 +483,52 @@ export const MultiAudioVisualizer = ({
     height: number,
     config: MultiVisualizationConfig["configs"]["waveform"]
   ) => {
+    // Validate canvas dimensions
+    if (!isFinite(width) || !isFinite(height) || width <= 0 || height <= 0) {
+      return;
+    }
+
     ctx.fillStyle = config.backgroundColor || "#0D0B14";
     ctx.fillRect(0, 0, width, height);
 
+    const sliceWidth = width / data.length;
+    const halfHeight = height / 2;
+    const sensitivity = config.sensitivity;
+
+    // Draw primary waveform
     ctx.strokeStyle = config.color;
     ctx.lineWidth = 2;
     ctx.beginPath();
 
-    const sliceWidth = width / data.length;
-    let x = 0;
-
     for (let i = 0; i < data.length; i++) {
-      const v = (data[i] / 128.0) * config.sensitivity;
-      const y = (v * height) / 2;
+      const v = (data[i] / 128.0) * sensitivity;
+      const y = (v * halfHeight);
 
       if (i === 0) {
-        ctx.moveTo(x, y);
+        ctx.moveTo(0, y);
       } else {
-        ctx.lineTo(x, y);
+        ctx.lineTo(i * sliceWidth, y);
       }
-
-      x += sliceWidth;
     }
 
     ctx.stroke();
 
+    // Draw secondary waveform if configured
     if (config.secondaryColor) {
       ctx.strokeStyle = config.secondaryColor;
       ctx.lineWidth = 1;
       ctx.beginPath();
 
-      x = 0;
+      const sensitivity2 = sensitivity * 0.7;
       for (let i = 0; i < data.length; i++) {
-        const v = (data[i] / 128.0) * config.sensitivity * 0.7;
-        const y = height - (v * height) / 2;
+        const v = (data[i] / 128.0) * sensitivity2;
+        const y = height - (v * halfHeight);
 
         if (i === 0) {
-          ctx.moveTo(x, y);
+          ctx.moveTo(0, y);
         } else {
-          ctx.lineTo(x, y);
+          ctx.lineTo(i * sliceWidth, y);
         }
-
-        x += sliceWidth;
       }
       ctx.stroke();
     }
@@ -556,39 +619,68 @@ export const MultiAudioVisualizer = ({
     height: number,
     config: MultiVisualizationConfig["configs"]["particles"]
   ) => {
+    // Validate canvas dimensions
+    if (!isFinite(width) || !isFinite(height) || width <= 0 || height <= 0) {
+      return;
+    }
+
     ctx.fillStyle = config.backgroundColor || "#0D0B14";
     ctx.fillRect(0, 0, width, height);
 
     const baseParticleCount = config.particleCount || 100;
-    const avgFrequency = data.reduce((sum, val) => sum + val, 0) / data.length;
+    
+    // Optimize frequency calculations - use typed array views
+    let avgFrequency = 0;
+    let lowFreq = 0;
+    let midFreq = 0;
+    let highFreq = 0;
+    
+    for (let i = 0; i < data.length; i++) {
+      avgFrequency += data[i];
+      if (i < 32) lowFreq += data[i];
+      else if (i < 96) midFreq += data[i];
+      else highFreq += data[i];
+    }
+    
+    avgFrequency /= data.length;
+    lowFreq /= 32;
+    midFreq /= 64;
+    highFreq /= (data.length - 96);
+    
     const dynamicParticleCount = Math.floor(
       baseParticleCount + (avgFrequency / 255) * 50 * config.sensitivity
     );
 
-    const lowFreq = data.slice(0, 32).reduce((sum, val) => sum + val, 0) / 32;
-    const midFreq = data.slice(32, 96).reduce((sum, val) => sum + val, 0) / 64;
-    const highFreq =
-      data.slice(96).reduce((sum, val) => sum + val, 0) / (data.length - 96);
+    // Pre-calculate colors once
+    const primaryRgb = hexToRgb(config.color);
+    const secondaryRgb = hexToRgb(config.secondaryColor || config.color);
+    
+    const halfWidth = width / 2;
+    const halfHeight = height / 2;
+    const minDim = Math.min(width, height);
+
+    // Batch particles by color for better performance
+    const primaryParticles: { x: number; y: number; size: number; alpha: number }[] = [];
+    const secondaryParticles: { x: number; y: number; size: number; alpha: number }[] = [];
 
     for (let i = 0; i < dynamicParticleCount; i++) {
       const particleType = i % 3;
-      let x, y, size, alpha, color;
+      let x, y, size, alpha;
 
       if (particleType === 0) {
         const angle = Math.random() * Math.PI * 2;
-        const distance =
-          (lowFreq / 255) * Math.min(width, height) * 0.2 * config.sensitivity;
-        x = width / 2 + Math.cos(angle) * distance;
-        y = height / 2 + Math.sin(angle) * distance;
+        const distance = (lowFreq / 255) * minDim * 0.2 * config.sensitivity;
+        x = halfWidth + Math.cos(angle) * distance;
+        y = halfHeight + Math.sin(angle) * distance;
         size = Math.max(1, (lowFreq / 255) * 8 * config.sensitivity);
         alpha = Math.max(0.3, (lowFreq / 255) * 0.9);
-        color = config.color;
+        primaryParticles.push({ x, y, size, alpha });
       } else if (particleType === 1) {
         x = Math.random() * width;
         y = Math.random() * height;
         size = Math.max(0.5, (midFreq / 255) * 6 * config.sensitivity);
         alpha = Math.max(0.2, (midFreq / 255) * 0.8);
-        color = config.secondaryColor || config.color;
+        secondaryParticles.push({ x, y, size, alpha });
       } else {
         const edge = Math.floor(Math.random() * 4);
         switch (edge) {
@@ -611,26 +703,25 @@ export const MultiAudioVisualizer = ({
         }
         size = Math.max(0.3, (highFreq / 255) * 4 * config.sensitivity);
         alpha = Math.max(0.1, (highFreq / 255) * 0.7);
-        color = config.secondaryColor || config.color;
+        secondaryParticles.push({ x, y, size, alpha });
       }
+    }
 
-      const hexToRgb = (hex: string) => {
-        const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-        return result
-          ? {
-              r: parseInt(result[1], 16),
-              g: parseInt(result[2], 16),
-              b: parseInt(result[3], 16),
-            }
-          : { r: 138, g: 66, b: 255 };
-      };
-
-      const rgb = hexToRgb(color);
-      ctx.fillStyle = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${alpha})`;
+    // Draw primary particles in batch
+    primaryParticles.forEach(({ x, y, size, alpha }) => {
+      ctx.fillStyle = `rgba(${primaryRgb.r}, ${primaryRgb.g}, ${primaryRgb.b}, ${alpha})`;
       ctx.beginPath();
       ctx.arc(x, y, size, 0, Math.PI * 2);
       ctx.fill();
-    }
+    });
+
+    // Draw secondary particles in batch
+    secondaryParticles.forEach(({ x, y, size, alpha }) => {
+      ctx.fillStyle = `rgba(${secondaryRgb.r}, ${secondaryRgb.g}, ${secondaryRgb.b}, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(x, y, size, 0, Math.PI * 2);
+      ctx.fill();
+    });
 
     // Add graph scales and legend for multi-visualization mode
     // Draw particle count indicator
@@ -694,6 +785,11 @@ export const MultiAudioVisualizer = ({
     height: number,
     config: MultiVisualizationConfig["configs"]["mirrored-waveform"]
   ) => {
+    // Validate canvas dimensions
+    if (!isFinite(width) || !isFinite(height) || width <= 0 || height <= 0) {
+      return;
+    }
+
     // Clear canvas with black background
     ctx.fillStyle = config.backgroundColor || "#000000";
     ctx.fillRect(0, 0, width, height);
@@ -702,40 +798,56 @@ export const MultiAudioVisualizer = ({
 
     const centerY = height / 2;
     const barWidth = width / data.length;
+    const halfHeight = height / 2;
     
-    // Create horizontal gradient
-    const gradient = ctx.createLinearGradient(0, 0, width, 0);
-    gradient.addColorStop(0, "#FFA500"); // Orange
-    gradient.addColorStop(0.2, "#FFFF00"); // Yellow
-    gradient.addColorStop(0.4, "#FFFF00"); // Yellow
-    gradient.addColorStop(0.5, "#FF00FF"); // Magenta/Pink
-    gradient.addColorStop(0.6, "#FF00FF"); // Magenta
-    gradient.addColorStop(0.8, "#0000FF"); // Deep Blue
-    gradient.addColorStop(1, "#FF0000"); // Red
+    // Cache gradient
+    const gradientKey = `mirrored-${width}`;
+    let gradient = gradientCacheRef.current[gradientKey];
+    if (!gradient) {
+      gradient = ctx.createLinearGradient(0, 0, width, 0);
+      gradient.addColorStop(0, "#FFA500");
+      gradient.addColorStop(0.2, "#FFFF00");
+      gradient.addColorStop(0.4, "#FFFF00");
+      gradient.addColorStop(0.5, "#FF00FF");
+      gradient.addColorStop(0.6, "#FF00FF");
+      gradient.addColorStop(0.8, "#0000FF");
+      gradient.addColorStop(1, "#FF0000");
+      gradientCacheRef.current[gradientKey] = gradient;
+    }
     
     ctx.fillStyle = gradient;
 
-    // Calculate overall volume for dynamic intensity
-    const avgAmplitude = data.reduce((sum, val) => sum + Math.abs(val - 128), 0) / data.length;
+    // Optimize amplitude calculation
+    let avgAmplitude = 0;
+    for (let i = 0; i < data.length; i++) {
+      avgAmplitude += Math.abs(data[i] - 128);
+    }
+    avgAmplitude /= data.length;
     const intensityMultiplier = Math.max(0.3, Math.min(2.0, avgAmplitude / 64)) * config.sensitivity;
 
-    // Draw mirrored bars
+    // Batch draw using single path
+    ctx.beginPath();
     for (let i = 0; i < data.length; i++) {
-      // Normalize amplitude from 0-255 to -1 to 1
       const amplitude = (data[i] - 128) / 128;
-      
-      // Calculate bar height with intensity modulation
-      const barHeight = Math.abs(amplitude) * (height / 2) * intensityMultiplier;
-      
-      // Calculate x position
+      const barHeight = Math.abs(amplitude) * halfHeight * intensityMultiplier;
       const x = i * barWidth;
       
-      // Draw upper bar (extending upward from center)
-      ctx.fillRect(x, centerY - barHeight, barWidth, barHeight);
-      
-      // Draw lower bar (extending downward from center)
-      ctx.fillRect(x, centerY, barWidth, barHeight);
+      // Draw upper bar
+      ctx.rect(x, centerY - barHeight, barWidth, barHeight);
     }
+    ctx.fill();
+    
+    // Draw lower bars in batch
+    ctx.beginPath();
+    for (let i = 0; i < data.length; i++) {
+      const amplitude = (data[i] - 128) / 128;
+      const barHeight = Math.abs(amplitude) * halfHeight * intensityMultiplier;
+      const x = i * barWidth;
+      
+      // Draw lower bar
+      ctx.rect(x, centerY, barWidth, barHeight);
+    }
+    ctx.fill();
 
     // Add graph scales and legend for multi-visualization mode
     // Draw dynamic range indicator
@@ -799,52 +911,59 @@ export const MultiAudioVisualizer = ({
     const canvas = canvasRefs.current[type];
     if (!canvas) return;
 
-    const container = canvas.parentElement;
-    if (!container) return;
-
-    const rect = container.getBoundingClientRect();
-    const dpr = window.devicePixelRatio || 1;
-
-    const width = Math.max(rect.width, 100);
-    const height = Math.max(rect.height, 100);
-
-    canvas.width = width * dpr;
-    canvas.height = height * dpr;
-
-    canvas.style.width = width + "px";
-    canvas.style.height = height + "px";
-
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      ctx.scale(dpr, dpr);
+    const parent = canvas.parentElement;
+    if (parent) {
+      const newWidth = parent.clientWidth;
+      const newHeight = parent.clientHeight;
+      
+      // Only resize if dimensions changed
+      const lastSize = lastResizeRef.current[type];
+      if (!lastSize || lastSize.width !== newWidth || lastSize.height !== newHeight) {
+        canvas.width = newWidth;
+        canvas.height = newHeight;
+        lastResizeRef.current[type] = { width: newWidth, height: newHeight };
+        
+        // Clear gradient cache for this visualization when resizing
+        const keysToDelete = Object.keys(gradientCacheRef.current).filter(k => k.startsWith(type));
+        keysToDelete.forEach(key => delete gradientCacheRef.current[key]);
+      }
     }
   };
 
   useEffect(() => {
-    if (!isPlaying) return;
-
     const render = () => {
-      sortedVisualizations.forEach((type) => {
-        // Skip analytics and 3d-globe visualizations as they are not canvas-based or have their own render loop
-        if (type === "analytics" || type === "3d-globe") return;
-        
-        const canvasType = type as Exclude<typeof type, "analytics" | "3d-globe">;
-        const canvas = canvasRefs.current[canvasType];
+      if (!isPlaying) return;
+
+      // Draw enabled visualizations
+      enabledVisualizations.forEach((type) => {
+        if (type === "analytics" || type === "3d-globe") return; // Handled by separate components
+
+        const canvas = canvasRefs.current[type];
         if (!canvas) return;
 
-        const ctx = canvas.getContext("2d");
-        if (!ctx) return;
+        // Cache context for reuse
+        let ctx = contextCacheRef.current[type];
+        if (!ctx) {
+          ctx = canvas.getContext("2d", { alpha: false }); // alpha: false for better performance
+          if (!ctx) return;
+          contextCacheRef.current[type] = ctx;
+        }
 
-        const container = canvas.parentElement;
-        if (!container) return;
+        // Optimize: Only check resize on every other frame or when actually needed
+        const parentWidth = canvas.parentElement?.clientWidth || 0;
+        const parentHeight = canvas.parentElement?.clientHeight || 0;
+        
+        if (canvas.width !== parentWidth || canvas.height !== parentHeight) {
+          resizeCanvas(type);
+        }
 
-        const rect = container.getBoundingClientRect();
-        const width = Math.max(rect.width, 100);
-        const height = Math.max(rect.height, 100);
+        const width = canvas.width;
+        const height = canvas.height;
 
-        if (audioData.frequencyData.length === 0) return;
+        // Skip rendering if canvas has no size
+        if (width === 0 || height === 0) return;
 
-        switch (canvasType) {
+        switch (type) {
           case "bars":
             drawBars(
               ctx,
@@ -901,120 +1020,54 @@ export const MultiAudioVisualizer = ({
     return () => {
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
-        animationRef.current = null;
       }
     };
-  }, [audioData, isPlaying, config, sortedVisualizations]);
-
-  useEffect(() => {
-    const handleResize = () => {
-      sortedVisualizations.forEach((type) => {
-        // Skip analytics and 3d-globe visualizations
-        if (type === "analytics" || type === "3d-globe") return;
-        const canvasType = type as Exclude<typeof type, "analytics" | "3d-globe">;
-        resizeCanvas(canvasType as keyof typeof canvasRefs.current);
-      });
-    };
-
-    window.addEventListener("resize", handleResize);
-
-    // Initial resize
-    sortedVisualizations.forEach((type) => {
-      // Skip analytics and 3d-globe visualizations
-      if (type === "analytics" || type === "3d-globe") return;
-      const canvasType = type as Exclude<typeof type, "analytics" | "3d-globe">;
-      resizeCanvas(canvasType as keyof typeof canvasRefs.current);
-    });
-
-    return () => {
-      window.removeEventListener("resize", handleResize);
-    };
-  }, [sortedVisualizations]);
-
-  if (enabledVisualizations.length === 0) {
-    return (
-      <div className="absolute inset-0 flex items-center justify-center">
-        <div
-          className="text-center"
-          style={{ color: "var(--color-text-secondary)" }}
-        >
-          <Waves className="w-20 h-20 mx-auto mb-6 opacity-50" />
-          <p className="text-2xl font-medium">No visualizations enabled</p>
-          <p className="text-lg mt-2 opacity-70">
-            Use the controller to enable visualizations
-          </p>
-        </div>
-      </div>
-    );
-  }
+  }, [audioData, isPlaying, config, enabledVisualizations]);
 
   return (
-    <div
-      ref={containerRef}
-      className="absolute inset-0 w-full h-full overflow-hidden"
-    >
-      {/* Drag Instructions */}
-      <DragInstructions isVisible={showInstructions && enabledVisualizations.length > 1} />
+    <div className="w-full h-full relative p-4">
+      {showInstructions && <DragInstructions />}
       
-      <div className={`grid ${gridCols} ${rows} gap-2 h-full w-full p-4`}>
-        {sortedVisualizations.map((type, index) => {
-          const position = config.positions[type];
-          if (!position) return null;
+      <div
+        ref={containerRef}
+        className={`grid ${gridCols} ${rows} gap-4 w-full h-full transition-all duration-500 ease-in-out`}
+      >
+        {sortedVisualizations.map((type) => (
+          <GridDraggableVisualizationItem
+            key={type}
+            type={type}
+            position={config.positions[type]}
+            isPlaying={isPlaying}
+            onPositionChange={handlePositionChange}
+            onGridSlotSwap={handleGridSlotSwap}
+            gridSlot={config.positions[type]?.gridSlot ?? 0}
+            gridCols={gridCols}
+            gridRows={rows}
+            spanClass="w-full h-full min-h-[200px]"
+            allTypes={enabledVisualizations}
+          >
+            {type === "analytics" && (
+              <AdvancedAudioAnalytics 
+                audioData={audioData}
+                isPlaying={isPlaying}
+              />
+            )}
+            
+            {type === "3d-globe" && (
+              <AudioGlobe3D 
+                audioData={audioData}
+                isPlaying={isPlaying}
+              />
+            )}
 
-          // Handle spanning for different grid layouts
-          let spanClass = "";
-          
-          if (sortedVisualizations.length === 3 && index === 2) {
-            // For 3 visualizations, make the third one span both columns
-            spanClass = "col-span-2";
-          } else if (sortedVisualizations.length === 5) {
-            // For 5 visualizations in 3x2 grid, make the last one span columns 2-3 in the second row
-            if (index === 4) {
-              spanClass = "col-span-2";
-            }
-          }
-
-          return (
-            <GridDraggableVisualizationItem
-              key={type}
-              type={type}
-              position={position}
-              isPlaying={isPlaying}
-              onPositionChange={handlePositionChange}
-              onGridSlotSwap={handleGridSlotSwap}
-              gridSlot={position.gridSlot}
-              gridCols={gridCols}
-              gridRows={rows}
-              spanClass={spanClass}
-              allTypes={sortedVisualizations}
-            >
-              {type === "analytics" && (
-                <AdvancedAudioAnalytics
-                  audioData={audioData}
-                  isPlaying={isPlaying}
-                  className="w-full h-full"
-                />
-              )}
-              
-              {type === "3d-globe" && (
-                <AudioGlobe3D
-                  audioData={audioData}
-                  isPlaying={isPlaying}
-                />
-              )}
-
-              {type !== "analytics" && type !== "3d-globe" && (
-                <canvas
-                  ref={(el) => {
-                    const canvasType = type as Exclude<typeof type, "analytics" | "3d-globe">;
-                    canvasRefs.current[canvasType] = el;
-                  }}
-                  className="absolute inset-0 w-full h-full"
-                />
-              )}
-            </GridDraggableVisualizationItem>
-          );
-        })}
+            {type !== "analytics" && type !== "3d-globe" && (
+              <canvas
+                ref={(el) => (canvasRefs.current[type] = el)}
+                className="w-full h-full"
+              />
+            )}
+          </GridDraggableVisualizationItem>
+        ))}
       </div>
     </div>
   );

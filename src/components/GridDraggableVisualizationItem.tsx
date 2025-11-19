@@ -132,7 +132,7 @@ export const GridDraggableVisualizationItem: React.FC<GridDraggableVisualization
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       style={{
-        zIndex: isDragging ? 1000 : draggedOver === gridSlot ? 999 : position.zIndex,
+        zIndex: isDragging ? 1000 : draggedOver === gridSlot ? 999 : position?.zIndex || 1,
       }}
       title="Drag to swap positions"
     >

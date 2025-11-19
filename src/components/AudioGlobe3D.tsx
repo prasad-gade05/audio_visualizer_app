@@ -246,8 +246,8 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
 
       // Rotation Logic
       if (!isDragging.current) {
-        // Slower auto rotation
-        const autoSpeed = 0.001 + (bass * 0.005); 
+        // Slower auto rotation - reduced base speed and audio reactivity
+        const autoSpeed = 0.0003 + (bass * 0.002); 
         globeGroupRef.current!.rotation.y += autoSpeed;
         
         // Decay manual rotation momentum

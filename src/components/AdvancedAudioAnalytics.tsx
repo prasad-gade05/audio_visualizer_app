@@ -74,38 +74,80 @@ export const AdvancedAudioAnalytics = ({
     const sampleRate = 44100;
     const nyquist = sampleRate / 2;
     
-    // Find peak frequency
+    // Optimize: Single pass through frequency data for multiple calculations
     let maxBin = 0;
     let maxValue = 0;
-    for (let i = 0; i < freqData.length; i++) {
-      if (freqData[i] > maxValue) {
-        maxValue = freqData[i];
+    let maxFreq = 0;
+    let minFreq = 255;
+    let activeCount = 0;
+    
+    const freqLen = freqData.length;
+    const bassEnd = Math.floor(freqLen * 0.1);
+    const midEnd = Math.floor(freqLen * 0.4);
+    const brightnessStart = Math.floor(freqLen * 0.6);
+    
+    let bassSum = 0;
+    let midSum = 0;
+    let trebleSum = 0;
+    let brightnessSum = 0;
+    let brightnessBinCount = 0;
+    
+    for (let i = 0; i < freqLen; i++) {
+      const val = freqData[i];
+      
+      // Peak frequency
+      if (val > maxValue) {
+        maxValue = val;
         maxBin = i;
       }
+      
+      // Dynamic range
+      if (val > maxFreq) maxFreq = val;
+      if (val > 0 && val < minFreq) minFreq = val;
+      
+      // Band sums
+      if (i < bassEnd) {
+        bassSum += val;
+      } else if (i < midEnd) {
+        midSum += val;
+      } else {
+        trebleSum += val;
+      }
+      
+      // Brightness
+      if (i >= brightnessStart) {
+        brightnessSum += val;
+        brightnessBinCount++;
+      }
     }
-    const peakFrequency = Math.round((maxBin / freqData.length) * nyquist) || 517;
+    
+    // Active frequencies (calculate threshold once)
+    const activeThreshold = maxValue * 0.1;
+    for (let i = 0; i < freqLen; i++) {
+      if (freqData[i] > activeThreshold) activeCount++;
+    }
+    
+    const peakFrequency = Math.round((maxBin / freqLen) * nyquist) || 517;
 
-    // Calculate RMS Level
-    const rms = Math.sqrt(timeData.reduce((sum, val) => sum + Math.pow((val - 128) / 128, 2), 0) / timeData.length);
+    // Optimize RMS calculation with single pass
+    let rmsSum = 0;
+    for (let i = 0; i < timeData.length; i++) {
+      const normalized = (timeData[i] - 128) / 128;
+      rmsSum += normalized * normalized;
+    }
+    const rms = Math.sqrt(rmsSum / timeData.length);
     const rmsLevel = Number((20 * Math.log10(rms + 1e-10)).toFixed(1)) || -39.3;
 
-    // Frequency band analysis
-    const bassEnd = Math.floor(freqData.length * 0.1);
-    const midEnd = Math.floor(freqData.length * 0.4);
-    
-    const bassSum = freqData.slice(0, bassEnd).reduce((sum, val) => sum + val, 0);
-    const midSum = freqData.slice(bassEnd, midEnd).reduce((sum, val) => sum + val, 0);
-    const trebleSum = freqData.slice(midEnd).reduce((sum, val) => sum + val, 0);
-    
+    // Band percentages
     const totalSum = bassSum + midSum + trebleSum;
-    
     const bassLevel = totalSum > 0 ? Math.round((bassSum / totalSum) * 100) : 46;
     const midLevel = totalSum > 0 ? Math.round((midSum / totalSum) * 100) : 36;
     const trebleLevel = totalSum > 0 ? Math.round((trebleSum / totalSum) * 100) : 24;
 
-    // Calculate brightness
-    const brightnessBins = freqData.slice(Math.floor(freqData.length * 0.6));
-    const brightness = Math.round((brightnessBins.reduce((sum, val) => sum + val, 0) / brightnessBins.length) * 100 / 255) || 58;
+    // Brightness
+    const brightness = brightnessBinCount > 0 
+      ? Math.round((brightnessSum / brightnessBinCount) * 100 / 255) 
+      : 58;
 
     // Quality metrics
     const clarity = Math.min(100, Math.round(maxValue * 100 / 255)) || 3;
@@ -113,26 +155,22 @@ export const AdvancedAudioAnalytics = ({
     const richness = Math.round((bassLevel + midLevel) / 2) || 33;
 
     // Dynamic range
-    const maxFreq = Math.max(...freqData);
-    const minFreq = Math.min(...freqData.filter(val => val > 0));
     const dynamicRange = Number((20 * Math.log10((maxFreq + 1) / (minFreq + 1))).toFixed(1)) || 164.0;
 
-    // Active frequencies
-    const activeThreshold = maxValue * 0.1;
-    const activeFrequencies = freqData.filter(val => val > activeThreshold).length || 431;
-
-    // Zero Crossing Rate
+    // Zero Crossing Rate - optimized
     let crossings = 0;
+    let prevSign = timeData[0] - 128;
     for (let i = 1; i < timeData.length; i++) {
-      if ((timeData[i] - 128) * (timeData[i - 1] - 128) < 0) {
+      const currSign = timeData[i] - 128;
+      if (prevSign * currSign < 0) {
         crossings++;
       }
+      prevSign = currSign;
     }
     const zcr = Number(((crossings / timeData.length) * 100).toFixed(1)) || 0.0;
 
     // Trend analysis
-    const currentLevel = rms;
-    const trend: 'Rising' | 'Falling' | 'Stable' = currentLevel > 0.3 ? 'Rising' : currentLevel < 0.1 ? 'Falling' : 'Stable';
+    const trend: 'Rising' | 'Falling' | 'Stable' = rms > 0.3 ? 'Rising' : rms < 0.1 ? 'Falling' : 'Stable';
 
     // Audio profile classification
     const profile = [];
@@ -152,7 +190,7 @@ export const AdvancedAudioAnalytics = ({
       midLevel,
       trebleLevel,
       dynamicRange,
-      activeFrequencies,
+      activeFrequencies: activeCount || 431,
       stability: 100,
       zcr,
       trend,
@@ -161,10 +199,12 @@ export const AdvancedAudioAnalytics = ({
   };
 
   useEffect(() => {
-    if (isPlaying) {
-      const newMetrics = calculateMetrics();
-      setMetrics(newMetrics);
-    }
+    if (!isPlaying) return;
+    
+    // Update analytics in real-time on every audio data change
+    // This is important for analytics to show live data
+    const newMetrics = calculateMetrics();
+    setMetrics(newMetrics);
   }, [audioData, isPlaying]);
 
   const ProgressBar = ({ 

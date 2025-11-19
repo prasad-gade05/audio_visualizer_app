@@ -10,7 +10,6 @@ import {
   Info,
   Settings,
   Volume2,
-  VolumeX,
 } from "lucide-react";
 
 interface MicrophoneCaptureProps {
@@ -245,60 +244,29 @@ export const MicrophoneCapture = ({
         </div>
       )}
 
-      {/* Instructions */}
+      {/* Instructions - Simplified */}
       {!isCapturing && !error && (
-        <div className="space-y-4">
-          <div className="glass p-4">
-            <div className="flex items-start gap-3">
-              <Info
-                className="w-5 h-5 mt-1"
-                style={{ color: "var(--color-secondary)" }}
-              />
-              <div>
-                <h4
-                  className="font-medium mb-2"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  How to use microphone input:
-                </h4>
-                <ol
-                  className="list-decimal list-inside space-y-1 text-sm"
-                  style={{ color: "var(--color-text-secondary)" }}
-                >
-                  <li>Click "Start Recording" above</li>
-                  <li>Allow microphone access when prompted by your browser</li>
-                  <li>Speak, sing, or play music near your microphone</li>
-                  <li>Adjust sensitivity and noise gate settings for optimal visualization</li>
-                  <li>Watch the real-time visualization respond to your audio</li>
-                </ol>
-              </div>
-            </div>
-          </div>
-
-          <div className="glass p-4">
-            <div className="flex items-start gap-3">
-              <Mic
-                className="w-5 h-5 mt-1"
-                style={{ color: "var(--color-primary)" }}
-              />
-              <div>
-                <h4
-                  className="font-medium mb-2"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  Tips for best results:
-                </h4>
-                <ul
-                  className="list-disc list-inside space-y-1 text-sm"
-                  style={{ color: "var(--color-text-secondary)" }}
-                >
-                  <li>Use a quality microphone for better audio capture</li>
-                  <li>Minimize background noise for cleaner visualizations</li>
-                  <li>Adjust sensitivity if the visualization is too weak or strong</li>
-                  <li>Use noise gate to filter out quiet background sounds</li>
-                  <li>Try different audio sources: voice, instruments, or music</li>
-                </ul>
-              </div>
+        <div className="glass p-4">
+          <div className="flex items-start gap-3">
+            <Info
+              className="w-5 h-5 mt-0.5 flex-shrink-0"
+              style={{ color: "var(--color-secondary)" }}
+            />
+            <div className="space-y-3">
+              <p
+                className="text-sm leading-relaxed"
+                style={{ color: "var(--color-text-secondary)" }}
+              >
+                Click <span className="font-medium" style={{ color: "var(--color-text-primary)" }}>Start Recording</span> to begin capturing audio from your microphone.
+                Your browser will ask for permission to access your microphone.
+              </p>
+              <p
+                className="text-sm leading-relaxed"
+                style={{ color: "var(--color-text-secondary)" }}
+              >
+                Once started, speak, sing, or play music near your microphone to see real-time visualizations.
+                Adjust sensitivity and noise gate settings if needed.
+              </p>
             </div>
           </div>
         </div>
