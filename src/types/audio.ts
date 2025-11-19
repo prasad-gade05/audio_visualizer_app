@@ -7,7 +7,7 @@ export interface AudioData {
 }
 
 export interface VisualizationConfig {
-  type: "bars" | "circular" | "waveform" | "particles" | "mirrored-waveform";
+  type: "bars" | "circular" | "waveform" | "particles" | "mirrored-waveform" | "3d-globe" | "analytics";
   color: string;
   sensitivity: number;
   smoothing: number;
@@ -32,6 +32,8 @@ export interface MultiVisualizationConfig {
     waveform: boolean;
     particles: boolean;
     "mirrored-waveform": boolean;
+    "3d-globe": boolean;
+    analytics: boolean;
   };
   positions: {
     bars: VisualizationPosition;
@@ -39,6 +41,8 @@ export interface MultiVisualizationConfig {
     waveform: VisualizationPosition;
     particles: VisualizationPosition;
     "mirrored-waveform": VisualizationPosition;
+    "3d-globe": VisualizationPosition;
+    analytics: VisualizationPosition;
   };
   configs: {
     bars: VisualizationConfig;
@@ -46,6 +50,8 @@ export interface MultiVisualizationConfig {
     waveform: VisualizationConfig;
     particles: VisualizationConfig;
     "mirrored-waveform": VisualizationConfig;
+    "3d-globe": VisualizationConfig;
+    analytics: VisualizationConfig;
   };
 }
 

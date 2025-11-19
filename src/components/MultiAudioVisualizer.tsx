@@ -4,6 +4,7 @@ import { Waves } from "lucide-react";
 import { GridDraggableVisualizationItem } from "./GridDraggableVisualizationItem";
 import { DragInstructions } from "./DragInstructions";
 import { AdvancedAudioAnalytics } from "./AdvancedAudioAnalytics";
+import { AudioGlobe3D } from "./AudioGlobe3D";
 
 interface MultiAudioVisualizerProps {
   audioData: AudioData;
@@ -26,6 +27,7 @@ export const MultiAudioVisualizer = ({
     waveform: HTMLCanvasElement | null;
     particles: HTMLCanvasElement | null;
     "mirrored-waveform": HTMLCanvasElement | null;
+    "3d-globe": HTMLCanvasElement | null;
     analytics: HTMLCanvasElement | null;
   }>({
     bars: null,
@@ -33,6 +35,7 @@ export const MultiAudioVisualizer = ({
     waveform: null,
     particles: null,
     "mirrored-waveform": null,
+    "3d-globe": null,
     analytics: null,
   });
   const animationRef = useRef<number | null>(null);
@@ -182,8 +185,10 @@ export const MultiAudioVisualizer = ({
         return { gridCols: "grid-cols-3", rows: "grid-rows-2", aspectRatio: "auto" }; // 3x2 grid with one empty
       case 6:
         return { gridCols: "grid-cols-3", rows: "grid-rows-2", aspectRatio: "auto" }; // 3x2 grid
+      case 7:
+        return { gridCols: "grid-cols-3", rows: "grid-rows-3", aspectRatio: "auto" }; // 3x3 grid
       default:
-        return { gridCols: "grid-cols-2", rows: "grid-rows-2", aspectRatio: "auto" };
+        return { gridCols: "grid-cols-3", rows: "grid-rows-3", aspectRatio: "auto" };
     }
   };
 
@@ -820,10 +825,10 @@ export const MultiAudioVisualizer = ({
 
     const render = () => {
       sortedVisualizations.forEach((type) => {
-        // Skip analytics visualization as it's not canvas-based
-        if (type === "analytics") return;
+        // Skip analytics and 3d-globe visualizations as they are not canvas-based or have their own render loop
+        if (type === "analytics" || type === "3d-globe") return;
         
-        const canvasType = type as Exclude<typeof type, "analytics">;
+        const canvasType = type as Exclude<typeof type, "analytics" | "3d-globe">;
         const canvas = canvasRefs.current[canvasType];
         if (!canvas) return;
 
@@ -904,9 +909,9 @@ export const MultiAudioVisualizer = ({
   useEffect(() => {
     const handleResize = () => {
       sortedVisualizations.forEach((type) => {
-        // Skip analytics visualization as it's not canvas-based
-        if (type === "analytics") return;
-        const canvasType = type as Exclude<typeof type, "analytics">;
+        // Skip analytics and 3d-globe visualizations
+        if (type === "analytics" || type === "3d-globe") return;
+        const canvasType = type as Exclude<typeof type, "analytics" | "3d-globe">;
         resizeCanvas(canvasType as keyof typeof canvasRefs.current);
       });
     };
@@ -915,9 +920,9 @@ export const MultiAudioVisualizer = ({
 
     // Initial resize
     sortedVisualizations.forEach((type) => {
-      // Skip analytics visualization as it's not canvas-based
-      if (type === "analytics") return;
-      const canvasType = type as Exclude<typeof type, "analytics">;
+      // Skip analytics and 3d-globe visualizations
+      if (type === "analytics" || type === "3d-globe") return;
+      const canvasType = type as Exclude<typeof type, "analytics" | "3d-globe">;
       resizeCanvas(canvasType as keyof typeof canvasRefs.current);
     });
 
@@ -983,19 +988,26 @@ export const MultiAudioVisualizer = ({
               spanClass={spanClass}
               allTypes={sortedVisualizations}
             >
-              {type === "analytics" ? (
+              {type === "analytics" && (
                 <AdvancedAudioAnalytics
                   audioData={audioData}
                   isPlaying={isPlaying}
                   className="w-full h-full"
                 />
-              ) : (
+              )}
+              
+              {type === "3d-globe" && (
+                <AudioGlobe3D
+                  audioData={audioData}
+                  isPlaying={isPlaying}
+                />
+              )}
+
+              {type !== "analytics" && type !== "3d-globe" && (
                 <canvas
                   ref={(el) => {
-                    if (type !== "analytics") {
-                      const canvasType = type as Exclude<typeof type, "analytics">;
-                      canvasRefs.current[canvasType] = el;
-                    }
+                    const canvasType = type as Exclude<typeof type, "analytics" | "3d-globe">;
+                    canvasRefs.current[canvasType] = el;
                   }}
                   className="absolute inset-0 w-full h-full"
                 />

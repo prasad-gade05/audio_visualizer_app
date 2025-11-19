@@ -25,10 +25,11 @@ export default function Index() {
     useState<MultiVisualizationConfig>({
       enabled: {
         bars: true,
-        circular: true,
+        circular: false,
         waveform: true,
         particles: true,
         "mirrored-waveform": true,
+        "3d-globe": true,
         analytics: true,
       },
       positions: {
@@ -37,7 +38,8 @@ export default function Index() {
         waveform: { gridSlot: 2, zIndex: 3 },
         particles: { gridSlot: 3, zIndex: 4 },
         "mirrored-waveform": { gridSlot: 4, zIndex: 5 },
-        analytics: { gridSlot: 5, zIndex: 6 },
+        "3d-globe": { gridSlot: 5, zIndex: 6 },
+        analytics: { gridSlot: 6, zIndex: 7 },
       },
       configs: {
         bars: {
@@ -83,6 +85,14 @@ export default function Index() {
           smoothing: 0.8,
           secondaryColor: "#FF0000",
           backgroundColor: "#0d0b14",
+        },
+        "3d-globe": {
+          type: "3d-globe",
+          color: "#8A42FF",
+          sensitivity: 1,
+          smoothing: 0.8,
+          secondaryColor: "#00D1FF",
+          backgroundColor: "#000000",
         },
         analytics: {
           type: "analytics",
