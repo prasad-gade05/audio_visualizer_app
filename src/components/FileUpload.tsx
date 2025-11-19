@@ -6,9 +6,10 @@ import { Upload, Music } from "lucide-react";
 interface FileUploadProps {
   onFileSelect: (file: File) => void;
   isLoaded: boolean;
+  onContinuePlaying?: () => void;
 }
 
-export const FileUpload = ({ onFileSelect, isLoaded }: FileUploadProps) => {
+export const FileUpload = ({ onFileSelect, isLoaded, onContinuePlaying }: FileUploadProps) => {
   const handleFileChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0];
@@ -45,7 +46,7 @@ export const FileUpload = ({ onFileSelect, isLoaded }: FileUploadProps) => {
 
   if (isLoaded) {
     return (
-      <div className="glass-interactive p-6">
+      <div className="glass-interactive p-6 space-y-4">
         <div className="flex items-center gap-3">
           <Music
             className="w-6 h-6"
@@ -57,14 +58,30 @@ export const FileUpload = ({ onFileSelect, isLoaded }: FileUploadProps) => {
           >
             Audio file loaded successfully
           </span>
+        </div>
+        
+        <div className="flex gap-3">
+          {onContinuePlaying && (
+            <button
+              onClick={onContinuePlaying}
+              className="flex-1 glass-interactive px-4 py-2.5 hover:scale-105 smooth-transition font-medium"
+              style={{ 
+                color: "var(--color-text-primary)",
+                background: "linear-gradient(135deg, var(--color-primary), var(--color-secondary))",
+              }}
+            >
+              Continue Playing
+            </button>
+          )}
           <button
             onClick={triggerFileInput}
-            className="ml-auto glass-interactive px-4 py-2 hover:scale-105 smooth-transition"
+            className="flex-1 glass-interactive px-4 py-2.5 hover:scale-105 smooth-transition"
             style={{ color: "var(--color-text-primary)" }}
           >
             Change File
           </button>
         </div>
+        
         <input
           id="audio-upload"
           type="file"

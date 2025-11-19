@@ -172,6 +172,10 @@ export default function Index() {
     setCurrentView("filePlayer");
   };
 
+  const handleContinuePlaying = () => {
+    setCurrentView("filePlayer");
+  };
+
   const handleSystemAudioStart = async () => {
     try {
       await startSystemAudioCapture();
@@ -191,11 +195,20 @@ export default function Index() {
   };
 
   const handleBack = () => {
-    if (currentView === "filePlayer" || currentView === "systemPlayer" || currentView === "microphonePlayer") {
-      setCurrentView("landing");
-    } else {
-      setCurrentView("landing");
+    // Stop audio playback if coming from file player
+    if (currentView === "filePlayer") {
+      pause();
     }
+    // Stop system audio if coming from system player
+    if (currentView === "systemPlayer") {
+      stopSystemAudioCapture();
+    }
+    // Stop microphone if coming from microphone player
+    if (currentView === "microphonePlayer") {
+      stopMicrophoneCapture();
+    }
+    
+    setCurrentView("landing");
   };
 
   const handleStop = () => {
@@ -241,6 +254,7 @@ export default function Index() {
                 <FileUpload
                   onFileSelect={handleFileSelect}
                   isLoaded={audioState.isLoaded}
+                  onContinuePlaying={handleContinuePlaying}
                 />
                 {fileName && (
                   <div className="mt-4 p-4 glass-interactive text-center">
