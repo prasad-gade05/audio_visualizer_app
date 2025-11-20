@@ -203,25 +203,64 @@ export const MultiAudioVisualizer = ({
   const getGridLayout = (count: number) => {
     switch (count) {
       case 1:
-        return { gridCols: "grid-cols-1", rows: "grid-rows-1", aspectRatio: "16:9" };
+        return { gridCols: "grid-cols-1", rows: "", cols: 1, maxRows: 1 };
       case 2:
-        return { gridCols: "grid-cols-2", rows: "grid-rows-1", aspectRatio: "4:3" };
+        return { gridCols: "grid-cols-3", rows: "", cols: 3, maxRows: 1 };
       case 3:
-        return { gridCols: "grid-cols-2", rows: "grid-rows-2", aspectRatio: "auto" }; // 2x2 grid with one empty
+        return { gridCols: "grid-cols-3", rows: "", cols: 3, maxRows: 1 };
       case 4:
-        return { gridCols: "grid-cols-2", rows: "grid-rows-2", aspectRatio: "1:1" };
+        return { gridCols: "grid-cols-2", rows: "grid-rows-2", cols: 2, maxRows: 2 };
       case 5:
-        return { gridCols: "grid-cols-3", rows: "grid-rows-2", aspectRatio: "auto" }; // 3x2 grid with one empty
+        return { gridCols: "grid-cols-3", rows: "grid-rows-2", cols: 3, maxRows: 2 };
       case 6:
-        return { gridCols: "grid-cols-3", rows: "grid-rows-2", aspectRatio: "auto" }; // 3x2 grid
+        return { gridCols: "grid-cols-3", rows: "grid-rows-2", cols: 3, maxRows: 2 };
       case 7:
-        return { gridCols: "grid-cols-3", rows: "grid-rows-3", aspectRatio: "auto" }; // 3x3 grid
+        return { gridCols: "grid-cols-3", rows: "grid-rows-3", cols: 3, maxRows: 3 };
       default:
-        return { gridCols: "grid-cols-3", rows: "grid-rows-3", aspectRatio: "auto" };
+        return { gridCols: "grid-cols-3", rows: "grid-rows-3", cols: 3, maxRows: 3 };
     }
   };
 
-  const { gridCols, rows, aspectRatio } = getGridLayout(sortedVisualizations.length);
+  const { gridCols, rows, cols, maxRows } = getGridLayout(sortedVisualizations.length);
+
+  // Calculate column span for each visualization based on its position
+  const getColumnSpan = (index: number, total: number, columns: number) => {
+    if (columns === 1) return 1; // Single column layout
+    
+    const itemsPerRow = columns;
+    const rowIndex = Math.floor(index / itemsPerRow);
+    const colIndex = index % itemsPerRow;
+    const totalRows = Math.ceil(total / itemsPerRow);
+    const isLastRow = rowIndex === totalRows - 1;
+    const itemsInCurrentRow = isLastRow ? total - (rowIndex * itemsPerRow) : itemsPerRow;
+    
+    // If only one item in row, span all columns
+    if (itemsInCurrentRow === 1) {
+      return columns;
+    }
+    
+    // If two items in a 3-column row
+    if (itemsInCurrentRow === 2 && columns === 3) {
+      // First item spans 1 column, second item spans 2 columns
+      return colIndex === 0 ? 1 : 2;
+    }
+    
+    // Default: span 1 column
+    return 1;
+  };
+
+  // Calculate row span for each visualization
+  const getRowSpan = (index: number, total: number, columns: number, maxRows: number) => {
+    // Not used when rows is empty string (single row layouts)
+    if (maxRows === 1) return 1;
+    
+    const itemsPerRow = columns;
+    const actualRowsNeeded = Math.ceil(total / itemsPerRow);
+    
+    // If we need fewer rows than available, items don't need to span
+    // The grid will naturally expand them
+    return 1;
+  };
 
   // Drawing functions
   const drawBars = (
@@ -1030,44 +1069,52 @@ export const MultiAudioVisualizer = ({
       
       <div
         ref={containerRef}
-        className={`grid ${gridCols} ${rows} gap-4 w-full h-full transition-all duration-500 ease-in-out`}
+        className={`grid ${gridCols} ${rows} ${rows ? '' : 'auto-rows-fr'} gap-4 w-full h-full transition-all duration-500 ease-in-out`}
       >
-        {sortedVisualizations.map((type) => (
-          <GridDraggableVisualizationItem
-            key={type}
-            type={type}
-            position={config.positions[type]}
-            isPlaying={isPlaying}
-            onPositionChange={handlePositionChange}
-            onGridSlotSwap={handleGridSlotSwap}
-            gridSlot={config.positions[type]?.gridSlot ?? 0}
-            gridCols={gridCols}
-            gridRows={rows}
-            spanClass="w-full h-full min-h-[200px]"
-            allTypes={enabledVisualizations}
-          >
-            {type === "analytics" && (
-              <AdvancedAudioAnalytics 
-                audioData={audioData}
-                isPlaying={isPlaying}
-              />
-            )}
-            
-            {type === "3d-globe" && (
-              <AudioGlobe3D 
-                audioData={audioData}
-                isPlaying={isPlaying}
-              />
-            )}
+        {sortedVisualizations.map((type, index) => {
+          const colSpan = getColumnSpan(index, sortedVisualizations.length, cols);
+          const rowSpan = getRowSpan(index, sortedVisualizations.length, cols, maxRows);
+          const colSpanClass = colSpan > 1 ? `col-span-${colSpan}` : '';
+          const rowSpanClass = rowSpan > 1 ? `row-span-${rowSpan}` : '';
+          const spanClass = `${colSpanClass} ${rowSpanClass}`.trim();
+          
+          return (
+            <GridDraggableVisualizationItem
+              key={type}
+              type={type}
+              position={config.positions[type]}
+              isPlaying={isPlaying}
+              onPositionChange={handlePositionChange}
+              onGridSlotSwap={handleGridSlotSwap}
+              gridSlot={config.positions[type]?.gridSlot ?? 0}
+              gridCols={gridCols}
+              gridRows={rows}
+              spanClass={`w-full h-full min-h-[200px] ${spanClass}`}
+              allTypes={enabledVisualizations}
+            >
+              {type === "analytics" && (
+                <AdvancedAudioAnalytics 
+                  audioData={audioData}
+                  isPlaying={isPlaying}
+                />
+              )}
+              
+              {type === "3d-globe" && (
+                <AudioGlobe3D 
+                  audioData={audioData}
+                  isPlaying={isPlaying}
+                />
+              )}
 
-            {type !== "analytics" && type !== "3d-globe" && (
-              <canvas
-                ref={(el) => (canvasRefs.current[type] = el)}
-                className="w-full h-full"
-              />
-            )}
-          </GridDraggableVisualizationItem>
-        ))}
+              {type !== "analytics" && type !== "3d-globe" && (
+                <canvas
+                  ref={(el) => (canvasRefs.current[type] = el)}
+                  className="w-full h-full"
+                />
+              )}
+            </GridDraggableVisualizationItem>
+          );
+        })}
       </div>
     </div>
   );

@@ -231,14 +231,14 @@ export const AdvancedAudioAnalytics = ({
 
   return (
     <div 
-      className={`overflow-hidden ${className}`}
+      className={`h-full w-full overflow-hidden flex flex-col ${className}`}
       style={{ 
         backgroundColor: '#0d0b14',
         backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(138, 66, 255, 0.03) 0%, transparent 70%)',
       }}
     >
-      <div className="h-full overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-700/50">
-        <div className="p-2 text-white min-h-full">
+      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-700/50">
+        <div className="p-2 text-white h-full">
           {/* Peak Frequency, RMS Level, and LIVE in one line */}
           <div className="grid grid-cols-3 gap-2 mb-2">
             <div>

@@ -66,6 +66,23 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
     scene.add(globeGroup);
     globeGroupRef.current = globeGroup;
 
+    // Resize observer to handle container size changes
+    const resizeObserver = new ResizeObserver((entries) => {
+      for (const entry of entries) {
+        const { width, height } = entry.contentRect;
+        if (width > 0 && height > 0) {
+          // Update camera aspect ratio
+          camera.aspect = width / height;
+          camera.updateProjectionMatrix();
+          
+          // Update renderer size
+          renderer.setSize(width, height);
+        }
+      }
+    });
+    
+    resizeObserver.observe(containerRef.current);
+
     // Particles Setup - Reduced count
     const particleCount = 1500; // Reduced from 3000
     const geometry = new THREE.BufferGeometry();
@@ -127,22 +144,6 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
     });
     const atmosphere = new THREE.Mesh(atmosphereGeo, atmosphereMat);
     globeGroup.add(atmosphere);
-
-    // Handle Resize with ResizeObserver
-    const handleResize = () => {
-      if (!containerRef.current || !cameraRef.current || !rendererRef.current) return;
-      const width = containerRef.current.clientWidth;
-      const height = containerRef.current.clientHeight;
-      cameraRef.current.aspect = width / height;
-      cameraRef.current.updateProjectionMatrix();
-      rendererRef.current.setSize(width, height);
-    };
-
-    const resizeObserver = new ResizeObserver(() => {
-      handleResize();
-    });
-
-    resizeObserver.observe(containerRef.current);
 
     // Store base positions
     particles.userData = { basePositions };
