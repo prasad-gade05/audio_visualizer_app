@@ -48,7 +48,7 @@ export default function Index() {
           sensitivity: 1,
           smoothing: 0.8,
           secondaryColor: "#00D1FF",
-          backgroundColor: "#0D0B14",
+          backgroundColor: "#0a0a0a",
           barCount: 32,
         },
         circular: {
@@ -57,7 +57,7 @@ export default function Index() {
           sensitivity: 1,
           smoothing: 0.8,
           secondaryColor: "#FF55E1",
-          backgroundColor: "#0D0B14",
+          backgroundColor: "#0a0a0a",
           radius: 1,
           intensity: 1,
         },
@@ -67,7 +67,7 @@ export default function Index() {
           sensitivity: 1,
           smoothing: 0.8,
           secondaryColor: "#8A42FF",
-          backgroundColor: "#0D0B14",
+          backgroundColor: "#0a0a0a",
         },
         particles: {
           type: "particles",
@@ -75,7 +75,7 @@ export default function Index() {
           sensitivity: 1,
           smoothing: 0.8,
           secondaryColor: "#00D1FF",
-          backgroundColor: "#0D0B14",
+          backgroundColor: "#0a0a0a",
           particleCount: 100,
         },
         "mirrored-waveform": {
@@ -84,7 +84,7 @@ export default function Index() {
           sensitivity: 1,
           smoothing: 0.8,
           secondaryColor: "#FF0000",
-          backgroundColor: "#0d0b14",
+          backgroundColor: "#0a0a0a",
         },
         "3d-globe": {
           type: "3d-globe",

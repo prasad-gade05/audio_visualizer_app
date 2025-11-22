@@ -233,8 +233,8 @@ export const AdvancedAudioAnalytics = ({
     <div 
       className={`h-full w-full overflow-hidden flex flex-col ${className}`}
       style={{ 
-        backgroundColor: '#0d0b14',
-        backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(138, 66, 255, 0.03) 0%, transparent 70%)',
+        backgroundColor: '#0a0a0a',
+        backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(64, 64, 64, 0.03) 0%, transparent 70%)',
       }}
     >
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-700/50">

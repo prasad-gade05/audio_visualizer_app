@@ -8,13 +8,13 @@ interface MultiVisualizationControllerProps {
 }
 
 const visualizationTypes = [
-  { type: "bars" as const, icon: BarChart3, label: "Frequency Bars" },
-  { type: "circular" as const, icon: Circle, label: "Circular" },
-  { type: "waveform" as const, icon: Waves, label: "Waveform" },
-  { type: "particles" as const, icon: Sparkles, label: "Particles" },
-  { type: "mirrored-waveform" as const, icon: Activity, label: "Mirrored Waveform" },
-  { type: "3d-globe" as const, icon: Globe, label: "3D Globe" },
-  { type: "analytics" as const, icon: TrendingUp, label: "Advanced Analytics" },
+  { type: "bars" as const, icon: BarChart3, label: "Frequency Bars", color: "#60a5fa" },
+  { type: "circular" as const, icon: Circle, label: "Circular", color: "#a78bfa" },
+  { type: "waveform" as const, icon: Waves, label: "Waveform", color: "#34d399" },
+  { type: "particles" as const, icon: Sparkles, label: "Particles", color: "#fbbf24" },
+  { type: "mirrored-waveform" as const, icon: Activity, label: "Mirrored Waveform", color: "#f472b6" },
+  { type: "3d-globe" as const, icon: Globe, label: "3D Globe", color: "#38bdf8" },
+  { type: "analytics" as const, icon: TrendingUp, label: "Advanced Analytics", color: "#fb923c" },
 ];
 
 export const MultiVisualizationController = ({
@@ -45,7 +45,7 @@ export const MultiVisualizationController = ({
         style={{ boxShadow: "var(--box-shadow-glow-sm)" }}
       >
         {/* Toggle Controls */}
-        {visualizationTypes.map(({ type, icon: Icon, label }) => {
+        {visualizationTypes.map(({ type, icon: Icon, label, color }) => {
           const isEnabled = config.enabled[type];
           return (
             <button
@@ -57,20 +57,19 @@ export const MultiVisualizationController = ({
                   : "glass-interactive opacity-40 hover:opacity-70"
               }`}
               style={{
-                boxShadow: isEnabled ? "var(--box-shadow-glow-md)" : undefined,
-                borderColor: isEnabled
-                  ? "var(--color-primary)"
-                  : "var(--color-border)",
+                boxShadow: isEnabled ? `0 0 16px ${color}40` : undefined,
+                borderColor: isEnabled ? `${color}80` : "var(--color-border)",
                 background: isEnabled
-                  ? `linear-gradient(135deg, var(--color-primary), var(--color-secondary))`
-                  : undefined,
+                  ? `linear-gradient(135deg, ${color}30, ${color}15)`
+                  : "rgba(20, 20, 20, 0.6)",
               }}
               title={`${label} - ${isEnabled ? "Enabled" : "Disabled"}`}
             >
               <Icon
                 className="w-6 h-6"
                 style={{
-                  color: isEnabled ? "#FFFFFF" : "var(--color-text-disabled)",
+                  color: color,
+                  opacity: isEnabled ? 1 : 0.5,
                 }}
               />
 

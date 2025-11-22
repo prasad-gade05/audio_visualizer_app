@@ -46,7 +46,7 @@ export const MirroredWaveformVisualizer = ({
     canvasHeight: number
   ) => {
     // Clear canvas with dark background
-    ctx.fillStyle = "#0d0b14";
+    ctx.fillStyle = "#0a0a0a";
     ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
     if (!timeData || timeData.length === 0) return;

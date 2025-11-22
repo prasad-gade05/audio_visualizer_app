@@ -107,20 +107,21 @@ export const PlayerView = ({
           controlsVisible ? 'opacity-100' : 'opacity-0'
         }`}
       >
-        <div className="glass flex items-center justify-between p-4">
+        <div className="glass flex items-center justify-between p-4" style={{ backgroundColor: 'rgba(15, 15, 15, 0.95)', borderColor: 'rgba(64, 64, 64, 0.3)' }}>
           {/* Back Button */}
           <button
             onClick={mode === 'system' && isCapturing ? onStop : onBack}
             className="glass-interactive p-3 hover:scale-105 smooth-transition"
+            style={{ backgroundColor: 'rgba(20, 20, 20, 0.95)', borderColor: 'rgba(64, 64, 64, 0.3)' }}
           >
-            <ArrowLeft className="w-5 h-5" style={{ color: 'var(--color-text-primary)' }} />
+            <ArrowLeft className="w-5 h-5" style={{ color: '#ffffff' }} />
           </button>
 
           {/* Track Info */}
           <div className="flex-1 text-center px-6">
             <p 
               className="text-lg font-medium"
-              style={{ color: 'var(--color-text-primary)' }}
+              style={{ color: '#ffffff' }}
             >
               {mode === 'file' 
                 ? `Now Playing: ${fileName || 'Unknown Track'}` 
@@ -133,8 +134,9 @@ export const PlayerView = ({
           <button
             onClick={onSettingsClick}
             className="glass-interactive p-3 hover:scale-105 smooth-transition"
+            style={{ backgroundColor: 'rgba(20, 20, 20, 0.95)', borderColor: 'rgba(64, 64, 64, 0.3)' }}
           >
-            <Settings className="w-5 h-5" style={{ color: 'var(--color-text-primary)' }} />
+            <Settings className="w-5 h-5" style={{ color: '#ffffff' }} />
           </button>
         </div>
       </div>
@@ -146,7 +148,7 @@ export const PlayerView = ({
             controlsVisible ? 'opacity-100' : 'opacity-0'
           }`}
         >
-          <div className="glass p-6 min-w-96">
+          <div className="glass p-6 min-w-96" style={{ backgroundColor: 'rgba(15, 15, 15, 0.95)', borderColor: 'rgba(64, 64, 64, 0.3)' }}>
             {/* Progress Bar */}
             <div className="space-y-3 mb-6">
               <Slider
@@ -167,16 +169,17 @@ export const PlayerView = ({
               <button
                 onClick={() => onSeek && onSeek(Math.max(0, audioState.currentTime - 10))}
                 className="glass-interactive p-3 hover:scale-105 smooth-transition"
+                style={{ backgroundColor: 'rgba(20, 20, 20, 0.95)', borderColor: 'rgba(64, 64, 64, 0.3)' }}
               >
-                <SkipBack className="w-5 h-5" style={{ color: 'var(--color-text-primary)' }} />
+                <SkipBack className="w-5 h-5" style={{ color: '#ffffff' }} />
               </button>
 
               <button
                 onClick={audioState.isPlaying ? onPause : onPlay}
                 className="w-14 h-14 rounded-full flex items-center justify-center hover:scale-105 smooth-transition"
                 style={{
-                  background: `linear-gradient(135deg, var(--color-primary), var(--color-secondary))`,
-                  boxShadow: 'var(--box-shadow-glow-sm)'
+                  background: `linear-gradient(135deg, #404040, #5a5a5a)`,
+                  boxShadow: '0 0 12px 0 rgba(64, 64, 64, 0.3)'
                 }}
               >
                 {audioState.isPlaying ? (
@@ -189,8 +192,9 @@ export const PlayerView = ({
               <button
                 onClick={() => onSeek && onSeek(Math.min(audioState.duration, audioState.currentTime + 10))}
                 className="glass-interactive p-3 hover:scale-105 smooth-transition"
+                style={{ backgroundColor: 'rgba(20, 20, 20, 0.95)', borderColor: 'rgba(64, 64, 64, 0.3)' }}
               >
-                <SkipForward className="w-5 h-5" style={{ color: 'var(--color-text-primary)' }} />
+                <SkipForward className="w-5 h-5" style={{ color: '#ffffff' }} />
               </button>
 
               {/* Volume Control */}
@@ -198,13 +202,14 @@ export const PlayerView = ({
                 <button
                   onClick={() => setVolumeVisible(!volumeVisible)}
                   className="glass-interactive p-3 hover:scale-105 smooth-transition"
+                  style={{ backgroundColor: 'rgba(20, 20, 20, 0.95)', borderColor: 'rgba(64, 64, 64, 0.3)' }}
                 >
-                  <Volume2 className="w-5 h-5" style={{ color: 'var(--color-text-primary)' }} />
+                  <Volume2 className="w-5 h-5" style={{ color: '#ffffff' }} />
                 </button>
                 
                 {volumeVisible && (
                   <div className="absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2">
-                    <div className="glass p-4 w-8 h-32 flex flex-col items-center">
+                    <div className="glass p-4 w-8 h-32 flex flex-col items-center" style={{ backgroundColor: 'rgba(15, 15, 15, 0.95)', borderColor: 'rgba(64, 64, 64, 0.3)' }}>
                       <Slider
                         orientation="vertical"
                         value={[audioState.volume * 100]}

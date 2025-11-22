@@ -130,7 +130,7 @@ export const MultiPlayerView = ({
         }`}
         style={{ 
           borderTop: "1px solid rgba(255,255,255,0.1)",
-          backgroundColor: "rgba(13, 11, 20, 0.8)",
+          backgroundColor: "rgba(15, 15, 15, 0.95)",
           backdropFilter: "blur(12px)"
         }}
       >
@@ -140,17 +140,18 @@ export const MultiPlayerView = ({
             onClick={(mode === "system" || mode === "microphone") && isCapturing ? onStop : onBack}
             className="glass-interactive p-2 hover:scale-105 smooth-transition flex-shrink-0 rounded-full"
             title="Back"
+            style={{ backgroundColor: 'rgba(20, 20, 20, 0.95)', borderColor: 'rgba(64, 64, 64, 0.3)' }}
           >
             <ArrowLeft
               className="w-5 h-5"
-              style={{ color: "var(--color-text-primary)" }}
+              style={{ color: "#93c5fd" }}
             />
           </button>
 
           <div className="flex-1 min-w-0 overflow-hidden">
             <p
               className="text-sm font-medium truncate"
-              style={{ color: "var(--color-text-primary)" }}
+              style={{ color: "#ffffff" }}
             >
               {mode === "file"
                 ? fileName || "Unknown Track"
@@ -185,6 +186,7 @@ export const MultiPlayerView = ({
                 <button
                   onClick={() => onSeek && onSeek(Math.max(0, audioState.currentTime - 10))}
                   className="p-2 hover:text-white opacity-70 hover:opacity-100 transition-opacity"
+                  style={{ color: "#a78bfa" }}
                 >
                   <SkipBack className="w-4 h-4" />
                 </button>
@@ -205,6 +207,7 @@ export const MultiPlayerView = ({
                 <button
                   onClick={() => onSeek && onSeek(Math.min(audioState.duration, audioState.currentTime + 10))}
                   className="p-2 hover:text-white opacity-70 hover:opacity-100 transition-opacity"
+                  style={{ color: "#a78bfa" }}
                 >
                   <SkipForward className="w-4 h-4" />
                 </button>
@@ -231,6 +234,7 @@ export const MultiPlayerView = ({
                 <button
                   onClick={() => setVolumeVisible(!volumeVisible)}
                   className="p-2 hover:text-white opacity-70 hover:opacity-100 transition-opacity"
+                  style={{ color: "#fbbf24" }}
                 >
                   <Volume2 className="w-5 h-5" />
                 </button>
@@ -256,7 +260,7 @@ export const MultiPlayerView = ({
             <div className="flex items-center gap-6 w-full max-w-md">
                {/* Level Meter */}
                <div className="flex-1 flex items-center gap-3">
-                  <Mic className="w-4 h-4 opacity-70" />
+                  <Mic className="w-4 h-4 opacity-70" style={{ color: "#34d399" }} />
                   <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
                     <div
                       className="h-full transition-all duration-100"
@@ -271,15 +275,23 @@ export const MultiPlayerView = ({
                {/* Settings Popover */}
                <Popover>
                  <PopoverTrigger asChild>
-                   <button className="glass-interactive px-3 py-1.5 text-xs flex items-center gap-2 rounded-full">
-                     <Settings className="w-3 h-3" />
-                     Settings
+                   <button 
+                     className="px-3 py-1.5 text-xs flex items-center gap-2 rounded-full border"
+                     style={{ 
+                       backgroundColor: 'rgba(20, 20, 20, 0.95)', 
+                       borderColor: 'rgba(64, 64, 64, 0.3)',
+                       color: '#ffffff',
+                       backdropFilter: 'blur(12px)'
+                     }}
+                   >
+                     <Settings className="w-3 h-3" style={{ color: '#f472b6' }} />
+                     <span style={{ color: '#ffffff' }}>Settings</span>
                    </button>
                  </PopoverTrigger>
-                 <PopoverContent className="w-64 glass p-4" side="top">
+                 <PopoverContent className="w-64 p-4" side="top" style={{ backgroundColor: 'rgba(15, 15, 15, 0.95)', borderColor: 'rgba(64, 64, 64, 0.3)', backdropFilter: 'blur(12px)' }}>
                    <div className="space-y-4">
                      <div className="space-y-2">
-                       <div className="flex justify-between text-xs">
+                       <div className="flex justify-between text-xs" style={{ color: '#ffffff' }}>
                          <span>Sensitivity</span>
                          <span>{Math.round((sensitivity || 1) * 100)}%</span>
                        </div>
@@ -290,7 +302,7 @@ export const MultiPlayerView = ({
                        />
                      </div>
                      <div className="space-y-2">
-                       <div className="flex justify-between text-xs">
+                       <div className="flex justify-between text-xs" style={{ color: '#ffffff' }}>
                          <span>Noise Gate</span>
                          <span>{Math.round((noiseGate || 0) * 100)}%</span>
                        </div>

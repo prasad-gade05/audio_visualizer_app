@@ -63,7 +63,7 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
     // Limit pixel ratio to 1 for performance on high-DPI screens
     renderer.setPixelRatio(1); 
     // Set background color
-    renderer.setClearColor(new THREE.Color("#0d0b14"), 1);
+    renderer.setClearColor(new THREE.Color("#0a0a0a"), 1);
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -104,7 +104,7 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
     const colors = new Float32Array(particleCount * 3);
     const basePositions = new Float32Array(particleCount * 3);
 
-    const color1 = new THREE.Color("#8A42FF"); // Primary
+    const color1 = new THREE.Color("#8A42FF"); // Primary purple
     
     for (let i = 0; i < particleCount; i++) {
       // Spherical distribution
@@ -252,7 +252,7 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
           // Smoother gradient
           colors[ix3] = 0.54 + (intensity * 0.3);     
           colors[ix3 + 1] = 0.26 + (intensity * 0.6); 
-          colors[ix3 + 2] = 1.0 - (intensity * 0.2);   
+          colors[ix3 + 2] = 1.0 - (intensity * 0.2);
         }
       }
 
@@ -318,7 +318,7 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
     <div 
       ref={containerRef} 
       className="w-full h-full relative cursor-move"
-      style={{ backgroundColor: "#0d0b14" }}
+      style={{ backgroundColor: "#0a0a0a" }}
       onMouseDown={handleMouseDown}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}

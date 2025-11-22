@@ -4,17 +4,17 @@
 
 @layer base {
   :root {
-    /* Aurora Theme Colors */
-    --color-background: #0d0b14; /* Deep, near-black purple */
-    --color-surface-1: rgba(22, 19, 33, 0.6); /* For primary containers */
-    --color-surface-2: rgba(36, 32, 51, 0.7); /* For interactive elements */
-    --color-primary: #8a42ff; /* Vibrant purple for accents */
-    --color-secondary: #00d1ff; /* Bright cyan for glows and highlights */
-    --color-tertiary: #ff55e1; /* Hot pink for secondary highlights */
-    --color-text-primary: #f0f0f5;
-    --color-text-secondary: #a09cb0;
-    --color-text-disabled: #6d6a7b;
-    --color-border: rgba(138, 66, 255, 0.2);
+    /* Subtle Dark Theme Colors */
+    --color-background: #0a0a0a; /* Deep black */
+    --color-surface-1: rgba(15, 15, 15, 0.95); /* For primary containers - more opaque */
+    --color-surface-2: rgba(20, 20, 20, 0.95); /* For interactive elements - more opaque */
+    --color-primary: #404040; /* Subtle medium grey for accents */
+    --color-secondary: #9a9a9a; /* Brighter grey for better visibility */
+    --color-tertiary: #707070; /* Even lighter grey for secondary highlights */
+    --color-text-primary: #f5f5f5;
+    --color-text-secondary: #b0b0b0;
+    --color-text-disabled: #5a5a5a;
+    --color-border: rgba(64, 64, 64, 0.2);
 
     /* Typography */
     --font-family-sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI",
@@ -42,8 +42,8 @@
 
     /* Effects */
     --backdrop-filter-glass: blur(12px);
-    --box-shadow-glow-sm: 0 0 12px 0 rgba(138, 66, 255, 0.3);
-    --box-shadow-glow-md: 0 0 24px 0 rgba(0, 209, 255, 0.4);
+    --box-shadow-glow-sm: 0 0 12px 0 rgba(64, 64, 64, 0.3);
+    --box-shadow-glow-md: 0 0 24px 0 rgba(90, 90, 90, 0.4);
     --transition-speed: 0.3s ease;
 
     /* Original Tailwind tokens for compatibility */
@@ -78,17 +78,17 @@
   }
 
   .dark {
-    /* Aurora theme is always dark, so we use the same colors */
-    --color-background: #0d0b14;
-    --color-surface-1: rgba(22, 19, 33, 0.6);
-    --color-surface-2: rgba(36, 32, 51, 0.7);
-    --color-primary: #8a42ff;
-    --color-secondary: #00d1ff;
-    --color-tertiary: #ff55e1;
-    --color-text-primary: #f0f0f5;
-    --color-text-secondary: #a09cb0;
-    --color-text-disabled: #6d6a7b;
-    --color-border: rgba(138, 66, 255, 0.2);
+    /* Subtle Dark theme is always dark, so we use the same colors */
+    --color-background: #0a0a0a;
+    --color-surface-1: rgba(15, 15, 15, 0.95);
+    --color-surface-2: rgba(20, 20, 20, 0.95);
+    --color-primary: #404040;
+    --color-secondary: #9a9a9a;
+    --color-tertiary: #707070;
+    --color-text-primary: #f5f5f5;
+    --color-text-secondary: #b0b0b0;
+    --color-text-disabled: #5a5a5a;
+    --color-border: rgba(64, 64, 64, 0.2);
 
     /* Original Tailwind dark mode tokens */
     --background: 222.2 84% 4.9%;
@@ -304,7 +304,7 @@
     height: 200%;
     background: radial-gradient(
       circle at 30% 30%,
-      var(--color-primary) 0%,
+      rgba(64, 64, 64, 0.15) 0%,
       transparent 40%
     );
     opacity: 0.4;
@@ -322,7 +322,7 @@
     height: 200%;
     background: radial-gradient(
       circle at 70% 70%,
-      var(--color-secondary) 0%,
+      rgba(90, 90, 90, 0.1) 0%,
       transparent 40%
     );
     opacity: 0.3;

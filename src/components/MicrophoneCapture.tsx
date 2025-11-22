@@ -112,20 +112,25 @@ export const MicrophoneCapture = ({
 
           <button
             onClick={isCapturing ? onStop : onStart}
-            className={`glass-interactive px-6 py-3 hover:scale-105 smooth-transition ${
+            className={`px-6 py-3 hover:scale-105 smooth-transition rounded-lg border ${
               isCapturing ? "hover:bg-red-500/20" : ""
             }`}
-            style={{ color: "var(--color-text-primary)" }}
+            style={{ 
+              color: "#ffffff !important", 
+              backgroundColor: "rgba(20, 20, 20, 0.95)", 
+              borderColor: "rgba(64, 64, 64, 0.3)",
+              backdropFilter: "blur(12px)"
+            }}
           >
             {isCapturing ? (
               <>
-                <Square className="w-4 h-4 mr-2" />
-                Stop Recording
+                <Square className="w-4 h-4 mr-2" style={{ color: "#ffffff" }} />
+                <span style={{ color: "#ffffff" }}>Stop Recording</span>
               </>
             ) : (
               <>
-                <Mic className="w-4 h-4 mr-2" />
-                Start Recording
+                <Mic className="w-4 h-4 mr-2" style={{ color: "#ffffff" }} />
+                <span style={{ color: "#ffffff" }}>Start Recording</span>
               </>
             )}
           </button>
@@ -159,7 +164,7 @@ export const MicrophoneCapture = ({
           <div className="flex items-center gap-2 mb-3">
             <Settings 
               className="w-4 h-4" 
-              style={{ color: "var(--color-secondary)" }}
+              style={{ color: "#e0e0e0" }}
             />
             <h4
               className="font-medium"
