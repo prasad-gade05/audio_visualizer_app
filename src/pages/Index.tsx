@@ -1,22 +1,12 @@
 import { useState } from "react";
 import { LandingView } from "@/components/LandingView";
 import { MultiPlayerView } from "@/components/MultiPlayerView";
-import { FileUpload } from "@/components/FileUpload";
-import { SystemAudioCapture } from "@/components/SystemAudioCapture";
-import { MicrophoneCapture } from "@/components/MicrophoneCapture";
 import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
 import { useSystemAudio } from "@/hooks/useSystemAudio";
 import { useMicrophoneAudio } from "@/hooks/useMicrophoneAudio";
 import { MultiVisualizationConfig } from "@/types/audio";
 
-type AppView =
-  | "landing"
-  | "fileUpload"
-  | "systemAudio"
-  | "microphoneAudio"
-  | "filePlayer"
-  | "systemPlayer"
-  | "microphonePlayer";
+type AppView = "landing" | "filePlayer" | "systemPlayer" | "microphonePlayer";
 
 export default function Index() {
   const [currentView, setCurrentView] = useState<AppView>("landing");
@@ -141,38 +131,9 @@ export default function Index() {
     setNoiseGate,
   } = useMicrophoneAudio();
 
-  const handleFileUploadClick = () => {
-    setCurrentView("fileUpload");
-  };
-
-  const handleSystemAudioClick = () => {
-    if (isSupported) {
-      setCurrentView("systemAudio");
-    } else {
-      // Show error dialog or handle unsupported case
-      alert(
-        "System audio capture is not supported in your browser. Please use Chrome or Edge with HTTPS."
-      );
-    }
-  };
-
-  const handleMicrophoneClick = () => {
-    if (isMicrophoneSupported) {
-      setCurrentView("microphoneAudio");
-    } else {
-      alert(
-        "Microphone access is not supported in your browser. Please use a modern browser with HTTPS."
-      );
-    }
-  };
-
   const handleFileSelect = async (file: File) => {
     setFileName(file.name);
     await initializeAudio(file);
-    setCurrentView("filePlayer");
-  };
-
-  const handleContinuePlaying = () => {
     setCurrentView("filePlayer");
   };
 
@@ -226,130 +187,16 @@ export default function Index() {
       case "landing":
         return (
           <LandingView
-            onFileUploadClick={handleFileUploadClick}
-            onSystemAudioClick={handleSystemAudioClick}
-            onMicrophoneClick={handleMicrophoneClick}
+            onFileSelect={handleFileSelect}
+            onSystemAudioStart={handleSystemAudioStart}
+            onMicrophoneStart={handleMicrophoneStart}
+            isSystemSupported={isSupported}
+            isMicrophoneSupported={isMicrophoneSupported}
+            systemError={error}
+            microphoneError={microphoneError}
+            isSystemCapturing={isCapturing}
+            isMicrophoneCapturing={isMicrophoneCapturing}
           />
-        );
-
-      case "fileUpload":
-        return (
-          <div
-            className="min-h-screen flex items-center justify-center p-6 overflow-y-auto"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          >
-            <style>{`
-              .scrollable-container::-webkit-scrollbar {
-                display: none;
-              }
-            `}</style>
-            <div className="w-full max-w-2xl">
-              <div className="glass p-8 mb-6">
-                <h2
-                  className="text-2xl font-bold mb-6 text-center"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  Upload Audio File
-                </h2>
-                <FileUpload
-                  onFileSelect={handleFileSelect}
-                  isLoaded={audioState.isLoaded}
-                  onContinuePlaying={handleContinuePlaying}
-                />
-                {fileName && (
-                  <div className="mt-4 p-4 glass-interactive text-center">
-                    <p style={{ color: "var(--color-text-primary)" }}>
-                      Selected: <strong>{fileName}</strong>
-                    </p>
-                  </div>
-                )}
-              </div>
-              <div className="text-center">
-                <button
-                  onClick={handleBack}
-                  className="glass-interactive px-6 py-3"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  ← Back to Home
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "systemAudio":
-        return (
-          <div
-            className="min-h-screen flex items-center justify-center p-6 overflow-y-auto"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          >
-            <div className="w-full max-w-2xl">
-              <div className="glass p-8 mb-6">
-                <h2
-                  className="text-2xl font-bold mb-6 text-center"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  System Audio Capture
-                </h2>
-                <SystemAudioCapture
-                  isCapturing={isCapturing}
-                  isSupported={isSupported}
-                  error={error}
-                  onStart={handleSystemAudioStart}
-                  onStop={stopSystemAudioCapture}
-                />
-              </div>
-              <div className="text-center">
-                <button
-                  onClick={handleBack}
-                  className="glass-interactive px-6 py-3"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  ← Back to Home
-                </button>
-              </div>
-            </div>
-          </div>
-        );
-
-      case "microphoneAudio":
-        return (
-          <div
-            className="min-h-screen flex items-center justify-center p-6 overflow-y-auto"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          >
-            <div className="w-full max-w-2xl">
-              <div className="glass p-8 mb-6">
-                <h2
-                  className="text-2xl font-bold mb-6 text-center"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  Microphone Input
-                </h2>
-                <MicrophoneCapture
-                  isCapturing={isMicrophoneCapturing}
-                  isSupported={isMicrophoneSupported}
-                  error={microphoneError}
-                  microphoneLevel={microphoneLevel}
-                  sensitivity={sensitivity}
-                  noiseGate={noiseGate}
-                  onStart={handleMicrophoneStart}
-                  onStop={stopMicrophoneCapture}
-                  onSensitivityChange={setSensitivity}
-                  onNoiseGateChange={setNoiseGate}
-                />
-              </div>
-              <div className="text-center">
-                <button
-                  onClick={handleBack}
-                  className="glass-interactive px-6 py-3"
-                  style={{ color: "var(--color-text-primary)" }}
-                >
-                  ← Back to Home
-                </button>
-              </div>
-            </div>
-          </div>
         );
 
       case "filePlayer":
