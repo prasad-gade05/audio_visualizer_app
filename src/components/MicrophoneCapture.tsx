@@ -43,7 +43,7 @@ export const MicrophoneCapture = ({
         <div className="flex items-start gap-3">
           <AlertCircle
             className="w-5 h-5 mt-1"
-            style={{ color: "var(--color-tertiary)" }}
+            style={{ color: "#fca5a5" }}
           />
           <div>
             <h4
@@ -63,7 +63,7 @@ export const MicrophoneCapture = ({
   }
 
   return (
-    <div className="glass-interactive p-6 space-y-6">
+    <div className="glass-interactive p-6 space-y-6" style={{ borderColor: 'rgba(244, 114, 182, 0.3)' }}>
       {/* Header Section */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -71,15 +71,17 @@ export const MicrophoneCapture = ({
             className="w-12 h-12 rounded-full flex items-center justify-center"
             style={{
               background: isCapturing
-                ? `linear-gradient(135deg, var(--color-secondary), var(--color-tertiary))`
-                : `linear-gradient(135deg, var(--color-primary), var(--color-secondary))`,
-              boxShadow: isCapturing ? "var(--box-shadow-glow-md)" : "var(--box-shadow-glow-sm)",
+                ? `linear-gradient(135deg, #f472b6, #f9a8d4)`
+                : `linear-gradient(135deg, #ec4899, #f472b6)`,
+              boxShadow: isCapturing 
+                ? "0 0 20px rgba(244, 114, 182, 0.5), 0 0 40px rgba(244, 114, 182, 0.2)"
+                : "0 0 16px rgba(236, 72, 153, 0.4)",
             }}
           >
             {isCapturing ? (
-              <Mic className="w-6 h-6 text-white" />
+              <Mic className="w-6 h-6" style={{ color: "#1a1a2e" }} />
             ) : (
-              <MicOff className="w-6 h-6 text-white" />
+              <MicOff className="w-6 h-6" style={{ color: "#1a1a2e" }} />
             )}
           </div>
           <div>
@@ -142,7 +144,7 @@ export const MicrophoneCapture = ({
         <div className="flex items-center gap-2">
           <Volume2 
             className="w-4 h-4" 
-            style={{ color: "var(--color-text-secondary)" }}
+            style={{ color: "#fbbf24" }}
           />
           <span
             className="text-sm font-medium"
@@ -160,12 +162,23 @@ export const MicrophoneCapture = ({
 
       {/* Controls Section */}
       {(isCapturing || microphoneLevel > 0) && (
-        <div className="glass p-4 space-y-4">
+        <div className="glass p-4 space-y-4" style={{ 
+          borderColor: 'rgba(244, 114, 182, 0.2)',
+          backgroundColor: 'rgba(244, 114, 182, 0.03)'
+        }}>
           <div className="flex items-center gap-2 mb-3">
-            <Settings 
-              className="w-4 h-4" 
-              style={{ color: "#e0e0e0" }}
-            />
+            <div 
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{
+                background: `linear-gradient(135deg, #f472b6, #f9a8d4)`,
+                boxShadow: '0 0 12px rgba(244, 114, 182, 0.4)'
+              }}
+            >
+              <Settings 
+                className="w-4 h-4" 
+                style={{ color: "#1a1a2e" }}
+              />
+            </div>
             <h4
               className="font-medium"
               style={{ color: "var(--color-text-primary)" }}
@@ -234,7 +247,7 @@ export const MicrophoneCapture = ({
           <div className="flex items-start gap-3">
             <AlertCircle
               className="w-5 h-5 mt-1"
-              style={{ color: "var(--color-tertiary)" }}
+              style={{ color: "#fca5a5" }}
             />
             <div>
               <h4
@@ -255,7 +268,7 @@ export const MicrophoneCapture = ({
           <div className="flex items-start gap-3">
             <Info
               className="w-5 h-5 mt-0.5 flex-shrink-0"
-              style={{ color: "var(--color-secondary)" }}
+              style={{ color: "#67e8f9" }}
             />
             <div className="space-y-3">
               <p

@@ -20,7 +20,7 @@ export const LandingView = ({ onFileUploadClick, onSystemAudioClick, onMicrophon
                 boxShadow: 'var(--box-shadow-glow-sm)'
               }}
             >
-              <Headphones className="w-8 h-8 text-white" />
+              <Headphones className="w-8 h-8" style={{ color: "#e9d5ff" }} />
             </div>
             <div>
               <h1 
@@ -50,16 +50,19 @@ export const LandingView = ({ onFileUploadClick, onSystemAudioClick, onMicrophon
           <div 
             className="glass-interactive p-6 cursor-pointer group"
             onClick={onFileUploadClick}
+            style={{
+              borderColor: 'rgba(167, 139, 250, 0.3)',
+            }}
           >
             <div className="text-center">
               <div 
                 className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 smooth-transition"
                 style={{
-                  background: `linear-gradient(135deg, var(--color-primary), var(--color-tertiary))`,
-                  boxShadow: '0 0 20px rgba(138, 66, 255, 0.3)'
+                  background: `linear-gradient(135deg, #a78bfa, #c4b5fd)`,
+                  boxShadow: '0 0 24px rgba(167, 139, 250, 0.5), 0 0 48px rgba(167, 139, 250, 0.2)'
                 }}
               >
-                <Upload className="w-8 h-8 text-white" />
+                <Upload className="w-8 h-8" style={{ color: "#1a1a2e" }} />
               </div>
               <h3 
                 className="text-xl font-semibold mb-3"
@@ -80,16 +83,19 @@ export const LandingView = ({ onFileUploadClick, onSystemAudioClick, onMicrophon
           <div 
             className="glass-interactive p-6 cursor-pointer group"
             onClick={onSystemAudioClick}
+            style={{
+              borderColor: 'rgba(56, 189, 248, 0.3)',
+            }}
           >
             <div className="text-center">
               <div 
                 className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 smooth-transition"
                 style={{
-                  background: `linear-gradient(135deg, var(--color-secondary), var(--color-tertiary))`,
-                  boxShadow: '0 0 20px rgba(0, 209, 255, 0.3)'
+                  background: `linear-gradient(135deg, #38bdf8, #7dd3fc)`,
+                  boxShadow: '0 0 24px rgba(56, 189, 248, 0.5), 0 0 48px rgba(56, 189, 248, 0.2)'
                 }}
               >
-                <Monitor className="w-8 h-8 text-white" />
+                <Monitor className="w-8 h-8" style={{ color: "#1a1a2e" }} />
               </div>
               <h3 
                 className="text-xl font-semibold mb-3"
@@ -110,16 +116,19 @@ export const LandingView = ({ onFileUploadClick, onSystemAudioClick, onMicrophon
           <div 
             className="glass-interactive p-6 cursor-pointer group"
             onClick={onMicrophoneClick}
+            style={{
+              borderColor: 'rgba(244, 114, 182, 0.3)',
+            }}
           >
             <div className="text-center">
               <div 
                 className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 smooth-transition"
                 style={{
-                  background: `linear-gradient(135deg, var(--color-tertiary), var(--color-primary))`,
-                  boxShadow: '0 0 20px rgba(255, 85, 225, 0.3)'
+                  background: `linear-gradient(135deg, #f472b6, #f9a8d4)`,
+                  boxShadow: '0 0 24px rgba(244, 114, 182, 0.5), 0 0 48px rgba(244, 114, 182, 0.2)'
                 }}
               >
-                <Mic className="w-8 h-8 text-white" />
+                <Mic className="w-8 h-8" style={{ color: "#1a1a2e" }} />
               </div>
               <h3 
                 className="text-xl font-semibold mb-3"

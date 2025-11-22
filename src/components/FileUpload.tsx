@@ -46,12 +46,20 @@ export const FileUpload = ({ onFileSelect, isLoaded, onContinuePlaying }: FileUp
 
   if (isLoaded) {
     return (
-      <div className="glass-interactive p-6 space-y-4">
+      <div className="glass-interactive p-6 space-y-4" style={{ borderColor: 'rgba(167, 139, 250, 0.3)' }}>
         <div className="flex items-center gap-3">
-          <Music
-            className="w-6 h-6"
-            style={{ color: "var(--color-primary)" }}
-          />
+          <div 
+            className="w-10 h-10 rounded-full flex items-center justify-center"
+            style={{
+              background: `linear-gradient(135deg, #a78bfa, #c4b5fd)`,
+              boxShadow: '0 0 16px rgba(167, 139, 250, 0.4)'
+            }}
+          >
+            <Music
+              className="w-5 h-5"
+              style={{ color: "#1a1a2e" }}
+            />
+          </div>
           <span
             className="font-medium"
             style={{ color: "var(--color-text-primary)" }}
@@ -99,16 +107,19 @@ export const FileUpload = ({ onFileSelect, isLoaded, onContinuePlaying }: FileUp
       onDrop={handleDrop}
       onDragOver={handleDragOver}
       onClick={triggerFileInput}
+      style={{
+        borderColor: 'rgba(167, 139, 250, 0.3)',
+      }}
     >
       <div className="flex flex-col items-center gap-6 text-center">
         <div
           className="w-20 h-20 rounded-full flex items-center justify-center group-hover:scale-110 smooth-transition"
           style={{
-            background: `linear-gradient(135deg, var(--color-primary), var(--color-secondary))`,
-            boxShadow: "var(--box-shadow-glow-sm)",
+            background: `linear-gradient(135deg, #a78bfa, #c4b5fd)`,
+            boxShadow: "0 0 24px rgba(167, 139, 250, 0.5), 0 0 48px rgba(167, 139, 250, 0.2)",
           }}
         >
-          <Upload className="w-10 h-10 text-white" />
+          <Upload className="w-10 h-10" style={{ color: "#1a1a2e" }} />
         </div>
         <div>
           <h3

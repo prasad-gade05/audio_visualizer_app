@@ -30,7 +30,7 @@ export const SystemAudioCapture = ({
         <div className="flex items-start gap-3">
           <AlertCircle
             className="w-5 h-5 mt-1"
-            style={{ color: "var(--color-tertiary)" }}
+            style={{ color: "#fca5a5" }}
           />
           <div>
             <h4
@@ -51,22 +51,24 @@ export const SystemAudioCapture = ({
   }
 
   return (
-    <div className="glass-interactive p-6">
+    <div className="glass-interactive p-6" style={{ borderColor: 'rgba(56, 189, 248, 0.3)' }}>
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
           <div
             className="w-12 h-12 rounded-full flex items-center justify-center"
             style={{
               background: isCapturing
-                ? `linear-gradient(135deg, var(--color-secondary), var(--color-tertiary))`
-                : `linear-gradient(135deg, var(--color-primary), var(--color-secondary))`,
-              boxShadow: "var(--box-shadow-glow-sm)",
+                ? `linear-gradient(135deg, #38bdf8, #7dd3fc)`
+                : `linear-gradient(135deg, #60a5fa, #93c5fd)`,
+              boxShadow: isCapturing 
+                ? "0 0 20px rgba(56, 189, 248, 0.5), 0 0 40px rgba(56, 189, 248, 0.2)" 
+                : "0 0 16px rgba(96, 165, 250, 0.4)",
             }}
           >
             {isCapturing ? (
-              <MonitorSpeaker className="w-6 h-6 text-white" />
+              <MonitorSpeaker className="w-6 h-6" style={{ color: "#1a1a2e" }} />
             ) : (
-              <Monitor className="w-6 h-6 text-white" />
+              <Monitor className="w-6 h-6" style={{ color: "#1a1a2e" }} />
             )}
           </div>
           <div>
@@ -124,7 +126,7 @@ export const SystemAudioCapture = ({
           <div className="flex items-start gap-3">
             <AlertCircle
               className="w-5 h-5 mt-1"
-              style={{ color: "var(--color-tertiary)" }}
+              style={{ color: "#fca5a5" }}
             />
             <div>
               <h4
@@ -145,7 +147,7 @@ export const SystemAudioCapture = ({
             <div className="flex items-start gap-3">
               <Info
                 className="w-5 h-5 mt-1"
-                style={{ color: "var(--color-secondary)" }}
+                style={{ color: "#67e8f9" }}
               />
               <div>
                 <h4
@@ -177,7 +179,7 @@ export const SystemAudioCapture = ({
             <div className="flex items-start gap-3">
               <Monitor
                 className="w-5 h-5 mt-1"
-                style={{ color: "var(--color-primary)" }}
+                style={{ color: "#93c5fd" }}
               />
               <div>
                 <h4
