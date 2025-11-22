@@ -38,13 +38,19 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
     sceneRef.current = scene;
 
     // Camera setup
+    const aspectRatio = containerRef.current.clientWidth / containerRef.current.clientHeight;
     const camera = new THREE.PerspectiveCamera(
       60,
-      containerRef.current.clientWidth / containerRef.current.clientHeight,
+      aspectRatio,
       0.1,
       1000
     );
-    camera.position.z = 2.2; // Slightly closer
+    
+    // Adjust camera distance based on aspect ratio
+    // For narrow containers (width < height), move camera further back
+    const baseDistance = 2.2;
+    const aspectAdjustment = aspectRatio < 1 ? (1 / aspectRatio) * 0.3 : 0;
+    camera.position.z = baseDistance + aspectAdjustment;
     cameraRef.current = camera;
 
     // Renderer setup - Optimized
@@ -72,7 +78,15 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
         const { width, height } = entry.contentRect;
         if (width > 0 && height > 0) {
           // Update camera aspect ratio
-          camera.aspect = width / height;
+          const newAspectRatio = width / height;
+          camera.aspect = newAspectRatio;
+          
+          // Adjust camera distance based on aspect ratio
+          // For narrow containers (width < height), move camera further back
+          const baseDistance = 2.2;
+          const aspectAdjustment = newAspectRatio < 1 ? (1 / newAspectRatio) * 0.3 : 0;
+          camera.position.z = baseDistance + aspectAdjustment;
+          
           camera.updateProjectionMatrix();
           
           // Update renderer size

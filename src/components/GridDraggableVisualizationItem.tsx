@@ -113,7 +113,7 @@ export const GridDraggableVisualizationItem: React.FC<GridDraggableVisualization
   return (
     <div
       ref={itemRef}
-      className={`relative overflow-hidden rounded-lg bg-black/20 border flex-1 min-h-0 transition-all duration-300 ease-out cursor-pointer ${spanClass} ${
+      className={`relative overflow-hidden rounded-lg bg-black/20 border min-h-0 min-w-0 transition-all duration-300 ease-out cursor-pointer ${spanClass} ${
         isDragging 
           ? "opacity-60 scale-95 border-blue-400/60 shadow-2xl transform rotate-1" 
           : draggedOver === gridSlot 

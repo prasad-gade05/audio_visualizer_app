@@ -203,11 +203,11 @@ export const MultiAudioVisualizer = ({
   const getGridLayout = (count: number) => {
     switch (count) {
       case 1:
-        return { gridCols: "grid-cols-1", rows: "", cols: 1, maxRows: 1 };
+        return { gridCols: "grid-cols-1", rows: "grid-rows-1", cols: 1, maxRows: 1 };
       case 2:
-        return { gridCols: "grid-cols-3", rows: "", cols: 3, maxRows: 1 };
+        return { gridCols: "grid-cols-3", rows: "grid-rows-1", cols: 3, maxRows: 1 };
       case 3:
-        return { gridCols: "grid-cols-3", rows: "", cols: 3, maxRows: 1 };
+        return { gridCols: "grid-cols-3", rows: "grid-rows-1", cols: 3, maxRows: 1 };
       case 4:
         return { gridCols: "grid-cols-2", rows: "grid-rows-2", cols: 2, maxRows: 2 };
       case 5:
@@ -1069,7 +1069,7 @@ export const MultiAudioVisualizer = ({
       
       <div
         ref={containerRef}
-        className={`grid ${gridCols} ${rows} ${rows ? '' : 'auto-rows-fr'} gap-4 w-full h-full transition-all duration-500 ease-in-out`}
+        className={`grid ${gridCols} ${rows} gap-4 w-full h-full transition-all duration-500 ease-in-out`}
       >
         {sortedVisualizations.map((type, index) => {
           const colSpan = getColumnSpan(index, sortedVisualizations.length, cols);
