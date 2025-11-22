@@ -1,4 +1,5 @@
 import { Upload, Monitor, Mic, Headphones } from 'lucide-react';
+import { StaticBackgroundVisualizer } from './StaticBackgroundVisualizer';
 
 interface LandingViewProps {
   onFileUploadClick: () => void;
@@ -8,8 +9,12 @@ interface LandingViewProps {
 
 export const LandingView = ({ onFileUploadClick, onSystemAudioClick, onMicrophoneClick }: LandingViewProps) => {
   return (
-    <div className="min-h-screen flex items-center justify-center p-6">
-      <div className="w-full max-w-4xl">
+    <div className="min-h-screen flex items-center justify-center p-6 relative">
+      {/* Static Background Visualizer */}
+      <StaticBackgroundVisualizer />
+      
+      {/* Main Content - positioned above background */}
+      <div className="w-full max-w-4xl relative z-10">
         {/* Central Glassmorphic Container */}
         <div className="glass p-8 mb-8 text-center">
           <div className="flex items-center justify-center gap-4 mb-6">
