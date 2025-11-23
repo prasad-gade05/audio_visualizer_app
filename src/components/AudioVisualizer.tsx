@@ -26,10 +26,10 @@ export const AudioVisualizer = ({
 
   const [internalConfig, setInternalConfig] = useState<VisualizationConfig>({
     type: "bars",
-    color: "#8A42FF",
+    color: "#10B981",
     sensitivity: 1,
     smoothing: 0.8,
-    secondaryColor: "#00D1FF",
+    secondaryColor: "#F59E0B",
     backgroundColor: "#0D0B14",
   });
 
@@ -786,22 +786,22 @@ export const AudioVisualizer = ({
       const barSpacing = 8;
       const barY = 35;
       
-      // Bass bar (purple)
-      ctx.fillStyle = "rgba(138, 66, 255, 0.3)";
+      // Bass bar (coral)
+      ctx.fillStyle = "rgba(251, 113, 133, 0.3)";
       ctx.fillRect(10, barY, barWidth, barHeight);
-      ctx.fillStyle = "#8A42FF";
+      ctx.fillStyle = "#FB7185";
       ctx.fillRect(10, barY, barWidth * bassLevel, barHeight);
       
-      // Mid bar (green)
-      ctx.fillStyle = "rgba(0, 255, 128, 0.3)";
+      // Mid bar (emerald)
+      ctx.fillStyle = "rgba(16, 185, 129, 0.3)";
       ctx.fillRect(10, barY + barHeight + barSpacing, barWidth, barHeight);
-      ctx.fillStyle = "#00FF80";
+      ctx.fillStyle = "#10B981";
       ctx.fillRect(10, barY + barHeight + barSpacing, barWidth * midLevel, barHeight);
       
-      // Treble bar (cyan)
-      ctx.fillStyle = "rgba(0, 209, 255, 0.3)";
+      // Treble bar (amber)
+      ctx.fillStyle = "rgba(245, 158, 11, 0.3)";
       ctx.fillRect(10, barY + (barHeight + barSpacing) * 2, barWidth, barHeight);
-      ctx.fillStyle = "#00D1FF";
+      ctx.fillStyle = "#F59E0B";
       ctx.fillRect(10, barY + (barHeight + barSpacing) * 2, barWidth * trebleLevel, barHeight);
       
       // Draw labels with scale
@@ -836,11 +836,11 @@ export const AudioVisualizer = ({
       
       // Legend items
       ctx.font = "10px monospace";
-      ctx.fillStyle = "#8A42FF";
+      ctx.fillStyle = "#FB7185";
       ctx.fillText("• Bass Particles", legendX, legendY + 15);
-      ctx.fillStyle = "#00FF80";
+      ctx.fillStyle = "#10B981";
       ctx.fillText("• Mid Particles", legendX, legendY + 28);
-      ctx.fillStyle = "#00D1FF";
+      ctx.fillStyle = "#F59E0B";
       ctx.fillText("• Treble Particles", legendX, legendY + 41);
       
       // Draw connection lines indicator
@@ -876,13 +876,13 @@ export const AudioVisualizer = ({
     
     // Create horizontal gradient
     const gradient = ctx.createLinearGradient(0, 0, width, 0);
-    gradient.addColorStop(0, "#FFA500"); // Orange
-    gradient.addColorStop(0.2, "#FFFF00"); // Yellow
-    gradient.addColorStop(0.4, "#FFFF00"); // Yellow
-    gradient.addColorStop(0.5, "#FF00FF"); // Magenta/Pink
-    gradient.addColorStop(0.6, "#FF00FF"); // Magenta
-    gradient.addColorStop(0.8, "#0000FF"); // Deep Blue
-    gradient.addColorStop(1, "#FF0000"); // Red
+    gradient.addColorStop(0, "#06B6D4"); // Cyan
+    gradient.addColorStop(0.2, "#10B981"); // Emerald
+    gradient.addColorStop(0.4, "#F59E0B"); // Amber
+    gradient.addColorStop(0.5, "#FB7185"); // Coral
+    gradient.addColorStop(0.6, "#EC4899"); // Pink
+    gradient.addColorStop(0.8, "#8B5CF6"); // Violet
+    gradient.addColorStop(1, "#06B6D4"); // Back to Cyan
     
     ctx.fillStyle = gradient;
 
@@ -1021,13 +1021,13 @@ export const AudioVisualizer = ({
       
       // Create horizontal gradient for legend
       const legendGradient = ctx.createLinearGradient(gradientLegendX, 0, gradientLegendX + gradientLegendWidth, 0);
-      legendGradient.addColorStop(0, "#FFA500"); // Orange
-      legendGradient.addColorStop(0.2, "#FFFF00"); // Yellow
-      legendGradient.addColorStop(0.4, "#FFFF00"); // Yellow
-      legendGradient.addColorStop(0.5, "#FF00FF"); // Magenta/Pink
-      legendGradient.addColorStop(0.6, "#FF00FF"); // Magenta
-      legendGradient.addColorStop(0.8, "#0000FF"); // Deep Blue
-      legendGradient.addColorStop(1, "#FF0000"); // Red
+      legendGradient.addColorStop(0, "#06B6D4"); // Cyan
+      legendGradient.addColorStop(0.2, "#10B981"); // Emerald
+      legendGradient.addColorStop(0.4, "#F59E0B"); // Amber
+      legendGradient.addColorStop(0.5, "#FB7185"); // Coral
+      legendGradient.addColorStop(0.6, "#EC4899"); // Pink
+      legendGradient.addColorStop(0.8, "#8B5CF6"); // Violet
+      legendGradient.addColorStop(1, "#06B6D4"); // Back to Cyan
       
       ctx.fillStyle = legendGradient;
       ctx.fillRect(gradientLegendX, gradientLegendY, gradientLegendWidth, gradientLegendHeight);
@@ -1040,10 +1040,10 @@ export const AudioVisualizer = ({
       ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
       ctx.font = "8px monospace";
       ctx.textAlign = "center";
-      ctx.fillText("Orange", gradientLegendX + 10, gradientLegendY + gradientLegendHeight + 10);
-      ctx.fillText("Yellow", gradientLegendX + 30, gradientLegendY + gradientLegendHeight + 10);
-      ctx.fillText("Magenta", gradientLegendX + 50, gradientLegendY + gradientLegendHeight + 10);
-      ctx.fillText("Blue", gradientLegendX + 70, gradientLegendY + gradientLegendHeight + 10);
+      ctx.fillText("Cyan", gradientLegendX + 10, gradientLegendY + gradientLegendHeight + 10);
+      ctx.fillText("Emerald", gradientLegendX + 30, gradientLegendY + gradientLegendHeight + 10);
+      ctx.fillText("Coral", gradientLegendX + 50, gradientLegendY + gradientLegendHeight + 10);
+      ctx.fillText("Violet", gradientLegendX + 70, gradientLegendY + gradientLegendHeight + 10);
       
       // Draw intensity meter
       const meterWidth = 80;
@@ -1056,7 +1056,7 @@ export const AudioVisualizer = ({
       ctx.fillRect(meterX, meterY, meterWidth, meterHeight);
       
       // Meter fill
-      ctx.fillStyle = "#FF00FF";
+      ctx.fillStyle = "#EC4899";
       ctx.fillRect(meterX, meterY, meterWidth * intensityMultiplier / 2, meterHeight);
       
       // Meter border

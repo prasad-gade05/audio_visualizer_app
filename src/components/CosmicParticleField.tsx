@@ -57,26 +57,60 @@ export const CosmicParticleField = ({
     // Color based on position for flowing rivers of color
     const colorPhase =
       (x / dimensions.width + y / dimensions.height) * Math.PI * 2;
-    const r = Math.sin(colorPhase) * 127 + 128; // Purple to magenta
-    const g = Math.sin(colorPhase + Math.PI * 0.5) * 100 + 50; // Varying intensity
-    const b = Math.sin(colorPhase + Math.PI) * 127 + 128; // Cyan to blue
+    
+    // Use vibrant diverse colors instead of purple-dominated
+    const colorVariant = Math.floor(Math.random() * 6);
+    let r, g, b;
+    
+    switch(colorVariant) {
+      case 0: // Cyan-Teal
+        r = Math.sin(colorPhase) * 50 + 6;
+        g = Math.sin(colorPhase + Math.PI * 0.5) * 50 + 182;
+        b = Math.sin(colorPhase + Math.PI) * 50 + 212;
+        break;
+      case 1: // Emerald-Green
+        r = Math.sin(colorPhase) * 30 + 16;
+        g = Math.sin(colorPhase + Math.PI * 0.5) * 50 + 185;
+        b = Math.sin(colorPhase + Math.PI) * 50 + 129;
+        break;
+      case 2: // Amber-Orange
+        r = Math.sin(colorPhase) * 50 + 245;
+        g = Math.sin(colorPhase + Math.PI * 0.5) * 50 + 158;
+        b = Math.sin(colorPhase + Math.PI) * 30 + 11;
+        break;
+      case 3: // Coral-Pink
+        r = Math.sin(colorPhase) * 50 + 251;
+        g = Math.sin(colorPhase + Math.PI * 0.5) * 50 + 113;
+        b = Math.sin(colorPhase + Math.PI) * 50 + 133;
+        break;
+      case 4: // Pink-Rose
+        r = Math.sin(colorPhase) * 50 + 236;
+        g = Math.sin(colorPhase + Math.PI * 0.5) * 40 + 72;
+        b = Math.sin(colorPhase + Math.PI) * 50 + 153;
+        break;
+      default: // Violet-Purple
+        r = Math.sin(colorPhase) * 50 + 139;
+        g = Math.sin(colorPhase + Math.PI * 0.5) * 40 + 92;
+        b = Math.sin(colorPhase + Math.PI) * 50 + 246;
+        break;
+    }
 
     return {
       x,
       y,
-      vx: 0, // Start with no velocity - only audio will move particles
-      vy: 0, // Start with no velocity - only audio will move particles
+      vx: 0,
+      vy: 0,
       baseX: x,
       baseY: y,
       size: baseSize,
       baseSize,
-      opacity: baseOpacity * 0.3, // Start dimmed, audio will brighten them
+      opacity: baseOpacity * 0.3,
       baseOpacity,
       color: {
         r: Math.floor(r * 0.5),
         g: Math.floor(g * 0.5),
         b: Math.floor(b * 0.5),
-      }, // Start dimmed
+      },
       sparkleTime: 0,
     };
   };
@@ -235,17 +269,41 @@ export const CosmicParticleField = ({
         Math.PI *
         2;
 
-      particle.color.r = Math.floor(
-        (Math.sin(baseColorPhase) * 127 + 128) * (0.5 + bassInfluence * 0.5)
-      ); // Purple base with bass boost
-      particle.color.g = Math.floor(
-        (Math.sin(baseColorPhase + Math.PI * 0.5) * 100 + 50) *
-          (0.5 + midInfluence * 0.5)
-      ); // Magenta influence from mids
-      particle.color.b = Math.floor(
-        (Math.sin(baseColorPhase + Math.PI) * 127 + 128) *
-          (0.5 + trebleInfluence * 0.5)
-      ); // Cyan influence from treble
+      // Determine color variant based on particle index for diverse colors
+      const colorVariant = index % 6;
+      
+      switch(colorVariant) {
+        case 0: // Cyan-Teal
+          particle.color.r = Math.floor((Math.sin(baseColorPhase) * 50 + 6) * (0.5 + trebleInfluence * 0.5));
+          particle.color.g = Math.floor((Math.sin(baseColorPhase + Math.PI * 0.5) * 50 + 182) * (0.5 + midInfluence * 0.5));
+          particle.color.b = Math.floor((Math.sin(baseColorPhase + Math.PI) * 50 + 212) * (0.5 + bassInfluence * 0.5));
+          break;
+        case 1: // Emerald-Green
+          particle.color.r = Math.floor((Math.sin(baseColorPhase) * 30 + 16) * (0.5 + bassInfluence * 0.5));
+          particle.color.g = Math.floor((Math.sin(baseColorPhase + Math.PI * 0.5) * 50 + 185) * (0.5 + midInfluence * 0.5));
+          particle.color.b = Math.floor((Math.sin(baseColorPhase + Math.PI) * 50 + 129) * (0.5 + trebleInfluence * 0.5));
+          break;
+        case 2: // Amber-Orange
+          particle.color.r = Math.floor((Math.sin(baseColorPhase) * 50 + 245) * (0.5 + bassInfluence * 0.5));
+          particle.color.g = Math.floor((Math.sin(baseColorPhase + Math.PI * 0.5) * 50 + 158) * (0.5 + midInfluence * 0.5));
+          particle.color.b = Math.floor((Math.sin(baseColorPhase + Math.PI) * 30 + 11) * (0.5 + trebleInfluence * 0.5));
+          break;
+        case 3: // Coral-Pink
+          particle.color.r = Math.floor((Math.sin(baseColorPhase) * 50 + 251) * (0.5 + midInfluence * 0.5));
+          particle.color.g = Math.floor((Math.sin(baseColorPhase + Math.PI * 0.5) * 50 + 113) * (0.5 + bassInfluence * 0.5));
+          particle.color.b = Math.floor((Math.sin(baseColorPhase + Math.PI) * 50 + 133) * (0.5 + trebleInfluence * 0.5));
+          break;
+        case 4: // Pink-Rose
+          particle.color.r = Math.floor((Math.sin(baseColorPhase) * 50 + 236) * (0.5 + trebleInfluence * 0.5));
+          particle.color.g = Math.floor((Math.sin(baseColorPhase + Math.PI * 0.5) * 40 + 72) * (0.5 + bassInfluence * 0.5));
+          particle.color.b = Math.floor((Math.sin(baseColorPhase + Math.PI) * 50 + 153) * (0.5 + midInfluence * 0.5));
+          break;
+        default: // Violet-Purple
+          particle.color.r = Math.floor((Math.sin(baseColorPhase) * 50 + 139) * (0.5 + midInfluence * 0.5));
+          particle.color.g = Math.floor((Math.sin(baseColorPhase + Math.PI * 0.5) * 40 + 92) * (0.5 + trebleInfluence * 0.5));
+          particle.color.b = Math.floor((Math.sin(baseColorPhase + Math.PI) * 50 + 246) * (0.5 + bassInfluence * 0.5));
+          break;
+      }
     });
   };
 
@@ -311,22 +369,22 @@ export const CosmicParticleField = ({
     const barY = 10;
     const barX = dimensions.width - (barWidth * 3 + barSpacing * 2) - 10;
     
-    // Bass bar (purple)
-    ctx.fillStyle = "rgba(138, 66, 255, 0.3)";
+    // Bass bar (coral)
+    ctx.fillStyle = "rgba(251, 113, 133, 0.3)";
     ctx.fillRect(barX, barY, barWidth, barHeight);
-    ctx.fillStyle = "#8A42FF";
+    ctx.fillStyle = "#FB7185";
     ctx.fillRect(barX, barY, barWidth * bassLevel, barHeight);
     
-    // Mid bar (pink)
-    ctx.fillStyle = "rgba(255, 0, 255, 0.3)";
+    // Mid bar (emerald)
+    ctx.fillStyle = "rgba(16, 185, 129, 0.3)";
     ctx.fillRect(barX + barWidth + barSpacing, barY, barWidth, barHeight);
-    ctx.fillStyle = "#FF00FF";
+    ctx.fillStyle = "#10B981";
     ctx.fillRect(barX + barWidth + barSpacing, barY, barWidth * midLevel, barHeight);
     
-    // Treble bar (cyan)
-    ctx.fillStyle = "rgba(0, 255, 255, 0.3)";
+    // Treble bar (amber)
+    ctx.fillStyle = "rgba(245, 158, 11, 0.3)";
     ctx.fillRect(barX + (barWidth + barSpacing) * 2, barY, barWidth, barHeight);
-    ctx.fillStyle = "#00FFFF";
+    ctx.fillStyle = "#F59E0B";
     ctx.fillRect(barX + (barWidth + barSpacing) * 2, barY, barWidth * trebleLevel, barHeight);
     
     // Draw labels for frequency bars
@@ -362,11 +420,11 @@ export const CosmicParticleField = ({
     
     // Legend items
     ctx.font = "8px monospace";
-    ctx.fillStyle = "#8A42FF";
+    ctx.fillStyle = "#FB7185";
     ctx.fillText("• Bass Particles", legendX, legendY + 12);
-    ctx.fillStyle = "#FF00FF";
+    ctx.fillStyle = "#10B981";
     ctx.fillText("• Mid Particles", legendX, legendY + 22);
-    ctx.fillStyle = "#00FFFF";
+    ctx.fillStyle = "#F59E0B";
     ctx.fillText("• Treble Particles", legendX, legendY + 32);
     
     // Draw scale indicators

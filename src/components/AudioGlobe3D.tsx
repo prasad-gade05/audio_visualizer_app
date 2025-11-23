@@ -104,7 +104,7 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
     const colors = new Float32Array(particleCount * 3);
     const basePositions = new Float32Array(particleCount * 3);
 
-    const color1 = new THREE.Color("#8A42FF"); // Primary purple
+    const color1 = new THREE.Color("#06B6D4"); // Primary cyan
     
     for (let i = 0; i < particleCount; i++) {
       // Spherical distribution
@@ -124,10 +124,21 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
       basePositions[i * 3 + 1] = y;
       basePositions[i * 3 + 2] = z;
 
-      // Initial colors
-      colors[i * 3] = color1.r;
-      colors[i * 3 + 1] = color1.g;
-      colors[i * 3 + 2] = color1.b;
+      // Initial colors - distribute across color spectrum
+      const colorVariant = i % 6;
+      let color;
+      switch(colorVariant) {
+        case 0: color = new THREE.Color("#06B6D4"); break; // Cyan
+        case 1: color = new THREE.Color("#10B981"); break; // Emerald
+        case 2: color = new THREE.Color("#F59E0B"); break; // Amber
+        case 3: color = new THREE.Color("#FB7185"); break; // Coral
+        case 4: color = new THREE.Color("#EC4899"); break; // Pink
+        default: color = new THREE.Color("#8B5CF6"); break; // Violet
+      }
+      
+      colors[i * 3] = color.r;
+      colors[i * 3 + 1] = color.g;
+      colors[i * 3 + 2] = color.b;
     }
 
     geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
@@ -150,7 +161,7 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
     // Simplified Atmosphere
     const atmosphereGeo = new THREE.SphereGeometry(0.85, 24, 24); // Lower polygon count
     const atmosphereMat = new THREE.MeshBasicMaterial({
-      color: "#2a0a4a",
+      color: "#1e293b",
       transparent: true,
       opacity: 0.15,
       side: THREE.BackSide,
@@ -194,9 +205,28 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
         positions[ix3 + 1] = basePositions[ix3 + 1];
         positions[ix3 + 2] = basePositions[ix3 + 2];
         
-        colors[ix3] = 0.54; // Base purple R
-        colors[ix3 + 1] = 0.26; // Base purple G
-        colors[ix3 + 2] = 1.0; // Base purple B
+        // Reset to diverse base colors
+        const colorVariant = i % 6;
+        switch(colorVariant) {
+          case 0: // Cyan
+            colors[ix3] = 0.024; colors[ix3 + 1] = 0.714; colors[ix3 + 2] = 0.831;
+            break;
+          case 1: // Emerald
+            colors[ix3] = 0.063; colors[ix3 + 1] = 0.725; colors[ix3 + 2] = 0.506;
+            break;
+          case 2: // Amber
+            colors[ix3] = 0.961; colors[ix3 + 1] = 0.620; colors[ix3 + 2] = 0.043;
+            break;
+          case 3: // Coral
+            colors[ix3] = 0.984; colors[ix3 + 1] = 0.443; colors[ix3 + 2] = 0.522;
+            break;
+          case 4: // Pink
+            colors[ix3] = 0.925; colors[ix3 + 1] = 0.282; colors[ix3 + 2] = 0.600;
+            break;
+          default: // Violet
+            colors[ix3] = 0.545; colors[ix3 + 1] = 0.361; colors[ix3 + 2] = 0.965;
+            break;
+        }
       }
       particles.geometry.attributes.position.needsUpdate = true;
       particles.geometry.attributes.color.needsUpdate = true;
@@ -247,12 +277,42 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
           positions[ix3 + 1] = by * displacement;
           positions[ix3 + 2] = bz * displacement;
 
-          // Color logic
+          // Color logic with diverse spectrum
           const intensity = freqValue;
-          // Smoother gradient
-          colors[ix3] = 0.54 + (intensity * 0.3);     
-          colors[ix3 + 1] = 0.26 + (intensity * 0.6); 
-          colors[ix3 + 2] = 1.0 - (intensity * 0.2);
+          const colorVariant = i % 6;
+          
+          switch(colorVariant) {
+            case 0: // Cyan - brighten with intensity
+              colors[ix3] = 0.024 + (intensity * 0.5);
+              colors[ix3 + 1] = 0.714 + (intensity * 0.286);
+              colors[ix3 + 2] = 0.831 + (intensity * 0.169);
+              break;
+            case 1: // Emerald - brighten with intensity
+              colors[ix3] = 0.063 + (intensity * 0.4);
+              colors[ix3 + 1] = 0.725 + (intensity * 0.275);
+              colors[ix3 + 2] = 0.506 + (intensity * 0.3);
+              break;
+            case 2: // Amber - brighten with intensity
+              colors[ix3] = 0.961 + (intensity * 0.039);
+              colors[ix3 + 1] = 0.620 + (intensity * 0.38);
+              colors[ix3 + 2] = 0.043 + (intensity * 0.3);
+              break;
+            case 3: // Coral - brighten with intensity
+              colors[ix3] = 0.984 + (intensity * 0.016);
+              colors[ix3 + 1] = 0.443 + (intensity * 0.557);
+              colors[ix3 + 2] = 0.522 + (intensity * 0.478);
+              break;
+            case 4: // Pink - brighten with intensity
+              colors[ix3] = 0.925 + (intensity * 0.075);
+              colors[ix3 + 1] = 0.282 + (intensity * 0.5);
+              colors[ix3 + 2] = 0.600 + (intensity * 0.4);
+              break;
+            default: // Violet - brighten with intensity
+              colors[ix3] = 0.545 + (intensity * 0.455);
+              colors[ix3 + 1] = 0.361 + (intensity * 0.4);
+              colors[ix3 + 2] = 0.965 + (intensity * 0.035);
+              break;
+          }
         }
       }
 

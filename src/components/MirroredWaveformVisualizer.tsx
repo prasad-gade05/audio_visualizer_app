@@ -23,18 +23,13 @@ export const MirroredWaveformVisualizer = ({
   const createGradient = (ctx: CanvasRenderingContext2D, width: number) => {
     const gradient = ctx.createLinearGradient(0, 0, width, 0);
     
-    // Left side: Orange to Yellow
-    gradient.addColorStop(0, "#FFA500"); // Orange
-    gradient.addColorStop(0.2, "#FFFF00"); // Yellow
-    
-    // Center: Yellow to Magenta/Pink
-    gradient.addColorStop(0.4, "#FFFF00"); // Yellow
-    gradient.addColorStop(0.5, "#FF00FF"); // Magenta/Pink
-    
-    // Right side: Magenta to Deep Blue to Red
-    gradient.addColorStop(0.6, "#FF00FF"); // Magenta
-    gradient.addColorStop(0.8, "#0000FF"); // Deep Blue
-    gradient.addColorStop(1, "#FF0000"); // Red
+    gradient.addColorStop(0, "#06B6D4"); // Cyan
+    gradient.addColorStop(0.2, "#10B981"); // Emerald
+    gradient.addColorStop(0.4, "#F59E0B"); // Amber
+    gradient.addColorStop(0.5, "#FB7185"); // Coral
+    gradient.addColorStop(0.6, "#EC4899"); // Pink
+    gradient.addColorStop(0.8, "#8B5CF6"); // Violet
+    gradient.addColorStop(1, "#06B6D4"); // Back to Cyan
     
     return gradient;
   };
@@ -192,13 +187,13 @@ export const MirroredWaveformVisualizer = ({
     
     // Create horizontal gradient for legend
     const legendGradient = ctx.createLinearGradient(gradientLegendX, 0, gradientLegendX + gradientLegendWidth, 0);
-    legendGradient.addColorStop(0, "#FFA500"); // Orange
-    legendGradient.addColorStop(0.2, "#FFFF00"); // Yellow
-    legendGradient.addColorStop(0.4, "#FFFF00"); // Yellow
-    legendGradient.addColorStop(0.5, "#FF00FF"); // Magenta/Pink
-    legendGradient.addColorStop(0.6, "#FF00FF"); // Magenta
-    legendGradient.addColorStop(0.8, "#0000FF"); // Deep Blue
-    legendGradient.addColorStop(1, "#FF0000"); // Red
+    legendGradient.addColorStop(0, "#06B6D4"); // Cyan
+    legendGradient.addColorStop(0.2, "#10B981"); // Emerald
+    legendGradient.addColorStop(0.4, "#F59E0B"); // Amber
+    legendGradient.addColorStop(0.5, "#FB7185"); // Coral
+    legendGradient.addColorStop(0.6, "#EC4899"); // Pink
+    legendGradient.addColorStop(0.8, "#8B5CF6"); // Violet
+    legendGradient.addColorStop(1, "#06B6D4"); // Back to Cyan
     
     ctx.fillStyle = legendGradient;
     ctx.fillRect(gradientLegendX, gradientLegendY, gradientLegendWidth, gradientLegendHeight);
@@ -211,10 +206,10 @@ export const MirroredWaveformVisualizer = ({
     ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
     ctx.font = "8px monospace";
     ctx.textAlign = "center";
-    ctx.fillText("Orange", gradientLegendX + 10, gradientLegendY + gradientLegendHeight + 10);
-    ctx.fillText("Yellow", gradientLegendX + 30, gradientLegendY + gradientLegendHeight + 10);
-    ctx.fillText("Magenta", gradientLegendX + 50, gradientLegendY + gradientLegendHeight + 10);
-    ctx.fillText("Blue", gradientLegendX + 70, gradientLegendY + gradientLegendHeight + 10);
+    ctx.fillText("Cyan", gradientLegendX + 10, gradientLegendY + gradientLegendHeight + 10);
+    ctx.fillText("Emerald", gradientLegendX + 30, gradientLegendY + gradientLegendHeight + 10);
+    ctx.fillText("Coral", gradientLegendX + 50, gradientLegendY + gradientLegendHeight + 10);
+    ctx.fillText("Violet", gradientLegendX + 70, gradientLegendY + gradientLegendHeight + 10);
     
     // Draw intensity meter
     const meterWidth = 80;
@@ -227,7 +222,7 @@ export const MirroredWaveformVisualizer = ({
     ctx.fillRect(meterX, meterY, meterWidth, meterHeight);
     
     // Meter fill
-    ctx.fillStyle = "#FF00FF";
+    ctx.fillStyle = "#EC4899";
     ctx.fillRect(meterX, meterY, meterWidth * intensityMultiplier / 2, meterHeight);
     
     // Meter border
