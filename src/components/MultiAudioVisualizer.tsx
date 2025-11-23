@@ -451,14 +451,10 @@ export const MultiAudioVisualizer = ({
     ctx.fillStyle = config.backgroundColor || "#0D0B14";
     ctx.fillRect(0, 0, width, height);
 
-    // Pre-calculate colors once
-    const colorStart = config.color + "80";
-    const colorEnd = config.secondaryColor || config.color;
-
     ctx.lineWidth = 2;
 
     // Use batch path operations for better performance
-    const paths: { startX: number; startY: number; endX: number; endY: number; }[] = [];
+    const paths: { startX: number; startY: number; endX: number; endY: number; colorIndex: number; }[] = [];
     
     for (let i = 0; i < barCount; i++) {
       const value = data[i] / 255;
@@ -476,14 +472,27 @@ export const MultiAudioVisualizer = ({
         continue;
       }
 
-      paths.push({ startX, startY, endX, endY });
+      paths.push({ startX, startY, endX, endY, colorIndex: i });
     }
 
-    // Draw all paths with gradients (unavoidable for radial effect)
-    paths.forEach(({ startX, startY, endX, endY }) => {
+    // Color palette matching the app gradient (Cyan → Emerald → Amber → Coral → Pink → Violet)
+    const colorPalette = [
+      { start: "#06B6D4", end: "#10B981" }, // Cyan to Emerald
+      { start: "#10B981", end: "#F59E0B" }, // Emerald to Amber
+      { start: "#F59E0B", end: "#FB7185" }, // Amber to Coral
+      { start: "#FB7185", end: "#EC4899" }, // Coral to Pink
+      { start: "#EC4899", end: "#8B5CF6" }, // Pink to Violet
+      { start: "#8B5CF6", end: "#06B6D4" }, // Violet to Cyan
+    ];
+
+    // Draw all paths with rainbow gradients
+    paths.forEach(({ startX, startY, endX, endY, colorIndex }) => {
+      const colorVariant = colorIndex % 6;
+      const colors = colorPalette[colorVariant];
+      
       const gradient = ctx.createLinearGradient(startX, startY, endX, endY);
-      gradient.addColorStop(0, colorStart);
-      gradient.addColorStop(1, colorEnd);
+      gradient.addColorStop(0, colors.start + "80"); // Semi-transparent start
+      gradient.addColorStop(1, colors.end);
       ctx.strokeStyle = gradient;
       ctx.beginPath();
       ctx.moveTo(startX, startY);

@@ -278,7 +278,7 @@ export const AdvancedAudioAnalytics = ({
             </div>
             <ProgressBar 
               value={metrics.brightness} 
-              color="linear-gradient(90deg, #FFA500 0%, #FFD700 50%, #FFFF00 100%)" 
+              color="linear-gradient(90deg, #F59E0B 0%, #FB7185 50%, #EC4899 100%)" 
               height="h-1"
             />
           </div>
@@ -292,14 +292,14 @@ export const AdvancedAudioAnalytics = ({
                   <span className="text-gray-400">Clarity</span>
                   <span className="font-mono text-gray-300">{metrics.clarity}%</span>
                 </div>
-                <ProgressBar value={metrics.clarity} color="#4F46E5" height="h-0.5" />
+                <ProgressBar value={metrics.clarity} color="#06B6D4" height="h-0.5" />
               </div>
               <div>
                 <div className="flex justify-between text-[9px] mb-0.5">
                   <span className="text-gray-400">Richness</span>
                   <span className="font-mono text-gray-300">{metrics.richness}%</span>
                 </div>
-                <ProgressBar value={metrics.richness} color="#7C3AED" height="h-0.5" />
+                <ProgressBar value={metrics.richness} color="#10B981" height="h-0.5" />
               </div>
               <div>
                 <div className="flex justify-between text-[9px] mb-0.5">
@@ -313,7 +313,7 @@ export const AdvancedAudioAnalytics = ({
                   <span className="text-gray-400">Brightness</span>
                   <span className="font-mono text-gray-300">100%</span>
                 </div>
-                <ProgressBar value={100} color="#EC4899" height="h-0.5" />
+                <ProgressBar value={100} color="#FB7185" height="h-0.5" />
               </div>
             </div>
           </div>
@@ -349,7 +349,7 @@ export const AdvancedAudioAnalytics = ({
                     <span className="text-gray-500">20-250Hz</span>
                   </div>
                 </div>
-                <ProgressBar value={metrics.bassLevel} color="#8B5CF6" height="h-1" />
+                <ProgressBar value={metrics.bassLevel} color="linear-gradient(90deg, #EC4899 0%, #8B5CF6 100%)" height="h-1" />
               </div>
               
               <div>
@@ -360,7 +360,7 @@ export const AdvancedAudioAnalytics = ({
                     <span className="text-gray-500">250-4kHz</span>
                   </div>
                 </div>
-                <ProgressBar value={metrics.midLevel} color="#10B981" height="h-1" />
+                <ProgressBar value={metrics.midLevel} color="linear-gradient(90deg, #10B981 0%, #F59E0B 100%)" height="h-1" />
               </div>
               
               <div>
@@ -371,7 +371,7 @@ export const AdvancedAudioAnalytics = ({
                     <span className="text-gray-500">4-20kHz</span>
                   </div>
                 </div>
-                <ProgressBar value={metrics.trebleLevel} color="#06B6D4" height="h-1" />
+                <ProgressBar value={metrics.trebleLevel} color="linear-gradient(90deg, #06B6D4 0%, #10B981 100%)" height="h-1" />
               </div>
             </div>
           </div>
