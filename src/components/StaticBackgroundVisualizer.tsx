@@ -24,15 +24,27 @@ export const StaticBackgroundVisualizer = () => {
     const bars = 40;
     const waves = 2;
 
-    // Create particles
-    const particles = Array.from({ length: particleCount }, () => ({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      size: Math.random() * 2 + 1,
-      speedX: (Math.random() - 0.5) * 0.3,
-      speedY: (Math.random() - 0.5) * 0.3,
-      hue: Math.random() * 60 + 250, // Purple to pink range
-    }));
+    // Create particles with diverse colors
+    const particles = Array.from({ length: particleCount }, (_, i) => {
+      const colorVariant = i % 6;
+      let hue;
+      switch(colorVariant) {
+        case 0: hue = 187; break; // Cyan
+        case 1: hue = 158; break; // Emerald
+        case 2: hue = 38; break;  // Amber
+        case 3: hue = 351; break; // Coral
+        case 4: hue = 330; break; // Pink
+        default: hue = 258; break; // Violet
+      }
+      return {
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 2 + 1,
+        speedX: (Math.random() - 0.5) * 0.3,
+        speedY: (Math.random() - 0.5) * 0.3,
+        hue,
+      };
+    });
 
     // Create frequency bars
     const barData = Array.from({ length: bars }, (_, i) => ({
@@ -90,9 +102,18 @@ export const StaticBackgroundVisualizer = () => {
         const height = bar.height * canvas.height * 0.4;
         const y = canvas.height - height;
 
-        // Gradient for bars
+        // Gradient for bars with diverse colors
         const gradient = ctx.createLinearGradient(x, y, x, canvas.height);
-        const hue = 260 + (bar.index / bars) * 60;
+        const colorVariant = bar.index % 6;
+        let hue;
+        switch(colorVariant) {
+          case 0: hue = 187; break; // Cyan
+          case 1: hue = 158; break; // Emerald
+          case 2: hue = 38; break;  // Amber
+          case 3: hue = 351; break; // Coral
+          case 4: hue = 330; break; // Pink
+          default: hue = 258; break; // Violet
+        }
         gradient.addColorStop(0, `hsla(${hue}, 70%, 60%, 0.2)`);
         gradient.addColorStop(1, `hsla(${hue}, 70%, 60%, 0.05)`);
 
@@ -114,7 +135,7 @@ export const StaticBackgroundVisualizer = () => {
           ctx.lineTo(x, y);
         }
 
-        ctx.strokeStyle = `hsla(280, 70%, 60%, 0.15)`;
+        ctx.strokeStyle = `hsla(180, 70%, 60%, 0.15)`;
         ctx.lineWidth = 2;
         ctx.stroke();
       });
@@ -136,7 +157,7 @@ export const StaticBackgroundVisualizer = () => {
         ctx.moveTo(x1, y1);
         ctx.lineTo(x2, y2);
       }
-      ctx.strokeStyle = `hsla(270, 70%, 60%, 0.2)`;
+      ctx.strokeStyle = `hsla(200, 70%, 60%, 0.2)`;
       ctx.lineWidth = 2;
       ctx.stroke();
 

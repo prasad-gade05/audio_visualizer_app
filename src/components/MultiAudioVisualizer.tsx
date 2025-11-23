@@ -15,7 +15,7 @@ const hexToRgb = (hex: string) => {
         g: parseInt(result[2], 16),
         b: parseInt(result[3], 16),
       }
-    : { r: 138, g: 66, b: 255 };
+    : { r: 16, g: 185, b: 129 }; // Default to emerald
 };
 
 interface MultiAudioVisualizerProps {
@@ -282,25 +282,55 @@ export const MultiAudioVisualizer = ({
     ctx.fillStyle = config.backgroundColor || "#0D0B14";
     ctx.fillRect(0, 0, width, height);
 
-    // Optimization: Cache gradient for reuse
-    const gradientKey = `bars-${width}-${height}-${config.color}-${config.secondaryColor}`;
-    let gradient = gradientCacheRef.current[gradientKey];
-    if (!gradient) {
-      gradient = ctx.createLinearGradient(0, height, 0, 0);
-      gradient.addColorStop(0, config.color);
-      gradient.addColorStop(1, config.secondaryColor || config.color + "40");
-      gradientCacheRef.current[gradientKey] = gradient;
-    }
-    ctx.fillStyle = gradient;
-
-    // Batch draw operations
-    ctx.beginPath();
+    // Draw each bar with its own gradient from the color palette
     for (let i = 0; i < barCount; i++) {
       const value = data[i * dataStep] / 255;
-      const barHeight = value * height * config.sensitivity;
-      ctx.rect(i * barWidth, height - barHeight, barWidth - 1, barHeight);
+      const sensitivity = isFinite(config.sensitivity) ? config.sensitivity : 1;
+      const barHeight = Math.max(0, Math.min(value * height * sensitivity, height));
+
+      // Skip if barHeight is not valid
+      if (!isFinite(barHeight) || barHeight <= 0) {
+        continue;
+      }
+
+      // Each bar gets a color from the palette based on its position
+      const colorVariant = i % 6;
+      let bottomColor, topColor;
+      
+      switch(colorVariant) {
+        case 0: // Cyan to Emerald
+          bottomColor = "#06B6D4";
+          topColor = "#10B981";
+          break;
+        case 1: // Emerald to Amber
+          bottomColor = "#10B981";
+          topColor = "#F59E0B";
+          break;
+        case 2: // Amber to Coral
+          bottomColor = "#F59E0B";
+          topColor = "#FB7185";
+          break;
+        case 3: // Coral to Pink
+          bottomColor = "#FB7185";
+          topColor = "#EC4899";
+          break;
+        case 4: // Pink to Violet
+          bottomColor = "#EC4899";
+          topColor = "#8B5CF6";
+          break;
+        default: // Violet to Cyan
+          bottomColor = "#8B5CF6";
+          topColor = "#06B6D4";
+          break;
+      }
+
+      const gradient = ctx.createLinearGradient(0, height, 0, height - barHeight);
+      gradient.addColorStop(0, bottomColor);
+      gradient.addColorStop(1, topColor);
+      
+      ctx.fillStyle = gradient;
+      ctx.fillRect(i * barWidth, height - barHeight, barWidth - 1, barHeight);
     }
-    ctx.fill();
 
     // Add graph scales and legend for multi-visualization mode
     // Find peak frequency
@@ -346,7 +376,7 @@ export const MultiAudioVisualizer = ({
     }
     const rms = Math.sqrt(rmsSum / data.length);
     
-    // Draw small RMS meter with scale
+    // Draw small RMS meter with colorful gradient
     const meterWidth = 40;
     const meterHeight = 4;
     const meterX = width - meterWidth - 5;
@@ -355,7 +385,12 @@ export const MultiAudioVisualizer = ({
     ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
     ctx.fillRect(meterX, meterY, meterWidth, meterHeight);
     
-    ctx.fillStyle = config.color;
+    // Meter fill with gradient
+    const meterGradient = ctx.createLinearGradient(meterX, 0, meterX + meterWidth, 0);
+    meterGradient.addColorStop(0, "#06B6D4");
+    meterGradient.addColorStop(0.5, "#F59E0B");
+    meterGradient.addColorStop(1, "#EC4899");
+    ctx.fillStyle = meterGradient;
     ctx.fillRect(meterX, meterY, meterWidth * rms, meterHeight);
     
     // Draw meter scale
@@ -365,23 +400,33 @@ export const MultiAudioVisualizer = ({
     ctx.fillText("0", meterX, meterY + meterHeight + 6);
     ctx.fillText("1", meterX + meterWidth, meterY + meterHeight + 6);
     
-    // Draw legend
+    // Draw legend with color spectrum
     ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-    ctx.fillRect(5, 5, 60, 25);
+    ctx.fillRect(5, 5, 65, 30);
     ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
     ctx.lineWidth = 1;
-    ctx.strokeRect(5, 5, 60, 25);
+    ctx.strokeRect(5, 5, 65, 30);
     
     ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
     ctx.font = "bold 8px monospace";
     ctx.textAlign = "left";
     ctx.fillText("Freq. Bars", 8, 15);
     
+    // Draw mini color spectrum
+    const spectrumBarWidth = 8;
+    const spectrumBarHeight = 3;
+    const spectrumX = 8;
+    const spectrumY = 20;
+    
+    const colors = ["#06B6D4", "#10B981", "#F59E0B", "#FB7185", "#EC4899", "#8B5CF6"];
+    colors.forEach((color, idx) => {
+      ctx.fillStyle = color;
+      ctx.fillRect(spectrumX + idx * (spectrumBarWidth + 1), spectrumY, spectrumBarWidth, spectrumBarHeight);
+    });
+    
+    ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
     ctx.font = "6px monospace";
-    ctx.fillStyle = config.color;
-    ctx.fillText("• Current", 8, 22);
-    ctx.fillStyle = config.secondaryColor || config.color + "40";
-    ctx.fillText("• Gradient", 8, 29);
+    ctx.fillText("6 Colors", 8, spectrumY + spectrumBarHeight + 7);
   };
 
   const drawCircular = (
@@ -780,22 +825,22 @@ export const MultiAudioVisualizer = ({
     const barSpacing = 3;
     const barY = 5;
     
-    // Bass bar (purple)
-    ctx.fillStyle = "rgba(138, 66, 255, 0.3)";
+    // Bass bar (coral)
+    ctx.fillStyle = "rgba(251, 113, 133, 0.3)";
     ctx.fillRect(5, barY, barWidth, barHeight);
-    ctx.fillStyle = "#8A42FF";
+    ctx.fillStyle = "#FB7185";
     ctx.fillRect(5, barY, barWidth * bassLevel, barHeight);
     
-    // Mid bar (green)
-    ctx.fillStyle = "rgba(0, 255, 128, 0.3)";
+    // Mid bar (emerald)
+    ctx.fillStyle = "rgba(16, 185, 129, 0.3)";
     ctx.fillRect(5, barY + barHeight + barSpacing, barWidth, barHeight);
-    ctx.fillStyle = "#00FF80";
+    ctx.fillStyle = "#10B981";
     ctx.fillRect(5, barY + barHeight + barSpacing, barWidth * midLevel, barHeight);
     
-    // Treble bar (cyan)
-    ctx.fillStyle = "rgba(0, 209, 255, 0.3)";
+    // Treble bar (amber)
+    ctx.fillStyle = "rgba(245, 158, 11, 0.3)";
     ctx.fillRect(5, barY + (barHeight + barSpacing) * 2, barWidth, barHeight);
-    ctx.fillStyle = "#00D1FF";
+    ctx.fillStyle = "#F59E0B";
     ctx.fillRect(5, barY + (barHeight + barSpacing) * 2, barWidth * trebleLevel, barHeight);
     
     // Draw legend
@@ -811,9 +856,9 @@ export const MultiAudioVisualizer = ({
     ctx.fillText("Particles", width - 62, 15);
     
     ctx.font = "6px monospace";
-    ctx.fillStyle = "#8A42FF";
+    ctx.fillStyle = "#FB7185";
     ctx.fillText("• Bass", width - 62, 22);
-    ctx.fillStyle = "#00FF80";
+    ctx.fillStyle = "#10B981";
     ctx.fillText("• Mid", width - 62, 29);
   };
 
@@ -844,13 +889,13 @@ export const MultiAudioVisualizer = ({
     let gradient = gradientCacheRef.current[gradientKey];
     if (!gradient) {
       gradient = ctx.createLinearGradient(0, 0, width, 0);
-      gradient.addColorStop(0, "#FFA500");
-      gradient.addColorStop(0.2, "#FFFF00");
-      gradient.addColorStop(0.4, "#FFFF00");
-      gradient.addColorStop(0.5, "#FF00FF");
-      gradient.addColorStop(0.6, "#FF00FF");
-      gradient.addColorStop(0.8, "#0000FF");
-      gradient.addColorStop(1, "#FF0000");
+      gradient.addColorStop(0, "#06B6D4");   // Cyan
+      gradient.addColorStop(0.2, "#10B981"); // Emerald
+      gradient.addColorStop(0.4, "#F59E0B"); // Amber
+      gradient.addColorStop(0.5, "#FB7185"); // Coral
+      gradient.addColorStop(0.6, "#EC4899"); // Pink
+      gradient.addColorStop(0.8, "#8B5CF6"); // Violet
+      gradient.addColorStop(1, "#06B6D4");   // Back to Cyan
       gradientCacheRef.current[gradientKey] = gradient;
     }
     
@@ -908,7 +953,7 @@ export const MultiAudioVisualizer = ({
     ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
     ctx.fillRect(meterX, meterY, meterWidth, meterHeight);
     
-    ctx.fillStyle = "#FF00FF";
+    ctx.fillStyle = "#EC4899";
     ctx.fillRect(meterX, meterY, meterWidth * intensityMultiplier / 2, meterHeight);
     
     // Draw meter scale
@@ -938,9 +983,10 @@ export const MultiAudioVisualizer = ({
     
     // Create horizontal gradient for legend
     const legendGradient = ctx.createLinearGradient(gradientLegendX, 0, gradientLegendX + gradientLegendWidth, 0);
-    legendGradient.addColorStop(0, "#FFA500"); // Orange
-    legendGradient.addColorStop(0.5, "#FF00FF"); // Magenta
-    legendGradient.addColorStop(1, "#0000FF"); // Blue
+    legendGradient.addColorStop(0, "#06B6D4");   // Cyan
+    legendGradient.addColorStop(0.33, "#10B981"); // Emerald
+    legendGradient.addColorStop(0.66, "#FB7185"); // Coral
+    legendGradient.addColorStop(1, "#8B5CF6");   // Violet
     
     ctx.fillStyle = legendGradient;
     ctx.fillRect(gradientLegendX, gradientLegendY, gradientLegendWidth, gradientLegendHeight);

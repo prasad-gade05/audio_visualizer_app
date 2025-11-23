@@ -67,14 +67,45 @@ export const AudioVisualizer = ({
       const value = data[i * dataStep] / 255;
       const barHeight = value * height * config.sensitivity;
 
+      // Each bar gets a color from the palette based on its position
+      const colorVariant = i % 6;
+      let bottomColor, topColor;
+      
+      switch(colorVariant) {
+        case 0: // Cyan to Emerald
+          bottomColor = "#06B6D4";
+          topColor = "#10B981";
+          break;
+        case 1: // Emerald to Amber
+          bottomColor = "#10B981";
+          topColor = "#F59E0B";
+          break;
+        case 2: // Amber to Coral
+          bottomColor = "#F59E0B";
+          topColor = "#FB7185";
+          break;
+        case 3: // Coral to Pink
+          bottomColor = "#FB7185";
+          topColor = "#EC4899";
+          break;
+        case 4: // Pink to Violet
+          bottomColor = "#EC4899";
+          topColor = "#8B5CF6";
+          break;
+        default: // Violet to Cyan
+          bottomColor = "#8B5CF6";
+          topColor = "#06B6D4";
+          break;
+      }
+
       const gradient = ctx.createLinearGradient(
         0,
         height,
         0,
         height - barHeight
       );
-      gradient.addColorStop(0, config.color);
-      gradient.addColorStop(1, config.secondaryColor || config.color + "40");
+      gradient.addColorStop(0, bottomColor);
+      gradient.addColorStop(1, topColor);
 
       ctx.fillStyle = gradient;
       ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, barHeight);
@@ -170,10 +201,10 @@ export const AudioVisualizer = ({
       
       // Legend background
       ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
-      ctx.fillRect(legendX - 5, legendY - 15, 120, 60);
+      ctx.fillRect(legendX - 5, legendY - 15, 120, 80);
       ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
       ctx.lineWidth = 1;
-      ctx.strokeRect(legendX - 5, legendY - 15, 120, 60);
+      ctx.strokeRect(legendX - 5, legendY - 15, 120, 80);
       
       // Legend title
       ctx.fillStyle = "rgba(255, 255, 255, 0.9)";
@@ -181,12 +212,42 @@ export const AudioVisualizer = ({
       ctx.textAlign = "left";
       ctx.fillText("Frequency Bars", legendX, legendY);
       
-      // Legend items
-      ctx.font = "10px monospace";
-      ctx.fillStyle = config.color;
-      ctx.fillText("• Current", legendX, legendY + 15);
-      ctx.fillStyle = config.secondaryColor || config.color + "40";
-      ctx.fillText("• Gradient", legendX, legendY + 28);
+      // Show color spectrum with small bars
+      ctx.font = "9px monospace";
+      const colorPairs = [
+        { name: "Cyan→Emerald", bottom: "#06B6D4", top: "#10B981" },
+        { name: "Emerald→Amber", bottom: "#10B981", top: "#F59E0B" },
+        { name: "Amber→Coral", bottom: "#F59E0B", top: "#FB7185" },
+        { name: "Coral→Pink", bottom: "#FB7185", top: "#EC4899" },
+        { name: "Pink→Violet", bottom: "#EC4899", top: "#8B5CF6" },
+        { name: "Violet→Cyan", bottom: "#8B5CF6", top: "#06B6D4" }
+      ];
+      
+      // Draw compact color spectrum
+      const spectrumBarWidth = 15;
+      const spectrumBarHeight = 8;
+      const spectrumY = legendY + 15;
+      
+      colorPairs.forEach((pair, idx) => {
+        const x = legendX + (idx % 3) * (spectrumBarWidth + 5);
+        const y = spectrumY + Math.floor(idx / 3) * (spectrumBarHeight + 10);
+        
+        const gradient = ctx.createLinearGradient(x, y + spectrumBarHeight, x, y);
+        gradient.addColorStop(0, pair.bottom);
+        gradient.addColorStop(1, pair.top);
+        
+        ctx.fillStyle = gradient;
+        ctx.fillRect(x, y, spectrumBarWidth, spectrumBarHeight);
+        
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+        ctx.lineWidth = 0.5;
+        ctx.strokeRect(x, y, spectrumBarWidth, spectrumBarHeight);
+      });
+      
+      ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
+      ctx.font = "8px monospace";
+      ctx.textAlign = "left";
+      ctx.fillText("6 Color Gradients", legendX, spectrumY + spectrumBarHeight * 2 + 20);
       
       // Draw RMS level indicator
       let rmsSum = 0;
@@ -200,14 +261,18 @@ export const AudioVisualizer = ({
       const meterWidth = 80;
       const meterHeight = 10;
       const meterX = legendX;
-      const meterY = legendY + 35;
+      const meterY = legendY + 55;
       
       // Meter background
       ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
       ctx.fillRect(meterX, meterY, meterWidth, meterHeight);
       
-      // Meter fill
-      ctx.fillStyle = config.color;
+      // Meter fill with gradient
+      const meterGradient = ctx.createLinearGradient(meterX, 0, meterX + meterWidth, 0);
+      meterGradient.addColorStop(0, "#06B6D4");
+      meterGradient.addColorStop(0.5, "#F59E0B");
+      meterGradient.addColorStop(1, "#EC4899");
+      ctx.fillStyle = meterGradient;
       ctx.fillRect(meterX, meterY, meterWidth * rms, meterHeight);
       
       // Meter border
