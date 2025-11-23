@@ -3,7 +3,6 @@ import {
   ArrowLeft,
   Play,
   Pause,
-  Volume2,
   SkipBack,
   SkipForward,
   Settings,
@@ -63,7 +62,6 @@ export const MultiPlayerView = ({
   onMultiVisualizationConfigChange,
 }: MultiPlayerViewProps) => {
   const [controlsVisible, setControlsVisible] = useState(true);
-  const [volumeVisible, setVolumeVisible] = useState(false);
   const [hideTimeout, setHideTimeout] = useState<NodeJS.Timeout | null>(null);
 
   const formatTime = (time: number) => {
@@ -85,10 +83,6 @@ export const MultiPlayerView = ({
 
   const handleSeek = (value: number[]) => {
     if (onSeek) onSeek(value[0]);
-  };
-
-  const handleVolumeChange = (value: number[]) => {
-    if (onVolumeChange) onVolumeChange(value[0] / 100);
   };
 
   useEffect(() => {
@@ -117,7 +111,7 @@ export const MultiPlayerView = ({
       <div 
         className="relative overflow-hidden transition-all duration-300 ease-in-out"
         style={{
-          height: controlsVisible ? 'calc(100vh - 5rem)' : '100vh'
+          height: controlsVisible ? 'calc(100vh - 3.5rem)' : '100vh'
         }}
       >
         <MultiAudioVisualizer
@@ -130,91 +124,81 @@ export const MultiPlayerView = ({
 
       {/* Control Bar - Slides in from bottom */}
       <div 
-        className={`absolute bottom-0 left-0 right-0 h-20 glass z-30 flex items-center justify-between px-6 py-2 transition-transform duration-300 ${
+        className={`absolute bottom-0 left-0 right-0 h-14 glass z-30 flex items-center justify-between px-4 py-1.5 transition-transform duration-300 ${
           controlsVisible ? "translate-y-0" : "translate-y-full"
         }`}
         style={{ 
-          borderTop: "1px solid rgba(255,255,255,0.1)",
-          backgroundColor: "rgba(15, 15, 15, 0.95)",
-          backdropFilter: "blur(12px)"
+          borderTop: "1px solid rgba(255,255,255,0.05)",
+          backgroundColor: "rgba(10, 10, 10, 0.9)",
+          backdropFilter: "blur(8px)"
         }}
       >
         {/* Left: Info & Back */}
-        <div className="flex items-center gap-4 min-w-[200px] w-1/4">
+        <div className="flex items-center gap-2 min-w-[150px] w-1/4">
           <button
             onClick={(mode === "system" || mode === "microphone") && isCapturing ? onStop : onBack}
-            className="glass-interactive p-2 hover:scale-105 smooth-transition flex-shrink-0 rounded-full"
+            className="p-1.5 hover:scale-105 smooth-transition flex-shrink-0 rounded-full opacity-70 hover:opacity-100"
             title="Back"
-            style={{ backgroundColor: 'rgba(20, 20, 20, 0.95)', borderColor: 'rgba(64, 64, 64, 0.3)' }}
+            style={{ backgroundColor: 'rgba(20, 20, 20, 0.6)' }}
           >
             <ArrowLeft
-              className="w-5 h-5"
+              className="w-4 h-4"
               style={{ color: "#93c5fd" }}
             />
           </button>
 
           <div className="flex-1 min-w-0 overflow-hidden">
             <p
-              className="text-sm font-medium truncate"
+              className="text-xs font-medium truncate"
               style={{ color: "#ffffff" }}
             >
               {mode === "file"
                 ? fileName || "Unknown Track"
                 : mode === "system"
                 ? "System Audio"
-                : "Microphone Input"}
-            </p>
-            <p
-              className="text-xs truncate opacity-70"
-              style={{ color: "var(--color-text-secondary)" }}
-            >
-              {mode === "microphone" 
-                ? "Recording..." 
-                : mode === "system" 
-                ? "Capturing..." 
-                : "Playing"}
+                : "Microphone"}
             </p>
           </div>
         </div>
 
         {/* Center: Player / Mic Controls */}
-        <div className="flex-1 flex justify-center items-center max-w-2xl px-4">
+        <div className="flex-1 flex justify-center items-center max-w-2xl px-2">
           {mode === "file" && audioState && (
-            <div className="flex items-center gap-4 w-full">
+            <div className="flex items-center gap-2 w-full">
               {/* Time */}
-              <span className="text-xs font-mono opacity-70 w-10 text-right">
+              <span className="text-xs font-mono opacity-50 w-9 text-right">
                 {formatTime(audioState.currentTime)}
               </span>
 
               {/* Controls */}
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <button
                   onClick={() => onSeek && onSeek(Math.max(0, audioState.currentTime - 10))}
-                  className="p-2 hover:text-white opacity-70 hover:opacity-100 transition-opacity"
+                  className="p-1 hover:text-white opacity-50 hover:opacity-100 transition-opacity"
                   style={{ color: "#a78bfa" }}
                 >
-                  <SkipBack className="w-4 h-4" />
+                  <SkipBack className="w-3.5 h-3.5" />
                 </button>
                 <button
                   onClick={audioState.isPlaying ? onPause : onPlay}
-                  className="w-10 h-10 rounded-full flex items-center justify-center hover:scale-105 smooth-transition"
+                  className="w-8 h-8 rounded-full flex items-center justify-center hover:scale-105 smooth-transition"
                   style={{
                     background: `linear-gradient(135deg, var(--color-primary), var(--color-secondary))`,
-                    boxShadow: "var(--box-shadow-glow-sm)",
+                    boxShadow: "0 0 8px rgba(99, 102, 241, 0.3)",
                   }}
                 >
                   {audioState.isPlaying ? (
-                    <Pause className="w-5 h-5 text-white" />
+                    <Pause className="w-4 h-4 text-white" />
                   ) : (
-                    <Play className="w-5 h-5 text-white ml-1" />
+                    <Play className="w-4 h-4 text-white ml-0.5" />
                   )}
                 </button>
                 <button
                   onClick={() => onSeek && onSeek(Math.min(audioState.duration, audioState.currentTime + 10))}
-                  className="p-2 hover:text-white opacity-70 hover:opacity-100 transition-opacity"
+                  className="p-1 hover:text-white opacity-50 hover:opacity-100 transition-opacity"
                   style={{ color: "#a78bfa" }}
                 >
-                  <SkipForward className="w-4 h-4" />
+                  <SkipForward className="w-3.5 h-3.5" />
                 </button>
               </div>
 
@@ -230,43 +214,18 @@ export const MultiPlayerView = ({
               </div>
 
               {/* Duration */}
-              <span className="text-xs font-mono opacity-70 w-10">
+              <span className="text-xs font-mono opacity-50 w-9">
                 {formatTime(audioState.duration)}
               </span>
-
-              {/* Volume */}
-              <div className="relative group">
-                <button
-                  onClick={() => setVolumeVisible(!volumeVisible)}
-                  className="p-2 hover:text-white opacity-70 hover:opacity-100 transition-opacity"
-                  style={{ color: "#fbbf24" }}
-                >
-                  <Volume2 className="w-5 h-5" />
-                </button>
-                
-                {/* Hover Volume Slider */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block hover:block">
-                   <div className="glass p-3 h-32 flex flex-col items-center rounded-lg">
-                      <Slider
-                        orientation="vertical"
-                        value={[audioState.volume * 100]}
-                        max={100}
-                        step={1}
-                        onValueChange={handleVolumeChange}
-                        className="h-24"
-                      />
-                   </div>
-                </div>
-              </div>
             </div>
           )}
 
           {mode === "microphone" && (
-            <div className="flex items-center gap-6 w-full max-w-md">
+            <div className="flex items-center gap-3 w-full max-w-md">
                {/* Level Meter */}
-               <div className="flex-1 flex items-center gap-3">
-                  <Mic className="w-4 h-4 opacity-70" style={{ color: "#34d399" }} />
-                  <div className="flex-1 h-1.5 bg-white/10 rounded-full overflow-hidden">
+               <div className="flex-1 flex items-center gap-2">
+                  <Mic className="w-3.5 h-3.5 opacity-50" style={{ color: "#34d399" }} />
+                  <div className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
                     <div
                       className="h-full transition-all duration-100"
                       style={{
@@ -281,21 +240,18 @@ export const MultiPlayerView = ({
                <Popover>
                  <PopoverTrigger asChild>
                    <button 
-                     className="px-3 py-1.5 text-xs flex items-center gap-2 rounded-full border"
+                     className="px-2 py-1 text-xs flex items-center gap-1.5 rounded-full opacity-70 hover:opacity-100"
                      style={{ 
-                       backgroundColor: 'rgba(20, 20, 20, 0.95)', 
-                       borderColor: 'rgba(64, 64, 64, 0.3)',
-                       color: '#ffffff',
-                       backdropFilter: 'blur(12px)'
+                       backgroundColor: 'rgba(20, 20, 20, 0.6)', 
+                       color: '#ffffff'
                      }}
                    >
                      <Settings className="w-3 h-3" style={{ color: '#f472b6' }} />
-                     <span style={{ color: '#ffffff' }}>Settings</span>
                    </button>
                  </PopoverTrigger>
-                 <PopoverContent className="w-64 p-4" side="top" style={{ backgroundColor: 'rgba(15, 15, 15, 0.95)', borderColor: 'rgba(64, 64, 64, 0.3)', backdropFilter: 'blur(12px)' }}>
-                   <div className="space-y-4">
-                     <div className="space-y-2">
+                 <PopoverContent className="w-56 p-3" side="top" style={{ backgroundColor: 'rgba(15, 15, 15, 0.95)', borderColor: 'rgba(64, 64, 64, 0.3)', backdropFilter: 'blur(12px)' }}>
+                   <div className="space-y-3">
+                     <div className="space-y-1.5">
                        <div className="flex justify-between text-xs" style={{ color: '#ffffff' }}>
                          <span>Sensitivity</span>
                          <span>{Math.round((sensitivity || 1) * 100)}%</span>
@@ -306,7 +262,7 @@ export const MultiPlayerView = ({
                          min={0.1} max={3} step={0.1}
                        />
                      </div>
-                     <div className="space-y-2">
+                     <div className="space-y-1.5">
                        <div className="flex justify-between text-xs" style={{ color: '#ffffff' }}>
                          <span>Noise Gate</span>
                          <span>{Math.round((noiseGate || 0) * 100)}%</span>

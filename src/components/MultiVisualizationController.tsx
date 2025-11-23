@@ -1,4 +1,4 @@
-import { BarChart3, Circle, Waves, Sparkles, Eye, EyeOff, Activity, TrendingUp, Globe } from "lucide-react";
+import { BarChart3, Circle, Waves, Sparkles, Activity, TrendingUp, Globe } from "lucide-react";
 import { MultiVisualizationConfig } from "@/types/audio";
 
 interface MultiVisualizationControllerProps {
@@ -41,8 +41,7 @@ export const MultiVisualizationController = ({
       }`}
     >
       <div
-        className="glass p-3 flex gap-2"
-        style={{ boxShadow: "var(--box-shadow-glow-sm)" }}
+        className="flex gap-1"
       >
         {/* Toggle Controls */}
         {visualizationTypes.map(({ type, icon: Icon, label, color }) => {
@@ -51,51 +50,26 @@ export const MultiVisualizationController = ({
             <button
               key={type}
               onClick={() => toggleVisualization(type)}
-              className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 hover:scale-110 relative ${
+              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 hover:scale-110 ${
                 isEnabled
-                  ? "glass-interactive"
-                  : "glass-interactive opacity-40 hover:opacity-70"
+                  ? ""
+                  : "opacity-30 hover:opacity-60"
               }`}
               style={{
-                boxShadow: isEnabled ? `0 0 16px ${color}40` : undefined,
-                borderColor: isEnabled ? `${color}80` : "var(--color-border)",
+                boxShadow: isEnabled ? `0 0 8px ${color}30` : undefined,
                 background: isEnabled
-                  ? `linear-gradient(135deg, ${color}30, ${color}15)`
-                  : "rgba(20, 20, 20, 0.6)",
+                  ? `linear-gradient(135deg, ${color}25, ${color}10)`
+                  : "rgba(20, 20, 20, 0.4)",
               }}
-              title={`${label} - ${isEnabled ? "Enabled" : "Disabled"}`}
+              title={`${label}`}
             >
               <Icon
-                className="w-6 h-6"
+                className="w-4 h-4"
                 style={{
                   color: color,
                   opacity: isEnabled ? 1 : 0.5,
                 }}
               />
-
-              {/* Status indicator */}
-              <div
-                className={`absolute -top-1 -right-1 w-3 h-3 rounded-full transition-all duration-300 ${
-                  isEnabled ? "opacity-100" : "opacity-0"
-                }`}
-                style={{
-                  background: "var(--color-secondary)",
-                  boxShadow: "0 0 6px var(--color-secondary)",
-                }}
-              >
-                <Eye className="w-2 h-2 text-white absolute top-0.5 left-0.5" />
-              </div>
-
-              {!isEnabled && (
-                <div
-                  className="absolute -top-1 -right-1 w-3 h-3 rounded-full transition-all duration-300"
-                  style={{
-                    background: "var(--color-text-disabled)",
-                  }}
-                >
-                  <EyeOff className="w-2 h-2 text-white absolute top-0.5 left-0.5" />
-                </div>
-              )}
             </button>
           );
         })}
