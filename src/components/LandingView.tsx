@@ -285,31 +285,33 @@ export const LandingView = ({
       <div className="w-full max-w-4xl relative z-10">
         {/* Central Glassmorphic Container */}
         <div className="glass p-8 mb-8 text-center">
-          <div className="flex items-center justify-center gap-4 mb-6">
+          <div className="flex items-center justify-center gap-6 mb-6">
             <div 
-              className="w-16 h-16 rounded-full flex items-center justify-center"
+              className="w-20 h-20 rounded-full flex items-center justify-center animate-pulse"
               style={{
-                background: `linear-gradient(135deg, var(--color-primary), var(--color-secondary))`,
-                boxShadow: 'var(--box-shadow-glow-sm)'
+                background: `linear-gradient(135deg, #a78bfa, #7dd3fc)`,
+                boxShadow: '0 0 40px rgba(167, 139, 250, 0.6), 0 0 60px rgba(125, 211, 252, 0.4)',
+                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
               }}
             >
-              <Headphones className="w-8 h-8" style={{ color: "#e9d5ff" }} />
+              <Headphones className="w-10 h-10" style={{ color: "#ffffff", filter: 'drop-shadow(0 2px 4px rgba(0,0,0,0.3))' }} />
             </div>
-            <div>
+            <div className="flex flex-col items-center">
               <h1 
-                className="text-4xl font-bold mb-2"
+                className="text-5xl font-bold mb-2"
                 style={{ 
-                  background: `linear-gradient(135deg, var(--color-primary), var(--color-secondary))`,
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
+                  color: '#ffffff',
+                  textShadow: '0 0 30px rgba(96, 165, 250, 0.6), 0 0 50px rgba(34, 211, 238, 0.4), 0 0 70px rgba(249, 158, 11, 0.3)'
                 }}
               >
                 Audio Visualizer
               </h1>
               <p 
-                className="text-lg"
-                style={{ color: 'var(--color-text-secondary)' }}
+                className="text-xl font-medium"
+                style={{ 
+                  color: '#93c5fd',
+                  textShadow: '0 0 20px rgba(147, 197, 253, 0.4)'
+                }}
               >
                 Experience your music
               </p>
