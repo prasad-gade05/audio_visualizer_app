@@ -101,7 +101,7 @@ export const MultiPlayerView = ({
 
   return (
     <div
-      className="flex flex-col h-screen w-full overflow-hidden bg-black"
+      className="flex flex-col h-screen w-full overflow-hidden bg-black relative"
       onMouseMove={handleMouseMove}
       onMouseLeave={() => {
         if (hideTimeout) {
@@ -113,8 +113,13 @@ export const MultiPlayerView = ({
         setHideTimeout(timeout);
       }}
     >
-      {/* Visualizer Area - Takes remaining space */}
-      <div className="flex-1 relative overflow-hidden">
+      {/* Visualizer Area - Dynamically expands when controls are hidden */}
+      <div 
+        className="relative overflow-hidden transition-all duration-300 ease-in-out"
+        style={{
+          height: controlsVisible ? 'calc(100vh - 5rem)' : '100vh'
+        }}
+      >
         <MultiAudioVisualizer
           audioData={audioData}
           isPlaying={isPlaying}
@@ -123,9 +128,9 @@ export const MultiPlayerView = ({
         />
       </div>
 
-      {/* Control Bar - Fixed height, no overlap */}
+      {/* Control Bar - Slides in from bottom */}
       <div 
-        className={`h-20 glass z-30 flex items-center justify-between px-6 py-2 transition-transform duration-300 ${
+        className={`absolute bottom-0 left-0 right-0 h-20 glass z-30 flex items-center justify-between px-6 py-2 transition-transform duration-300 ${
           controlsVisible ? "translate-y-0" : "translate-y-full"
         }`}
         style={{ 
