@@ -23,6 +23,8 @@ interface AudioMetrics {
   zcr: number;
   trend: 'Rising' | 'Falling' | 'Stable';
   profile: string[];
+  spreadMin: number;
+  spreadMax: number;
 }
 
 export const AdvancedAudioAnalytics = ({
@@ -44,9 +46,13 @@ export const AdvancedAudioAnalytics = ({
     activeFrequencies: 431,
     stability: 100,
     zcr: 0.0,
-    trend: 'Falling',
-    profile: ['Sharp', 'Dynamic', 'Stable']
+    trend: 'Stable',
+    profile: ['Sharp', 'Dynamic', 'Stable'],
+    spreadMin: 5502,
+    spreadMax: 5847
   });
+
+  const [prevRmsLevel, setPrevRmsLevel] = useState(-39.3);
 
   const calculateMetrics = (): AudioMetrics => {
     if (!audioData.frequencyData || !audioData.timeData || !isPlaying) {
@@ -64,8 +70,10 @@ export const AdvancedAudioAnalytics = ({
         activeFrequencies: 431,
         stability: 100,
         zcr: 0.0,
-        trend: 'Falling',
-        profile: ['Sharp', 'Dynamic', 'Stable']
+        trend: 'Stable',
+        profile: ['Sharp', 'Dynamic', 'Stable'],
+        spreadMin: 5502,
+        spreadMax: 5847
       };
     }
 
@@ -144,9 +152,11 @@ export const AdvancedAudioAnalytics = ({
     const midLevel = totalSum > 0 ? Math.round((midSum / totalSum) * 100) : 36;
     const trebleLevel = totalSum > 0 ? Math.round((trebleSum / totalSum) * 100) : 24;
 
-    // Brightness
-    const brightness = brightnessBinCount > 0 
-      ? Math.round((brightnessSum / brightnessBinCount) * 100 / 255) 
+    // Brightness - calculate based on high frequency energy relative to total energy
+    const totalEnergy = bassSum + midSum + trebleSum;
+    const highFreqEnergy = brightnessSum;
+    const brightness = totalEnergy > 0 
+      ? Math.min(100, Math.round((highFreqEnergy / totalEnergy) * 100)) 
       : 58;
 
     // Quality metrics
@@ -169,8 +179,21 @@ export const AdvancedAudioAnalytics = ({
     }
     const zcr = Number(((crossings / timeData.length) * 100).toFixed(1)) || 0.0;
 
-    // Trend analysis
-    const trend: 'Rising' | 'Falling' | 'Stable' = rms > 0.3 ? 'Rising' : rms < 0.1 ? 'Falling' : 'Stable';
+    // Trend analysis - compare with previous RMS level to detect rising/falling trends
+    const rmsDiff = rmsLevel - prevRmsLevel;
+    const trend: 'Rising' | 'Falling' | 'Stable' = rmsDiff > 2 ? 'Rising' : rmsDiff < -2 ? 'Falling' : 'Stable';
+
+    // Stability - calculate based on variance in frequency distribution
+    let variance = 0;
+    const avgFreq = (bassLevel + midLevel + trebleLevel) / 3;
+    variance += Math.pow(bassLevel - avgFreq, 2);
+    variance += Math.pow(midLevel - avgFreq, 2);
+    variance += Math.pow(trebleLevel - avgFreq, 2);
+    const stability = Math.max(0, Math.min(100, Math.round(100 - (Math.sqrt(variance / 3) * 2))));
+
+    // Spread - calculate frequency range where energy is present (reuse brightnessStart from above)
+    const spreadMinFreq = Math.round((brightnessStart / freqLen) * nyquist);
+    const spreadMaxFreq = Math.round(((brightnessStart + brightnessBinCount) / freqLen) * nyquist);
 
     // Audio profile classification
     const profile = [];
@@ -191,10 +214,12 @@ export const AdvancedAudioAnalytics = ({
       trebleLevel,
       dynamicRange,
       activeFrequencies: activeCount || 431,
-      stability: 100,
+      stability,
       zcr,
       trend,
-      profile
+      profile,
+      spreadMin: spreadMinFreq || 5502,
+      spreadMax: spreadMaxFreq || 5847
     };
   };
 
@@ -205,6 +230,7 @@ export const AdvancedAudioAnalytics = ({
     // This is important for analytics to show live data
     const newMetrics = calculateMetrics();
     setMetrics(newMetrics);
+    setPrevRmsLevel(newMetrics.rmsLevel);
   }, [audioData, isPlaying]);
 
   const ProgressBar = ({ 
@@ -237,16 +263,16 @@ export const AdvancedAudioAnalytics = ({
         backgroundImage: 'radial-gradient(circle at 50% 50%, rgba(64, 64, 64, 0.03) 0%, transparent 70%)',
       }}
     >
-      <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-700/50">
-        <div className="p-2 text-white h-full">
+      <div className="flex-1 overflow-hidden flex flex-col">
+        <div className="p-2 md:p-3 lg:p-4 text-white flex-1 flex flex-col justify-evenly min-h-0">
           {/* Spectral Analysis */}
-          <div className="mb-2">
+          <div className="flex-shrink min-h-0">
             <div className="flex justify-between items-center mb-0.5">
               <span className="text-gray-400 text-[9px]">Brightness</span>
-              <div className="flex gap-2 text-[8px] font-mono text-gray-300">
-                <span>5847Hz</span>
+              <div className="flex gap-1 md:gap-2 text-[8px] font-mono text-gray-300">
+                <span>{metrics.spreadMax}Hz</span>
                 <span className="text-gray-500">Spread</span>
-                <span>5502Hz</span>
+                <span>{metrics.spreadMin}Hz</span>
               </div>
             </div>
             <ProgressBar 
@@ -257,8 +283,8 @@ export const AdvancedAudioAnalytics = ({
           </div>
 
           {/* Quality Assessment */}
-          <div className="mb-2">
-            <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+          <div className="flex-shrink min-h-0">
+            <div className="grid grid-cols-2 gap-x-2 md:gap-x-3 lg:gap-x-4 gap-y-1 md:gap-y-1.5 lg:gap-y-2">
               <div>
                 <div className="flex justify-between text-[9px] mb-0.5">
                   <span className="text-gray-400">Clarity</span>
@@ -283,18 +309,18 @@ export const AdvancedAudioAnalytics = ({
               <div>
                 <div className="flex justify-between text-[9px] mb-0.5">
                   <span className="text-gray-400">Brightness</span>
-                  <span className="font-mono text-gray-300">100%</span>
+                  <span className="font-mono text-gray-300">{metrics.brightness}%</span>
                 </div>
-                <ProgressBar value={100} color="#FB7185" height="h-0.5" />
+                <ProgressBar value={metrics.brightness} color="#FB7185" height="h-0.5" />
               </div>
             </div>
           </div>
 
           {/* Audio Profile with Peak Frequency, RMS Level, and LIVE */}
-          <div className="mb-2">
-            <div className="flex items-center justify-between gap-2">
-              <div className="flex items-center gap-1.5">
-                <span className="text-white text-xs font-medium">Audio Profile</span>
+          <div className="flex-shrink min-h-0">
+            <div className="flex items-center justify-between gap-2 md:gap-3 lg:gap-4 flex-wrap md:flex-nowrap">
+              <div className="flex items-center gap-1.5 md:gap-2">
+                <span className="text-white text-xs md:text-sm font-medium">Audio Profile</span>
                 <div className="flex gap-1">
                   {metrics.profile.map((tag, index) => (
                     <span 
@@ -306,7 +332,7 @@ export const AdvancedAudioAnalytics = ({
                   ))}
                 </div>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 md:gap-3 flex-wrap">
                 <div className="flex items-center gap-1">
                   <span className="text-gray-400 text-[9px]">Peak:</span>
                   <span className="text-xs font-mono font-medium text-white">{metrics.peakFrequency}Hz</span>
@@ -333,12 +359,12 @@ export const AdvancedAudioAnalytics = ({
           </div>
 
           {/* Frequency Distribution */}
-          <div className="mb-2">
-            <div className="space-y-1">
+          <div className="flex-shrink min-h-0">
+            <div className="space-y-1 md:space-y-1.5 lg:space-y-2">
               <div>
                 <div className="flex justify-between text-[9px] mb-0.5">
                   <span className="text-gray-400">Bass</span>
-                  <div className="flex gap-2 font-mono text-gray-300">
+                  <div className="flex gap-1 md:gap-2 font-mono text-gray-300">
                     <span>{metrics.bassLevel}%</span>
                     <span className="text-gray-500">20-250Hz</span>
                   </div>
@@ -349,7 +375,7 @@ export const AdvancedAudioAnalytics = ({
               <div>
                 <div className="flex justify-between text-[9px] mb-0.5">
                   <span className="text-gray-400">Mid</span>
-                  <div className="flex gap-2 font-mono text-gray-300">
+                  <div className="flex gap-1 md:gap-2 font-mono text-gray-300">
                     <span>{metrics.midLevel}%</span>
                     <span className="text-gray-500">250-4kHz</span>
                   </div>
@@ -360,7 +386,7 @@ export const AdvancedAudioAnalytics = ({
               <div>
                 <div className="flex justify-between text-[9px] mb-0.5">
                   <span className="text-gray-400">Treble</span>
-                  <div className="flex gap-2 font-mono text-gray-300">
+                  <div className="flex gap-1 md:gap-2 font-mono text-gray-300">
                     <span>{metrics.trebleLevel}%</span>
                     <span className="text-gray-500">4-20kHz</span>
                   </div>
@@ -371,7 +397,7 @@ export const AdvancedAudioAnalytics = ({
           </div>
 
           {/* Bottom Statistics */}
-          <div className="grid grid-cols-4 gap-2 text-center border-t border-white/10 pt-1.5">
+          <div className="grid grid-cols-4 gap-2 md:gap-3 lg:gap-4 text-center border-t border-white/10 pt-1.5 md:pt-2 lg:pt-3 flex-shrink min-h-0">
             <div className="flex items-center justify-center gap-1">
               <span className="text-gray-400 text-[8px]">Range:</span>
               <span className="text-[9px] font-mono text-gray-300">{metrics.dynamicRange}dB</span>
