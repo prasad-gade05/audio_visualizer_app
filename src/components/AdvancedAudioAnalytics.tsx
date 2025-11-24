@@ -241,7 +241,6 @@ export const AdvancedAudioAnalytics = ({
         <div className="p-2 text-white h-full">
           {/* Spectral Analysis */}
           <div className="mb-2">
-            <div className="text-white text-xs font-medium mb-1">Spectral Analysis</div>
             <div className="flex justify-between items-center mb-0.5">
               <span className="text-gray-400 text-[9px]">Brightness</span>
               <div className="flex gap-2 text-[8px] font-mono text-gray-300">
@@ -259,7 +258,6 @@ export const AdvancedAudioAnalytics = ({
 
           {/* Quality Assessment */}
           <div className="mb-2">
-            <div className="text-white text-xs font-medium mb-1">Quality Assessment</div>
             <div className="grid grid-cols-2 gap-x-2 gap-y-1">
               <div>
                 <div className="flex justify-between text-[9px] mb-0.5">
@@ -324,6 +322,9 @@ export const AdvancedAudioAnalytics = ({
                     ↘ {metrics.trend}
                   </span>
                 </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-400 text-[8px]">Stability: {metrics.stability}%</span>
+                </div>
                 <div className="bg-green-500/20 text-green-400 px-1 py-0.5 rounded text-[8px] font-medium border border-green-500/30">
                   LIVE
                 </div>
@@ -333,11 +334,6 @@ export const AdvancedAudioAnalytics = ({
 
           {/* Frequency Distribution */}
           <div className="mb-2">
-            <div className="flex justify-between items-center mb-1">
-              <span className="text-white text-xs font-medium">Frequency Distribution</span>
-              <span className="text-gray-400 text-[8px]">Stability: {metrics.stability}%</span>
-            </div>
-            
             <div className="space-y-1">
               <div>
                 <div className="flex justify-between text-[9px] mb-0.5">

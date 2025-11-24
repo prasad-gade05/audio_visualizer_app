@@ -384,9 +384,6 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
-      <div className="absolute bottom-2 left-2 text-xs text-white/50 pointer-events-none select-none">
-        Drag to rotate • Reacts to audio
-      </div>
     </div>
   );
 };
