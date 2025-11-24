@@ -1,5 +1,6 @@
 import { Upload, Monitor, Mic, Headphones, ArrowLeft, AlertCircle, Info } from 'lucide-react';
 import { StaticBackgroundVisualizer } from './StaticBackgroundVisualizer';
+import { MusicNotesEffect } from './MusicNotesEffect';
 import { useState } from 'react';
 
 interface LandingViewProps {
@@ -280,6 +281,9 @@ export const LandingView = ({
     <div className="min-h-screen flex items-center justify-center p-6 relative">
       {/* Static Background Visualizer */}
       <StaticBackgroundVisualizer />
+      
+      {/* Music Notes Effect */}
+      <MusicNotesEffect />
       
       {/* Main Content - positioned above background */}
       <div className="w-full max-w-4xl relative z-10">
