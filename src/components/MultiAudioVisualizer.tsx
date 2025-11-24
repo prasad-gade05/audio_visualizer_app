@@ -210,7 +210,7 @@ export const MultiAudioVisualizer = ({
       case 2:
         return { gridCols: "grid-cols-3", rows: "grid-rows-1", cols: 3, maxRows: 1 };
       case 3:
-        return { gridCols: "grid-cols-3", rows: "grid-rows-1", cols: 3, maxRows: 1 };
+        return { gridCols: "grid-cols-2", rows: "grid-rows-2", cols: 2, maxRows: 2 };
       case 4:
         return { gridCols: "grid-cols-2", rows: "grid-rows-2", cols: 2, maxRows: 2 };
       case 5:
