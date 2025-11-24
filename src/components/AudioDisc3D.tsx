@@ -59,7 +59,7 @@ export const AudioDisc3D = ({ audioData, isPlaying }: AudioDisc3DProps) => {
     });
     renderer.setSize(containerRef.current.clientWidth, containerRef.current.clientHeight);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(new THREE.Color("#000000"), 1);
+    renderer.setClearColor(new THREE.Color("#0a0a0a"), 1);
     containerRef.current.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
@@ -288,14 +288,34 @@ export const AudioDisc3D = ({ audioData, isPlaying }: AudioDisc3DProps) => {
   }, []);
 
   return (
-    <div 
-      ref={containerRef} 
-      className="w-full h-full"
-      style={{ 
+    <div
+      ref={containerRef}
+      className="w-full h-full relative"
+      style={{
         minHeight: '300px',
-        background: '#000000',
+        background: '#0a0a0a',
         touchAction: 'none'
       }}
-    />
+    >
+      {/* Top left corner legends */}
+      <div className="absolute top-2 left-2 text-[9px] text-cyan-400/70 font-mono space-y-0.5 pointer-events-none select-none">
+        <div className="flex items-center gap-1">
+          <div className="w-1 h-1 rounded-full bg-cyan-400 animate-pulse"></div>
+          <span>FREQ RINGS</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-1 h-1 rounded-full bg-pink-400"></div>
+          <span>AMPLITUDE</span>
+        </div>
+      </div>
+      
+      {/* Top right corner legends */}
+      <div className="absolute top-2 right-2 text-[9px] text-emerald-400/70 font-mono text-right space-y-0.5 pointer-events-none select-none">
+        <div className="flex items-center justify-end gap-1">
+          <span>3D SPECTRUM</span>
+          <div className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></div>
+        </div>
+      </div>
+    </div>
   );
 };

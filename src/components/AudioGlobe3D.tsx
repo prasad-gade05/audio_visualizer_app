@@ -384,6 +384,25 @@ export const AudioGlobe3D = ({ audioData, isPlaying }: AudioGlobe3DProps) => {
       onMouseUp={handleMouseUp}
       onMouseLeave={handleMouseUp}
     >
+      {/* Top left corner legends */}
+      <div className="absolute top-2 left-2 text-[9px] text-cyan-400/70 font-mono space-y-0.5 pointer-events-none select-none">
+        <div className="flex items-center gap-1">
+          <div className="w-1 h-1 rounded-full bg-cyan-400 animate-pulse"></div>
+          <span>PARTICLE FIELD</span>
+        </div>
+        <div className="flex items-center gap-1">
+          <div className="w-1 h-1 rounded-full bg-pink-400"></div>
+          <span>FREQUENCY MAP</span>
+        </div>
+      </div>
+      
+      {/* Top right corner legends */}
+      <div className="absolute top-2 right-2 text-[9px] text-emerald-400/70 font-mono text-right space-y-0.5 pointer-events-none select-none">
+        <div className="flex items-center justify-end gap-1">
+          <span>SPHERICAL 3D</span>
+          <div className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></div>
+        </div>
+      </div>
     </div>
   );
 };
