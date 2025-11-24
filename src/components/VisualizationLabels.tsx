@@ -88,7 +88,7 @@ export const analyzeAudioData = (audioData: AudioData) => {
 
 interface VisualizationLabelsProps {
   audioData: AudioData;
-  visualizationType: "bars" | "circular" | "waveform" | "particles" | "mirrored-waveform" | "analytics";
+  visualizationType: "bars" | "circular" | "waveform" | "particles" | "mirrored-waveform" | "3d-globe" | "3d-disc" | "analytics";
   isPlaying: boolean;
   showDetailedStats?: boolean;
   position?: "top-left" | "top-right" | "bottom-left" | "bottom-right";
@@ -135,6 +135,10 @@ export const VisualizationLabels: React.FC<VisualizationLabelsProps> = ({
         return "Frequency Particle System";
       case "mirrored-waveform":
         return "Mirrored Spectrum Bars";
+      case "3d-globe":
+        return "3D Globe Visualizer";
+      case "3d-disc":
+        return "3D Radial Disc";
       case "analytics":
         return "Advanced Audio Analytics";
       default:
@@ -154,6 +158,10 @@ export const VisualizationLabels: React.FC<VisualizationLabelsProps> = ({
         return [`Bass: ${formatPercentage(stats.bassLevel)}`, `Mid: ${formatPercentage(stats.midLevel)}`, `Treble: ${formatPercentage(stats.trebleLevel)}`];
       case "mirrored-waveform":
         return [`Range: ${Math.round(stats.dynamicRange)}`, `Avg: ${formatPercentage(stats.avgAmplitude)}`];
+      case "3d-globe":
+        return [`Frequency Sphere`, `Interactive 3D`];
+      case "3d-disc":
+        return [`Radial Waveform`, `128 Spokes`];
       case "analytics":
         return [`Peak: ${formatFrequency(stats.peakFrequency)}`, `RMS: ${stats.rmsLevel.toFixed(1)}dB`, `Range: ${stats.dynamicRange.toFixed(1)}dB`];
       default:

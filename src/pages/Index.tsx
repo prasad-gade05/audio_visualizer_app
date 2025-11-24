@@ -16,10 +16,11 @@ export default function Index() {
       enabled: {
         bars: true,
         circular: true,
-        waveform: true,
+        waveform: false,
         particles: false,
         "mirrored-waveform": true,
         "3d-globe": true,
+        "3d-disc": true,
         analytics: true,
       },
       positions: {
@@ -29,7 +30,8 @@ export default function Index() {
         particles: { gridSlot: 3, zIndex: 4 },
         "mirrored-waveform": { gridSlot: 4, zIndex: 5 },
         "3d-globe": { gridSlot: 5, zIndex: 6 },
-        analytics: { gridSlot: 6, zIndex: 7 },
+        "3d-disc": { gridSlot: 6, zIndex: 7 },
+        analytics: { gridSlot: 7, zIndex: 8 },
       },
       configs: {
         bars: {
@@ -82,6 +84,14 @@ export default function Index() {
           sensitivity: 1,
           smoothing: 0.8,
           secondaryColor: "#10B981",
+          backgroundColor: "#000000",
+        },
+        "3d-disc": {
+          type: "3d-disc",
+          color: "#FB7185",
+          sensitivity: 1,
+          smoothing: 0.8,
+          secondaryColor: "#06B6D4",
           backgroundColor: "#000000",
         },
         analytics: {

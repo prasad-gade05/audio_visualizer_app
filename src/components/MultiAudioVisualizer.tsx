@@ -5,6 +5,7 @@ import { GridDraggableVisualizationItem } from "./GridDraggableVisualizationItem
 import { DragInstructions } from "./DragInstructions";
 import { AdvancedAudioAnalytics } from "./AdvancedAudioAnalytics";
 import { AudioGlobe3D } from "./AudioGlobe3D";
+import { AudioDisc3D } from "./AudioDisc3D";
 
 // Helper function moved outside to avoid recreation
 const hexToRgb = (hex: string) => {
@@ -40,6 +41,7 @@ export const MultiAudioVisualizer = ({
     particles: HTMLCanvasElement | null;
     "mirrored-waveform": HTMLCanvasElement | null;
     "3d-globe": HTMLCanvasElement | null;
+    "3d-disc": HTMLCanvasElement | null;
     analytics: HTMLCanvasElement | null;
   }>({
     bars: null,
@@ -48,6 +50,7 @@ export const MultiAudioVisualizer = ({
     particles: null,
     "mirrored-waveform": null,
     "3d-globe": null,
+    "3d-disc": null,
     analytics: null,
   });
   const animationRef = useRef<number | null>(null);
@@ -1161,7 +1164,14 @@ export const MultiAudioVisualizer = ({
                 />
               )}
 
-              {type !== "analytics" && type !== "3d-globe" && (
+              {type === "3d-disc" && (
+                <AudioDisc3D 
+                  audioData={audioData}
+                  isPlaying={isPlaying}
+                />
+              )}
+
+              {type !== "analytics" && type !== "3d-globe" && type !== "3d-disc" && (
                 <canvas
                   ref={(el) => (canvasRefs.current[type] = el)}
                   className="w-full h-full"

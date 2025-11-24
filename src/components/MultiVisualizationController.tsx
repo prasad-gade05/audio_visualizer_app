@@ -1,4 +1,4 @@
-import { BarChart3, Circle, Waves, Sparkles, Activity, TrendingUp, Globe } from "lucide-react";
+import { BarChart3, Circle, Waves, Sparkles, Activity, TrendingUp, Globe, Disc3 } from "lucide-react";
 import { MultiVisualizationConfig } from "@/types/audio";
 
 interface MultiVisualizationControllerProps {
@@ -14,6 +14,7 @@ const visualizationTypes = [
   { type: "particles" as const, icon: Sparkles, label: "Particles", color: "#fbbf24" },
   { type: "mirrored-waveform" as const, icon: Activity, label: "Mirrored Waveform", color: "#f472b6" },
   { type: "3d-globe" as const, icon: Globe, label: "3D Globe", color: "#38bdf8" },
+  { type: "3d-disc" as const, icon: Disc3, label: "3D Disc", color: "#fb7185" },
   { type: "analytics" as const, icon: TrendingUp, label: "Advanced Analytics", color: "#fb923c" },
 ];
 
