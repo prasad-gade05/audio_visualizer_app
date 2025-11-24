@@ -1127,7 +1127,7 @@ export const MultiAudioVisualizer = ({
       
       <div
         ref={containerRef}
-        className={`grid ${gridCols} ${rows} gap-4 w-full h-full transition-all duration-500 ease-in-out`}
+        className={`grid ${gridCols} ${rows} gap-2 w-full h-full transition-all duration-500 ease-in-out`}
       >
         {sortedVisualizations.map((type, index) => {
           const colSpan = getColumnSpan(index, sortedVisualizations.length, cols);
