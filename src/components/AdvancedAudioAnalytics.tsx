@@ -239,32 +239,6 @@ export const AdvancedAudioAnalytics = ({
     >
       <div className="flex-1 overflow-y-auto scrollbar-thin scrollbar-track-transparent scrollbar-thumb-gray-700/50">
         <div className="p-2 text-white h-full">
-          {/* Peak Frequency, RMS Level, and LIVE in one line */}
-          <div className="grid grid-cols-3 gap-2 mb-2">
-            <div>
-              <div className="text-gray-400 text-[9px] mb-0.5">Peak Frequency</div>
-              <div className="text-sm font-mono font-medium text-white">{metrics.peakFrequency}Hz</div>
-            </div>
-            <div>
-              <div className="text-gray-400 text-[9px] mb-0.5">RMS Level</div>
-              <div className="flex items-center gap-1">
-                <span className="text-sm font-mono font-medium text-white">{metrics.rmsLevel}dB</span>
-                <span className={`text-[8px] ${
-                  metrics.trend === 'Rising' ? 'text-green-400' : 
-                  metrics.trend === 'Falling' ? 'text-red-400' : 
-                  'text-gray-400'
-                }`}>
-                  ↘ {metrics.trend}
-                </span>
-              </div>
-            </div>
-            <div className="flex justify-end items-start">
-              <div className="bg-green-500/20 text-green-400 px-1 py-0.5 rounded text-[8px] font-medium border border-green-500/30">
-                LIVE
-              </div>
-            </div>
-          </div>
-
           {/* Spectral Analysis */}
           <div className="mb-2">
             <div className="text-white text-xs font-medium mb-1">Spectral Analysis</div>
@@ -318,18 +292,42 @@ export const AdvancedAudioAnalytics = ({
             </div>
           </div>
 
-          {/* Audio Profile */}
+          {/* Audio Profile with Peak Frequency, RMS Level, and LIVE */}
           <div className="mb-2">
-            <div className="text-white text-xs font-medium mb-1">Audio Profile</div>
-            <div className="flex gap-1 flex-wrap">
-              {metrics.profile.map((tag, index) => (
-                <span 
-                  key={index} 
-                  className="bg-cyan-500/15 text-cyan-400 px-1.5 py-0.5 rounded-full text-[8px] border border-cyan-500/30 font-medium"
-                >
-                  {tag}
-                </span>
-              ))}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                <span className="text-white text-xs font-medium">Audio Profile</span>
+                <div className="flex gap-1">
+                  {metrics.profile.map((tag, index) => (
+                    <span 
+                      key={index} 
+                      className="bg-cyan-500/15 text-cyan-400 px-1.5 py-0.5 rounded-full text-[8px] border border-cyan-500/30 font-medium"
+                    >
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-400 text-[9px]">Peak:</span>
+                  <span className="text-xs font-mono font-medium text-white">{metrics.peakFrequency}Hz</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <span className="text-gray-400 text-[9px]">RMS:</span>
+                  <span className="text-xs font-mono font-medium text-white">{metrics.rmsLevel}dB</span>
+                  <span className={`text-[8px] ${
+                    metrics.trend === 'Rising' ? 'text-green-400' : 
+                    metrics.trend === 'Falling' ? 'text-red-400' : 
+                    'text-gray-400'
+                  }`}>
+                    ↘ {metrics.trend}
+                  </span>
+                </div>
+                <div className="bg-green-500/20 text-green-400 px-1 py-0.5 rounded text-[8px] font-medium border border-green-500/30">
+                  LIVE
+                </div>
+              </div>
             </div>
           </div>
 
@@ -377,22 +375,22 @@ export const AdvancedAudioAnalytics = ({
           </div>
 
           {/* Bottom Statistics */}
-          <div className="grid grid-cols-4 gap-1 text-center border-t border-white/10 pt-1.5">
-            <div>
-              <div className="text-gray-400 text-[8px] mb-0.5">Range:</div>
-              <div className="text-[9px] font-mono text-gray-300">{metrics.dynamicRange}dB</div>
+          <div className="grid grid-cols-4 gap-2 text-center border-t border-white/10 pt-1.5">
+            <div className="flex items-center justify-center gap-1">
+              <span className="text-gray-400 text-[8px]">Range:</span>
+              <span className="text-[9px] font-mono text-gray-300">{metrics.dynamicRange}dB</span>
             </div>
-            <div>
-              <div className="text-gray-400 text-[8px] mb-0.5">Active:</div>
-              <div className="text-[9px] font-mono text-gray-300">{metrics.activeFrequencies}/1024</div>
+            <div className="flex items-center justify-center gap-1">
+              <span className="text-gray-400 text-[8px]">Active:</span>
+              <span className="text-[9px] font-mono text-gray-300">{metrics.activeFrequencies}/1024</span>
             </div>
-            <div>
-              <div className="text-gray-400 text-[8px] mb-0.5">Stability:</div>
-              <div className="text-[9px] font-mono text-gray-300">{metrics.stability}%</div>
+            <div className="flex items-center justify-center gap-1">
+              <span className="text-gray-400 text-[8px]">Stability:</span>
+              <span className="text-[9px] font-mono text-gray-300">{metrics.stability}%</span>
             </div>
-            <div>
-              <div className="text-gray-400 text-[8px] mb-0.5">ZCR:</div>
-              <div className="text-[9px] font-mono text-gray-300">{metrics.zcr}%</div>
+            <div className="flex items-center justify-center gap-1">
+              <span className="text-gray-400 text-[8px]">ZCR:</span>
+              <span className="text-[9px] font-mono text-gray-300">{metrics.zcr}%</span>
             </div>
           </div>
         </div>
