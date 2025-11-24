@@ -16,8 +16,8 @@ export default function Index() {
       enabled: {
         bars: true,
         circular: true,
-        waveform: false,
-        particles: false,
+        waveform: true,
+        particles: true,
         "mirrored-waveform": true,
         "3d-globe": true,
         "3d-disc": true,
@@ -26,11 +26,11 @@ export default function Index() {
       positions: {
         bars: { gridSlot: 0, zIndex: 1 },
         circular: { gridSlot: 1, zIndex: 2 },
-        waveform: { gridSlot: 2, zIndex: 3 },
+        "3d-globe": { gridSlot: 2, zIndex: 3 },
         particles: { gridSlot: 3, zIndex: 4 },
         "mirrored-waveform": { gridSlot: 4, zIndex: 5 },
-        "3d-globe": { gridSlot: 5, zIndex: 6 },
-        "3d-disc": { gridSlot: 6, zIndex: 7 },
+        "3d-disc": { gridSlot: 5, zIndex: 6 },
+        waveform: { gridSlot: 6, zIndex: 7 },
         analytics: { gridSlot: 7, zIndex: 8 },
       },
       configs: {
