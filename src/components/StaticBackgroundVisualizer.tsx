@@ -50,7 +50,7 @@ export const StaticBackgroundVisualizer = () => {
     const barData = Array.from({ length: bars }, (_, i) => ({
       index: i,
       height: Math.random(),
-      speed: Math.random() * 0.02 + 0.01,
+      speed: Math.random() * 0.08 + 0.04, // 4x faster: was originally 0.02 + 0.01
       phase: Math.random() * Math.PI * 2,
     }));
 
