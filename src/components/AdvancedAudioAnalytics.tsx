@@ -92,12 +92,13 @@ export const AdvancedAudioAnalytics = ({
     const freqLen = freqData.length;
     const bassEnd = Math.floor(freqLen * 0.1);
     const midEnd = Math.floor(freqLen * 0.4);
-    const brightnessStart = Math.floor(freqLen * 0.6);
+    const brightnessStart = Math.floor(freqLen * 0.5);
     
     let bassSum = 0;
     let midSum = 0;
     let trebleSum = 0;
-    let brightnessSum = 0;
+    let lowFreqSum = 0;
+    let highFreqSum = 0;
     let brightnessBinCount = 0;
     
     for (let i = 0; i < freqLen; i++) {
@@ -122,10 +123,12 @@ export const AdvancedAudioAnalytics = ({
         trebleSum += val;
       }
       
-      // Brightness
+      // Brightness - spectral centroid approach
       if (i >= brightnessStart) {
-        brightnessSum += val;
+        highFreqSum += val;
         brightnessBinCount++;
+      } else {
+        lowFreqSum += val;
       }
     }
     
@@ -152,11 +155,11 @@ export const AdvancedAudioAnalytics = ({
     const midLevel = totalSum > 0 ? Math.round((midSum / totalSum) * 100) : 36;
     const trebleLevel = totalSum > 0 ? Math.round((trebleSum / totalSum) * 100) : 24;
 
-    // Brightness - calculate based on high frequency energy relative to total energy
-    const totalEnergy = bassSum + midSum + trebleSum;
-    const highFreqEnergy = brightnessSum;
-    const brightness = totalEnergy > 0 
-      ? Math.min(100, Math.round((highFreqEnergy / totalEnergy) * 100)) 
+    // Brightness - ratio of high frequency energy to low frequency energy
+    // This measures spectral "brightness" - higher values mean more high frequency content
+    const totalEnergyForBrightness = lowFreqSum + highFreqSum;
+    const brightness = totalEnergyForBrightness > 0 
+      ? Math.min(100, Math.round((highFreqSum / totalEnergyForBrightness) * 200)) 
       : 58;
 
     // Quality metrics
