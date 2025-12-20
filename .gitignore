@@ -8,6 +8,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+dist
 dist-ssr
 *.local
 
@@ -22,5 +23,10 @@ dist-ssr
 *.sln
 *.sw?
 
+# Development notes
 todo.md
-*.md
+OPTIMIZATION*.md
+TESTING*.md
+MIGRATION*.md
+CHANGELOG*.md
+CHANGES.md

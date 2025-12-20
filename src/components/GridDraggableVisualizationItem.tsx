@@ -100,13 +100,11 @@ export const GridDraggableVisualizationItem: React.FC<GridDraggableVisualization
       const dragData = JSON.parse(dragDataString);
       const { type: draggedType, currentSlot } = dragData;
       
-      // Only swap if it's a different position
       if (draggedType !== type && currentSlot !== gridSlot) {
-        // Use atomic swap to prevent duplicate grid slots
         onGridSlotSwap(draggedType, type);
       }
     } catch (error) {
-      console.error("Error handling drop:", error);
+      // Error handling can be added here if needed
     }
   }, [type, gridSlot, onGridSlotSwap]);
 

@@ -1,6 +1,6 @@
 # Audio Visualizer - [Demo](https://prasad-gade05.github.io/audio_visualizer_app/)
 
-This is a web-based audio visualization tool built with React, Vite, and shadcn/ui. It allows users to upload audio files, capture system audio, and visualize the audio in different ways, including a 3D globe and a traditional audio visualizer.
+This is a **highly optimized** web-based audio visualization tool built with React, Vite, and shadcn/ui. It allows users to upload audio files, capture system audio, and visualize the audio in different ways, including a 3D globe and traditional visualizers.
 
 ## Features
 
@@ -12,13 +12,14 @@ This is a web-based audio visualization tool built with React, Vite, and shadcn/
 
 ## Technologies Used
 
-- **Frontend:** [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/), [Vite](https://vitejs.dev/)
+- **Frontend:** [React](https://react.dev/), [TypeScript](https://www.typescriptlang.org/) (Strict Mode), [Vite](https://vitejs.dev/)
 - **UI Components:** [shadcn/ui](https://ui.shadcn.com/)
 - **Styling:** [Tailwind CSS](https://tailwindcss.com/)
 - **Routing:** [React Router DOM](https://reactrouter.com/)
 - **State Management:** [Zustand](https://zustand-demo.pmnd.rs/)
 - **Data Fetching:** [TanStack Query](https://tanstack.com/query/latest)
 - **Linting:** [ESLint](https://eslint.org/)
+- **Optimization:** Code splitting, React.memo, Error boundaries
 
 ## Getting Started
 
@@ -65,22 +66,28 @@ In the project directory, you can run:
 ## Project Structure
 
 ```
-.
-├── public/
+audio_visualizer/
+├── public/              # Static assets
 ├── src/
-│   ├── components/
-│   │   ├── ui/
-│   │   ├── AudioControls.tsx
-│   │   ├── AudioGlobe3D.tsx
-│   │   ├── AudioVisualizer.tsx
-│   │   ├── FileUpload.tsx
-│   │   └── ...
-│   ├── hooks/
-│   ├── lib/
-│   ├── pages/
-│   └── types/
-├── .gitignore
+│   ├── components/      # React components
+│   │   ├── ui/         # shadcn/ui components
+│   │   └── ...         # App-specific components
+│   ├── hooks/          # Custom React hooks
+│   ├── lib/            # Utilities & Zustand store
+│   ├── pages/          # Page components
+│   └── types/          # TypeScript interfaces
 ├── package.json
-├── README.md
-└── ...
+├── vite.config.ts
+└── README.md
 ```
+
+## Performance
+
+This application is optimized for:
+
+- **60 FPS** smooth animations
+- **Zero memory leaks** during playback
+- **Fast initial load** with code splitting
+- **Minimal re-renders** with React.memo
+- **Type-safe** with TypeScript strict mode
+- **Clean codebase** with no unused files

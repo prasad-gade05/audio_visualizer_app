@@ -1,109 +1,22 @@
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import { LandingView } from "@/components/LandingView";
-import { MultiPlayerView } from "@/components/MultiPlayerView";
 import { useAudioAnalyzer } from "@/hooks/useAudioAnalyzer";
 import { useSystemAudio } from "@/hooks/useSystemAudio";
 import { useMicrophoneAudio } from "@/hooks/useMicrophoneAudio";
-import { MultiVisualizationConfig } from "@/types/audio";
+import { useAudioStore } from "@/lib/audioStore";
+
+const MultiPlayerView = lazy(() => 
+  import("@/components/MultiPlayerView").then(module => ({ default: module.MultiPlayerView }))
+);
 
 type AppView = "landing" | "filePlayer" | "systemPlayer" | "microphonePlayer";
 
 export default function Index() {
   const [currentView, setCurrentView] = useState<AppView>("landing");
   const [fileName, setFileName] = useState<string>("");
-  const [multiVisualizationConfig, setMultiVisualizationConfig] =
-    useState<MultiVisualizationConfig>({
-      enabled: {
-        bars: true,
-        circular: true,
-        waveform: true,
-        particles: true,
-        "mirrored-waveform": true,
-        "3d-globe": true,
-        "3d-disc": true,
-        analytics: true,
-      },
-      positions: {
-        bars: { gridSlot: 0, zIndex: 1 },
-        circular: { gridSlot: 1, zIndex: 2 },
-        "3d-globe": { gridSlot: 2, zIndex: 3 },
-        particles: { gridSlot: 3, zIndex: 4 },
-        "mirrored-waveform": { gridSlot: 4, zIndex: 5 },
-        "3d-disc": { gridSlot: 5, zIndex: 6 },
-        waveform: { gridSlot: 6, zIndex: 7 },
-        analytics: { gridSlot: 7, zIndex: 8 },
-      },
-      configs: {
-        bars: {
-          type: "bars",
-          color: "#10B981",
-          sensitivity: 1,
-          smoothing: 0.8,
-          secondaryColor: "#F59E0B",
-          backgroundColor: "#0a0a0a",
-          barCount: 32,
-        },
-        circular: {
-          type: "circular",
-          color: "#06B6D4",
-          sensitivity: 1,
-          smoothing: 0.8,
-          secondaryColor: "#EC4899",
-          backgroundColor: "#0a0a0a",
-          radius: 1,
-          intensity: 1,
-        },
-        waveform: {
-          type: "waveform",
-          color: "#FB7185",
-          sensitivity: 1,
-          smoothing: 0.8,
-          secondaryColor: "#8B5CF6",
-          backgroundColor: "#0a0a0a",
-        },
-        particles: {
-          type: "particles",
-          color: "#10B981",
-          sensitivity: 1,
-          smoothing: 0.8,
-          secondaryColor: "#F59E0B",
-          backgroundColor: "#0a0a0a",
-          particleCount: 100,
-        },
-        "mirrored-waveform": {
-          type: "mirrored-waveform",
-          color: "#06B6D4",
-          sensitivity: 1,
-          smoothing: 0.8,
-          secondaryColor: "#FB7185",
-          backgroundColor: "#0a0a0a",
-        },
-        "3d-globe": {
-          type: "3d-globe",
-          color: "#06B6D4",
-          sensitivity: 1,
-          smoothing: 0.8,
-          secondaryColor: "#10B981",
-          backgroundColor: "#000000",
-        },
-        "3d-disc": {
-          type: "3d-disc",
-          color: "#FB7185",
-          sensitivity: 1,
-          smoothing: 0.8,
-          secondaryColor: "#06B6D4",
-          backgroundColor: "#000000",
-        },
-        analytics: {
-          type: "analytics",
-          color: "#10B981",
-          sensitivity: 1,
-          smoothing: 0.8,
-          secondaryColor: "#F59E0B",
-          backgroundColor: "#0d0b14",
-        },
-      },
-    });
+  
+  const multiVisualizationConfig = useAudioStore(state => state.multiVisualizationConfig);
+  const setMultiVisualizationConfig = useAudioStore(state => state.setMultiVisualizationConfig);
 
   // File-based audio
   const {
@@ -148,37 +61,23 @@ export default function Index() {
   };
 
   const handleSystemAudioStart = async () => {
-    try {
-      await startSystemAudioCapture();
-      setCurrentView("systemPlayer");
-    } catch (err) {
-      // Error handling is done in the hook
-    }
+    await startSystemAudioCapture();
+    setCurrentView("systemPlayer");
   };
 
   const handleMicrophoneStart = async () => {
-    try {
-      await startMicrophoneCapture();
-      setCurrentView("microphonePlayer");
-    } catch (err) {
-      // Error handling is done in the hook
-    }
+    await startMicrophoneCapture();
+    setCurrentView("microphonePlayer");
   };
 
   const handleBack = () => {
-    // Stop audio playback if coming from file player
     if (currentView === "filePlayer") {
       pause();
-    }
-    // Stop system audio if coming from system player
-    if (currentView === "systemPlayer") {
+    } else if (currentView === "systemPlayer") {
       stopSystemAudioCapture();
-    }
-    // Stop microphone if coming from microphone player
-    if (currentView === "microphonePlayer") {
+    } else if (currentView === "microphonePlayer") {
       stopMicrophoneCapture();
     }
-    
     setCurrentView("landing");
   };
 
@@ -211,53 +110,59 @@ export default function Index() {
 
       case "filePlayer":
         return (
-          <MultiPlayerView
-            mode="file"
-            fileName={fileName}
-            audioState={audioState}
-            audioData={fileAudioData}
-            isPlaying={audioState.isPlaying}
-            onBack={handleBack}
-            onPlay={play}
-            onPause={pause}
-            onSeek={seek}
-            onVolumeChange={setVolume}
-            multiVisualizationConfig={multiVisualizationConfig}
-            onMultiVisualizationConfigChange={setMultiVisualizationConfig}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+            <MultiPlayerView
+              mode="file"
+              fileName={fileName}
+              audioState={audioState}
+              audioData={fileAudioData}
+              isPlaying={audioState.isPlaying}
+              onBack={handleBack}
+              onPlay={play}
+              onPause={pause}
+              onSeek={seek}
+              onVolumeChange={setVolume}
+              multiVisualizationConfig={multiVisualizationConfig}
+              onMultiVisualizationConfigChange={setMultiVisualizationConfig}
+            />
+          </Suspense>
         );
 
       case "systemPlayer":
         return (
-          <MultiPlayerView
-            mode="system"
-            audioData={systemAudioData}
-            isPlaying={isCapturing}
-            isCapturing={isCapturing}
-            onBack={handleBack}
-            onStop={handleStop}
-            multiVisualizationConfig={multiVisualizationConfig}
-            onMultiVisualizationConfigChange={setMultiVisualizationConfig}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+            <MultiPlayerView
+              mode="system"
+              audioData={systemAudioData}
+              isPlaying={isCapturing}
+              isCapturing={isCapturing}
+              onBack={handleBack}
+              onStop={handleStop}
+              multiVisualizationConfig={multiVisualizationConfig}
+              onMultiVisualizationConfigChange={setMultiVisualizationConfig}
+            />
+          </Suspense>
         );
 
       case "microphonePlayer":
         return (
-          <MultiPlayerView
-            mode="microphone"
-            audioData={microphoneAudioData}
-            isPlaying={isMicrophoneCapturing}
-            isCapturing={isMicrophoneCapturing}
-            microphoneLevel={microphoneLevel}
-            sensitivity={sensitivity}
-            noiseGate={noiseGate}
-            onBack={handleBack}
-            onStop={handleMicrophoneStop}
-            onSensitivityChange={setSensitivity}
-            onNoiseGateChange={setNoiseGate}
-            multiVisualizationConfig={multiVisualizationConfig}
-            onMultiVisualizationConfigChange={setMultiVisualizationConfig}
-          />
+          <Suspense fallback={<div className="flex items-center justify-center h-screen">Loading...</div>}>
+            <MultiPlayerView
+              mode="microphone"
+              audioData={microphoneAudioData}
+              isPlaying={isMicrophoneCapturing}
+              isCapturing={isMicrophoneCapturing}
+              microphoneLevel={microphoneLevel}
+              sensitivity={sensitivity}
+              noiseGate={noiseGate}
+              onBack={handleBack}
+              onStop={handleMicrophoneStop}
+              onSensitivityChange={setSensitivity}
+              onNoiseGateChange={setNoiseGate}
+              multiVisualizationConfig={multiVisualizationConfig}
+              onMultiVisualizationConfigChange={setMultiVisualizationConfig}
+            />
+          </Suspense>
         );
 
       default:

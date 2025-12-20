@@ -94,15 +94,11 @@ export const MultiAudioVisualizer = ({
       }
     });
     
-    // Fix duplicates by reassigning to next available slots
     if (duplicates.length > 0) {
-      console.warn(`Found duplicate grid slots, fixing:`, duplicates);
-      
       const newPositions = { ...positions };
       let nextAvailableSlot = 0;
       
       duplicates.forEach(duplicateType => {
-        // Find next available slot
         while (usedSlots.has(nextAvailableSlot)) {
           nextAvailableSlot++;
         }
@@ -171,13 +167,10 @@ export const MultiAudioVisualizer = ({
       const targetPosition = config.positions[targetType as keyof typeof config.positions];
       
       if (draggedPosition && targetPosition) {
-        // Ensure we're not swapping identical slots (safety check)
         if (draggedPosition.gridSlot === targetPosition.gridSlot) {
-          console.warn(`Attempted to swap identical grid slots (${draggedPosition.gridSlot}) - ignoring swap`);
           return;
         }
         
-        // Swap the grid slots in a single atomic operation
         onConfigChange({
           ...config,
           positions: {

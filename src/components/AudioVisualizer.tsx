@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo, memo } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,7 +13,7 @@ interface AudioVisualizerProps {
   onConfigChange?: (config: VisualizationConfig) => void;
 }
 
-export const AudioVisualizer = ({
+export const AudioVisualizer = memo(({
   audioData,
   isPlaying,
   fullScreen = false,
@@ -37,13 +37,13 @@ export const AudioVisualizer = ({
   const config = externalConfig || internalConfig;
   const setConfig = onConfigChange || setInternalConfig;
 
-  const visualizationTypes = [
+  const visualizationTypes = useMemo(() => [
     { type: "bars" as const, icon: BarChart3, label: "Frequency Bars" },
     { type: "circular" as const, icon: Circle, label: "Circular" },
     { type: "waveform" as const, icon: Waves, label: "Waveform" },
     { type: "particles" as const, icon: Sparkles, label: "Particles" },
     { type: "mirrored-waveform" as const, icon: Activity, label: "Mirrored Waveform" },
-  ];
+  ], []);
 
   const drawBars = (
     ctx: CanvasRenderingContext2D,
@@ -1323,4 +1323,6 @@ export const AudioVisualizer = ({
       </div>
     </Card>
   );
-};
+});
+
+AudioVisualizer.displayName = 'AudioVisualizer';

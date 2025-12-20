@@ -80,7 +80,7 @@ export const useAudioAnalyzer = () => {
 
       await audio.load();
     } catch (error) {
-      console.error('Error initializing audio:', error);
+      throw new Error('Failed to initialize audio: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   }, []);
 
@@ -96,12 +96,13 @@ export const useAudioAnalyzer = () => {
       analyzer.getByteFrequencyData(frequencyData);
       analyzer.getByteTimeDomainData(timeData);
 
-      setAudioData(prev => ({
-        ...prev,
-        frequencyData: new Uint8Array(frequencyData),
-        timeData: new Uint8Array(timeData),
+      setAudioData({
+        frequencyData,
+        timeData,
+        sampleRate: audioContextRef.current?.sampleRate || 44100,
+        duration: audioRef.current?.duration || 0,
         currentTime: audioRef.current?.currentTime || 0,
-      }));
+      });
 
       animationRef.current = requestAnimationFrame(updateData);
     };
@@ -127,7 +128,7 @@ export const useAudioAnalyzer = () => {
       setAudioState(prev => ({ ...prev, isPlaying: true }));
       startVisualization();
     } catch (error) {
-      console.error('Error playing audio:', error);
+      throw new Error('Failed to play audio: ' + (error instanceof Error ? error.message : 'Unknown error'));
     }
   }, [startVisualization]);
 
