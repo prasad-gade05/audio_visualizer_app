@@ -55,7 +55,7 @@ export const AdvancedAudioAnalytics = ({
   const [prevRmsLevel, setPrevRmsLevel] = useState(-39.3);
 
   const calculateMetrics = (): AudioMetrics => {
-    if (!audioData.frequencyData || !audioData.timeData || !isPlaying) {
+    if (!audioData.frequencyData || !audioData.timeData) {
       return {
         peakFrequency: 517,
         rmsLevel: -39.3,
@@ -227,14 +227,13 @@ export const AdvancedAudioAnalytics = ({
   };
 
   useEffect(() => {
-    if (!isPlaying) return;
-    
     // Update analytics in real-time on every audio data change
     // This is important for analytics to show live data
+    // Calculate metrics when audio data is available, regardless of isPlaying state
     const newMetrics = calculateMetrics();
     setMetrics(newMetrics);
     setPrevRmsLevel(newMetrics.rmsLevel);
-  }, [audioData, isPlaying]);
+  }, [audioData.frequencyData, audioData.timeData]);
 
   const ProgressBar = ({ 
     value, 
