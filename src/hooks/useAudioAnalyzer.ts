@@ -13,6 +13,7 @@ export const useAudioAnalyzer = () => {
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const animationRef = useRef<number>();
+  const dataBuffersRef = useRef<{ frequency: Uint8Array; time: Uint8Array } | null>(null);
 
   const [audioState, setAudioState] = useState<AudioState>({
     isPlaying: false,
@@ -43,11 +44,18 @@ export const useAudioAnalyzer = () => {
       const audioContext = new AudioContextClass();
       audioContextRef.current = audioContext;
 
-      // Create analyzer
+      // Create analyzer with optimized settings
       const analyzer = audioContext.createAnalyser();
-      analyzer.fftSize = 2048;
-      analyzer.smoothingTimeConstant = 0.8;
+      analyzer.fftSize = 1024; // Reduced from 2048 for better performance
+      analyzer.smoothingTimeConstant = 0.7; // Reduced for more responsive data
       analyzerRef.current = analyzer;
+      
+      // Pre-allocate buffers for reuse
+      const bufferLength = analyzer.frequencyBinCount;
+      dataBuffersRef.current = {
+        frequency: new Uint8Array(bufferLength),
+        time: new Uint8Array(bufferLength)
+      };
 
       // Connect audio to analyzer
       const source = audioContext.createMediaElementSource(audio);
@@ -85,20 +93,20 @@ export const useAudioAnalyzer = () => {
   }, []);
 
   const startVisualization = useCallback(() => {
-    if (!analyzerRef.current) return;
+    if (!analyzerRef.current || !dataBuffersRef.current) return;
 
     const analyzer = analyzerRef.current;
-    const bufferLength = analyzer.frequencyBinCount;
-    const frequencyData = new Uint8Array(bufferLength);
-    const timeData = new Uint8Array(bufferLength);
+    const buffers = dataBuffersRef.current;
 
     const updateData = () => {
-      analyzer.getByteFrequencyData(frequencyData);
-      analyzer.getByteTimeDomainData(timeData);
+      // Reuse existing buffers instead of creating new ones
+      analyzer.getByteFrequencyData(buffers.frequency);
+      analyzer.getByteTimeDomainData(buffers.time);
 
+      // Update state with references to reused buffers
       setAudioData({
-        frequencyData,
-        timeData,
+        frequencyData: buffers.frequency,
+        timeData: buffers.time,
         sampleRate: audioContextRef.current?.sampleRate || 44100,
         duration: audioRef.current?.duration || 0,
         currentTime: audioRef.current?.currentTime || 0,

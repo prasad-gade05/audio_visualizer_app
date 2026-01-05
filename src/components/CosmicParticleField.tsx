@@ -31,10 +31,13 @@ export const CosmicParticleField = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
   const particlesRef = useRef<Particle[]>([]);
+  const particlePoolRef = useRef<Particle[]>([]);
   const mouseRef = useRef({ x: 0, y: 0, isOver: false });
   const timeRef = useRef(0);
-  const [particleCount] = useState(400);
+  const [particleCount] = useState(200); // Reduced from 400
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
+  const isPageVisibleRef = useRef(true);
+  const lastAudioActivityRef = useRef(0);
 
   // Audio analysis variables
   const bassRef = useRef(0);
@@ -48,6 +51,25 @@ export const CosmicParticleField = ({
     // Simple pseudo-random noise function
     const seed = Math.sin(x * 12.9898 + y * 78.233 + time * 0.001) * 43758.5453;
     return (seed - Math.floor(seed)) * 2 - 1;
+  };
+
+  // Object pooling for particles
+  const getParticleFromPool = (x: number, y: number): Particle => {
+    if (particlePoolRef.current.length > 0) {
+      const particle = particlePoolRef.current.pop()!;
+      particle.x = x;
+      particle.y = y;
+      particle.baseX = x;
+      particle.baseY = y;
+      particle.vx = 0;
+      particle.vy = 0;
+      return particle;
+    }
+    return createParticle(x, y);
+  };
+
+  const returnParticleToPool = (particle: Particle) => {
+    particlePoolRef.current.push(particle);
   };
 
   const createParticle = (x: number, y: number): Particle => {
@@ -120,7 +142,7 @@ export const CosmicParticleField = ({
     for (let i = 0; i < particleCount; i++) {
       const x = Math.random() * dimensions.width;
       const y = Math.random() * dimensions.height;
-      particles.push(createParticle(x, y));
+      particles.push(getParticleFromPool(x, y));
     }
     particlesRef.current = particles;
   };
@@ -453,11 +475,17 @@ export const CosmicParticleField = ({
   };
 
   const animate = (currentTime: number) => {
+    // Skip animation if page is hidden
+    if (!isPageVisibleRef.current) {
+      animationRef.current = requestAnimationFrame(animate);
+      return;
+    }
+
     if (!isPlaying) {
       // Clear canvas when not playing and keep particles static
       const canvas = canvasRef.current;
       if (canvas) {
-        const ctx = canvas.getContext("2d");
+        const ctx = canvas.getContext("2d", { alpha: false });
         if (ctx) {
           ctx.fillStyle = "#000000";
           ctx.fillRect(0, 0, dimensions.width, dimensions.height);
@@ -494,13 +522,20 @@ export const CosmicParticleField = ({
       overallVolumeRef.current > 0.05;
 
     if (hasAudioActivity) {
+      lastAudioActivityRef.current = currentTime;
       updateParticles(deltaTime);
+    } else {
+      // Skip particle updates if no audio for 100ms
+      const timeSinceLastActivity = currentTime - lastAudioActivityRef.current;
+      if (timeSinceLastActivity < 100) {
+        updateParticles(deltaTime);
+      }
     }
 
     // Always draw particles (but they may be static)
     const canvas = canvasRef.current;
     if (canvas) {
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext("2d", { alpha: false });
       if (ctx) {
         drawParticles(ctx);
       }
@@ -547,9 +582,21 @@ export const CosmicParticleField = ({
 
     updateDimensions();
 
-    // Add resize observer
-    const resizeObserver = new ResizeObserver(updateDimensions);
+    // Add resize observer with debouncing
+    let resizeTimeout: number;
+    const debouncedResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = window.setTimeout(updateDimensions, 100);
+    };
+    
+    const resizeObserver = new ResizeObserver(debouncedResize);
     resizeObserver.observe(container);
+
+    // Page Visibility API
+    const handleVisibilityChange = () => {
+      isPageVisibleRef.current = !document.hidden;
+    };
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // Initialize particles
     initializeParticles();
@@ -560,7 +607,7 @@ export const CosmicParticleField = ({
       animationRef.current = requestAnimationFrame(animate);
     } else {
       // Clear canvas when stopped
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext("2d", { alpha: false });
       if (ctx) {
         ctx.fillStyle = "#000000";
         ctx.fillRect(0, 0, dimensions.width, dimensions.height);
@@ -574,6 +621,10 @@ export const CosmicParticleField = ({
         animationRef.current = null;
       }
       resizeObserver.disconnect();
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      clearTimeout(resizeTimeout);
+      // Return particles to pool
+      particlesRef.current.forEach(returnParticleToPool);
     };
   }, [isPlaying, dimensions.width, dimensions.height]);
 

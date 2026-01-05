@@ -57,6 +57,8 @@ export const MultiAudioVisualizer = ({
   const lastResizeRef = useRef<{ [key: string]: { width: number; height: number } }>({});
   const gradientCacheRef = useRef<{ [key: string]: CanvasGradient }>({});
   const contextCacheRef = useRef<{ [key: string]: CanvasRenderingContext2D | null }>({});
+  const isPageVisibleRef = useRef(true);
+  const lastFrameTimeRef = useRef(0);
 
   // Get enabled visualizations
   const enabledVisualizations = useMemo(() => Object.entries(config.enabled)
@@ -1021,8 +1023,35 @@ export const MultiAudioVisualizer = ({
   };
 
   useEffect(() => {
-    const render = () => {
-      if (!isPlaying) return;
+    // Page Visibility API
+    const handleVisibilityChange = () => {
+      isPageVisibleRef.current = !document.hidden;
+      if (document.hidden && animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      } else if (!document.hidden && isPlaying) {
+        // Resume animation when tab becomes visible
+        lastFrameTimeRef.current = performance.now();
+        animationRef.current = requestAnimationFrame(render);
+      }
+    };
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    const render = (currentTime?: number) => {
+      // Skip rendering if page is hidden
+      if (!isPlaying || !isPageVisibleRef.current) {
+        return;
+      }
+
+      // Throttle to display refresh rate (60fps max)
+      const now = currentTime || performance.now();
+      const elapsed = now - lastFrameTimeRef.current;
+      if (elapsed < 16) { // ~60fps cap
+        animationRef.current = requestAnimationFrame(render);
+        return;
+      }
+      lastFrameTimeRef.current = now;
 
       // Draw enabled visualizations
       enabledVisualizations.forEach((type) => {
@@ -1111,6 +1140,7 @@ export const MultiAudioVisualizer = ({
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [audioData, isPlaying, config, enabledVisualizations]);
 

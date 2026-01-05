@@ -23,6 +23,8 @@ export const AudioVisualizer = memo(({
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const animationRef = useRef<number | null>(null);
+  const gradientCacheRef = useRef<Map<string, CanvasGradient>>(new Map());
+  const isPageVisibleRef = useRef(true);
 
   const [internalConfig, setInternalConfig] = useState<VisualizationConfig>({
     type: "bars",
@@ -98,14 +100,15 @@ export const AudioVisualizer = memo(({
           break;
       }
 
-      const gradient = ctx.createLinearGradient(
-        0,
-        height,
-        0,
-        height - barHeight
-      );
-      gradient.addColorStop(0, bottomColor);
-      gradient.addColorStop(1, topColor);
+      // Cache gradient for this color variant
+      const gradientKey = `bar-${colorVariant}-${height}`;
+      let gradient = gradientCacheRef.current.get(gradientKey);
+      if (!gradient) {
+        gradient = ctx.createLinearGradient(0, height, 0, 0);
+        gradient.addColorStop(0, bottomColor);
+        gradient.addColorStop(1, topColor);
+        gradientCacheRef.current.set(gradientKey, gradient);
+      }
 
       ctx.fillStyle = gradient;
       ctx.fillRect(i * barWidth, height - barHeight, barWidth - 2, barHeight);
@@ -1177,14 +1180,15 @@ export const AudioVisualizer = memo(({
       const container = containerRef.current;
       if (!canvas || !container) return;
 
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext("2d", { alpha: false }); // Disable alpha for better performance
       if (!ctx) return;
 
       const rect = container.getBoundingClientRect();
       const width = Math.max(rect.width, 100);
       const height = Math.max(rect.height, 100);
 
-      if (!isPlaying) {
+      // Skip rendering if page is hidden or not playing
+      if (!isPlaying || !isPageVisibleRef.current) {
         ctx.clearRect(0, 0, width, height);
         return;
       }
@@ -1231,12 +1235,76 @@ export const AudioVisualizer = memo(({
 
     const handleResize = () => {
       resizeCanvas();
+      // Clear gradient cache on resize
+      gradientCacheRef.current.clear();
+    };
+
+    // Page Visibility API to pause when tab is hidden
+    const handleVisibilityChange = () => {
+      isPageVisibleRef.current = !document.hidden;
+      if (document.hidden && animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+        animationRef.current = null;
+      } else if (!document.hidden && isPlaying) {
+        // Resume animation when tab becomes visible
+        const canvas = canvasRef.current;
+        if (canvas) {
+          const ctx = canvas.getContext("2d");
+          if (ctx) {
+            const render = () => {
+              const canvas = canvasRef.current;
+              const container = containerRef.current;
+              if (!canvas || !container) return;
+
+              const ctx = canvas.getContext("2d");
+              if (!ctx) return;
+
+              const rect = container.getBoundingClientRect();
+              const width = Math.max(rect.width, 100);
+              const height = Math.max(rect.height, 100);
+
+              if (!isPlaying || !isPageVisibleRef.current) {
+                ctx.clearRect(0, 0, width, height);
+                return;
+              }
+
+              if (audioData.frequencyData.length === 0) {
+                animationRef.current = requestAnimationFrame(render);
+                return;
+              }
+
+              switch (config.type) {
+                case "bars":
+                  drawBars(ctx, audioData.frequencyData, width, height);
+                  break;
+                case "circular":
+                  drawCircular(ctx, audioData.frequencyData, width, height);
+                  break;
+                case "waveform":
+                  drawWaveform(ctx, audioData.timeData, width, height);
+                  break;
+                case "particles":
+                  drawParticles(ctx, audioData.frequencyData, width, height);
+                  break;
+                case "mirrored-waveform":
+                  drawMirroredWaveform(ctx, audioData.timeData, width, height);
+                  break;
+              }
+
+              animationRef.current = requestAnimationFrame(render);
+            };
+            render();
+          }
+        }
+      }
     };
 
     window.addEventListener("resize", handleResize);
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
     const resizeObserver = new ResizeObserver(() => {
       resizeCanvas();
+      gradientCacheRef.current.clear();
     });
 
     if (containerRef.current) {
@@ -1245,9 +1313,11 @@ export const AudioVisualizer = memo(({
 
     return () => {
       window.removeEventListener("resize", handleResize);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
       resizeObserver.disconnect();
+      gradientCacheRef.current.clear();
     };
-  }, []);
+  }, [isPlaying, audioData, config]);
 
   return fullScreen ? (
     // Full-screen mode for PlayerView
