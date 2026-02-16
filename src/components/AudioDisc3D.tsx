@@ -14,8 +14,10 @@ export const AudioDisc3D = ({ audioData, isPlaying }: AudioDisc3DProps) => {
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const discLinesRef = useRef<THREE.Line[]>([]);
   const frameIdRef = useRef<number | null>(null);
+  const animateRef = useRef<(() => void) | null>(null);
   
   const audioDataRef = useRef(audioData);
+  const isPlayingRef = useRef(isPlaying);
   
   const isDragging = useRef(false);
   const previousMousePosition = useRef({ x: 0, y: 0 });
@@ -24,6 +26,16 @@ export const AudioDisc3D = ({ audioData, isPlaying }: AudioDisc3DProps) => {
   useEffect(() => {
     audioDataRef.current = audioData;
   }, [audioData]);
+
+  useEffect(() => {
+    isPlayingRef.current = isPlaying;
+    if (!isPlaying && frameIdRef.current) {
+      cancelAnimationFrame(frameIdRef.current);
+      frameIdRef.current = null;
+    } else if (isPlaying && !frameIdRef.current) {
+      animateRef.current?.();
+    }
+  }, [isPlaying]);
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -153,6 +165,10 @@ export const AudioDisc3D = ({ audioData, isPlaying }: AudioDisc3DProps) => {
         x: event.clientX,
         y: event.clientY
       };
+
+      if (!isPlayingRef.current && rendererRef.current && sceneRef.current && cameraRef.current) {
+        rendererRef.current.render(sceneRef.current, cameraRef.current);
+      }
     };
 
     const handleMouseUp = () => {
@@ -207,6 +223,11 @@ export const AudioDisc3D = ({ audioData, isPlaying }: AudioDisc3DProps) => {
 
     // Animation loop
     const animate = () => {
+      if (!isPlayingRef.current) {
+        frameIdRef.current = null;
+        return;
+      }
+
       frameIdRef.current = requestAnimationFrame(animate);
 
       // Update disc geometry based on audio data
@@ -259,7 +280,10 @@ export const AudioDisc3D = ({ audioData, isPlaying }: AudioDisc3DProps) => {
       renderer.render(scene, camera);
     };
 
-    animate();
+    animateRef.current = animate;
+    if (isPlayingRef.current) {
+      animate();
+    }
 
     // Cleanup
     return () => {
@@ -278,6 +302,8 @@ export const AudioDisc3D = ({ audioData, isPlaying }: AudioDisc3DProps) => {
         line.geometry.dispose();
         (line.material as THREE.Material).dispose();
       });
+
+      animateRef.current = null;
       
       if (containerRef.current && renderer.domElement.parentNode === containerRef.current) {
         containerRef.current.removeChild(renderer.domElement);

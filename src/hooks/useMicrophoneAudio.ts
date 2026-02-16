@@ -2,11 +2,21 @@ import { useRef, useCallback, useState, useEffect } from "react";
 import { AudioData } from "@/types/audio";
 
 export const useMicrophoneAudio = () => {
+  const AUDIO_STATE_UPDATE_INTERVAL_MS = 25;
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationRef = useRef<number | undefined>(undefined);
+  const dataBuffersRef = useRef<{
+    frequency: Uint8Array;
+    time: Uint8Array;
+    processedFrequency: Uint8Array;
+  } | null>(null);
+  const lastStateUpdateRef = useRef(0);
+  const isCapturingRef = useRef(false);
+  const sensitivityRef = useRef(1);
+  const noiseGateRef = useRef(0.1);
 
   const [isCapturing, setIsCapturing] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
@@ -22,6 +32,18 @@ export const useMicrophoneAudio = () => {
     duration: 0,
     currentTime: 0,
   });
+
+  useEffect(() => {
+    isCapturingRef.current = isCapturing;
+  }, [isCapturing]);
+
+  useEffect(() => {
+    sensitivityRef.current = sensitivity;
+  }, [sensitivity]);
+
+  useEffect(() => {
+    noiseGateRef.current = noiseGate;
+  }, [noiseGate]);
 
   // Check if microphone access is supported
   useEffect(() => {
@@ -88,6 +110,11 @@ export const useMicrophoneAudio = () => {
       analyzer.fftSize = 2048;
       analyzer.smoothingTimeConstant = 0.8;
       analyzerRef.current = analyzer;
+      dataBuffersRef.current = {
+        frequency: new Uint8Array(analyzer.frequencyBinCount),
+        time: new Uint8Array(analyzer.frequencyBinCount),
+        processedFrequency: new Uint8Array(analyzer.frequencyBinCount),
+      };
 
       // Connect microphone stream to analyzer
       const source = audioContext.createMediaStreamSource(stream);
@@ -176,6 +203,7 @@ export const useMicrophoneAudio = () => {
 
     // Reset analyzer
     analyzerRef.current = null;
+    dataBuffersRef.current = null;
 
     // Reset state
     setIsCapturing(false);
@@ -193,50 +221,64 @@ export const useMicrophoneAudio = () => {
     if (!analyzerRef.current) return;
 
     const analyzer = analyzerRef.current;
-    const bufferLength = analyzer.frequencyBinCount;
-    const frequencyData = new Uint8Array(bufferLength);
-    const timeData = new Uint8Array(bufferLength);
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+
+    if (!dataBuffersRef.current) {
+      dataBuffersRef.current = {
+        frequency: new Uint8Array(analyzer.frequencyBinCount),
+        time: new Uint8Array(analyzer.frequencyBinCount),
+        processedFrequency: new Uint8Array(analyzer.frequencyBinCount),
+      };
+    }
+
+    const buffers = dataBuffersRef.current;
 
     const updateData = () => {
-      if (!analyzer || !isCapturing) return;
+      if (!analyzer || !isCapturingRef.current || !streamRef.current) return;
 
-      analyzer.getByteFrequencyData(frequencyData);
-      analyzer.getByteTimeDomainData(timeData);
+      analyzer.getByteFrequencyData(buffers.frequency);
+      analyzer.getByteTimeDomainData(buffers.time);
 
       // Calculate current volume level for UI feedback
       let sum = 0;
-      for (let i = 0; i < timeData.length; i++) {
-        const normalized = (timeData[i] - 128) / 128;
+      for (let i = 0; i < buffers.time.length; i++) {
+        const normalized = (buffers.time[i] - 128) / 128;
         sum += normalized * normalized;
       }
-      const rms = Math.sqrt(sum / timeData.length);
-      const currentLevel = rms * sensitivity;
+      const rms = Math.sqrt(sum / buffers.time.length);
+      const currentLevel = rms * sensitivityRef.current;
 
       // Apply noise gate
-      const gatedLevel = currentLevel > noiseGate ? currentLevel : 0;
-      setMicrophoneLevel(Math.min(gatedLevel, 1));
+      const gatedLevel = currentLevel > noiseGateRef.current ? currentLevel : 0;
 
       // Apply sensitivity and noise gate to frequency data for visualization
-      const processedFrequencyData = new Uint8Array(frequencyData.length);
-      for (let i = 0; i < frequencyData.length; i++) {
-        const normalizedValue = frequencyData[i] / 255;
-        const sensitiveValue = Math.min(normalizedValue * sensitivity, 1);
-        const gatedValue = sensitiveValue > noiseGate ? sensitiveValue : 0;
-        processedFrequencyData[i] = Math.floor(gatedValue * 255);
+      for (let i = 0; i < buffers.frequency.length; i++) {
+        const normalizedValue = buffers.frequency[i] / 255;
+        const sensitiveValue = Math.min(normalizedValue * sensitivityRef.current, 1);
+        const gatedValue = sensitiveValue > noiseGateRef.current ? sensitiveValue : 0;
+        buffers.processedFrequency[i] = Math.floor(gatedValue * 255);
       }
 
-      setAudioData(prev => ({
-        ...prev,
-        frequencyData: processedFrequencyData,
-        timeData: new Uint8Array(timeData),
-        currentTime: Date.now() / 1000, // Use timestamp for real-time sources
-      }));
+      const now = performance.now();
+      if (now - lastStateUpdateRef.current >= AUDIO_STATE_UPDATE_INTERVAL_MS) {
+        setMicrophoneLevel(Math.min(gatedLevel, 1));
+        setAudioData({
+          frequencyData: buffers.processedFrequency,
+          timeData: buffers.time,
+          sampleRate: audioContextRef.current?.sampleRate || 44100,
+          duration: 0,
+          currentTime: Date.now() / 1000,
+        });
+        lastStateUpdateRef.current = now;
+      }
 
       animationRef.current = requestAnimationFrame(updateData);
     };
 
     updateData();
-  }, [isCapturing, sensitivity, noiseGate]);
+  }, []);
 
   // Cleanup on unmount
   useEffect(() => {

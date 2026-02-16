@@ -13,11 +13,14 @@ interface DisplayMediaStreamConstraints {
 }
 
 export const useSystemAudio = () => {
+  const AUDIO_STATE_UPDATE_INTERVAL_MS = 25;
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const animationRef = useRef<number | undefined>(undefined);
+  const dataBuffersRef = useRef<{ frequency: Uint8Array; time: Uint8Array } | null>(null);
+  const lastStateUpdateRef = useRef(0);
 
   const [isCapturing, setIsCapturing] = useState(false);
   const [isSupported, setIsSupported] = useState(false);
@@ -135,6 +138,10 @@ export const useSystemAudio = () => {
       analyzer.fftSize = 2048;
       analyzer.smoothingTimeConstant = 0.8;
       analyzerRef.current = analyzer;
+      dataBuffersRef.current = {
+        frequency: new Uint8Array(analyzer.frequencyBinCount),
+        time: new Uint8Array(analyzer.frequencyBinCount),
+      };
 
       // Connect stream to analyzer
       const source = audioContext.createMediaStreamSource(stream);
@@ -216,6 +223,7 @@ export const useSystemAudio = () => {
     }
 
     analyzerRef.current = null;
+    dataBuffersRef.current = null;
     setIsCapturing(false);
     setError("");
   }, []);
@@ -230,8 +238,18 @@ export const useSystemAudio = () => {
     }
 
     const analyzer = analyzerRef.current;
-    const audioContext = audioContextRef.current;
-    const bufferLength = analyzer.frequencyBinCount;
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+
+    if (!dataBuffersRef.current) {
+      dataBuffersRef.current = {
+        frequency: new Uint8Array(analyzer.frequencyBinCount),
+        time: new Uint8Array(analyzer.frequencyBinCount),
+      };
+    }
+
+    const buffers = dataBuffersRef.current;
 
     // Use a flag to control the animation loop instead of React state
     let shouldContinue = true;
@@ -247,20 +265,20 @@ export const useSystemAudio = () => {
         return;
       }
 
-      // Create new arrays for each frame to avoid reference issues
-      const frequencyData = new Uint8Array(bufferLength);
-      const timeData = new Uint8Array(bufferLength);
+      analyzer.getByteFrequencyData(buffers.frequency);
+      analyzer.getByteTimeDomainData(buffers.time);
 
-      analyzer.getByteFrequencyData(frequencyData);
-      analyzer.getByteTimeDomainData(timeData);
-
-      setAudioData({
-        frequencyData,
-        timeData,
-        sampleRate: audioContextRef.current?.sampleRate || 44100,
-        duration: 0,
-        currentTime: 0,
-      });
+      const now = performance.now();
+      if (now - lastStateUpdateRef.current >= AUDIO_STATE_UPDATE_INTERVAL_MS) {
+        setAudioData({
+          frequencyData: buffers.frequency,
+          timeData: buffers.time,
+          sampleRate: audioContextRef.current?.sampleRate || 44100,
+          duration: 0,
+          currentTime: 0,
+        });
+        lastStateUpdateRef.current = now;
+      }
 
       animationRef.current = requestAnimationFrame(updateData);
     };

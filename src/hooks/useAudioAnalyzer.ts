@@ -8,12 +8,14 @@ declare global {
 }
 
 export const useAudioAnalyzer = () => {
+  const AUDIO_STATE_UPDATE_INTERVAL_MS = 25;
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyzerRef = useRef<AnalyserNode | null>(null);
   const sourceRef = useRef<MediaElementAudioSourceNode | null>(null);
   const animationRef = useRef<number>();
   const dataBuffersRef = useRef<{ frequency: Uint8Array; time: Uint8Array } | null>(null);
+  const lastStateUpdateRef = useRef(0);
 
   const [audioState, setAudioState] = useState<AudioState>({
     isPlaying: false,
@@ -95,6 +97,10 @@ export const useAudioAnalyzer = () => {
   const startVisualization = useCallback(() => {
     if (!analyzerRef.current || !dataBuffersRef.current) return;
 
+    if (animationRef.current) {
+      cancelAnimationFrame(animationRef.current);
+    }
+
     const analyzer = analyzerRef.current;
     const buffers = dataBuffersRef.current;
 
@@ -103,14 +109,18 @@ export const useAudioAnalyzer = () => {
       analyzer.getByteFrequencyData(buffers.frequency);
       analyzer.getByteTimeDomainData(buffers.time);
 
-      // Update state with references to reused buffers
-      setAudioData({
-        frequencyData: buffers.frequency,
-        timeData: buffers.time,
-        sampleRate: audioContextRef.current?.sampleRate || 44100,
-        duration: audioRef.current?.duration || 0,
-        currentTime: audioRef.current?.currentTime || 0,
-      });
+      const now = performance.now();
+      if (now - lastStateUpdateRef.current >= AUDIO_STATE_UPDATE_INTERVAL_MS) {
+        // Update state at a lower cadence to avoid full React tree rerenders each frame.
+        setAudioData({
+          frequencyData: buffers.frequency,
+          timeData: buffers.time,
+          sampleRate: audioContextRef.current?.sampleRate || 44100,
+          duration: audioRef.current?.duration || 0,
+          currentTime: audioRef.current?.currentTime || 0,
+        });
+        lastStateUpdateRef.current = now;
+      }
 
       animationRef.current = requestAnimationFrame(updateData);
     };

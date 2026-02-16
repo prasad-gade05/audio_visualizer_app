@@ -7,14 +7,24 @@ import { viteSourceLocator } from "@metagptx/vite-plugin-source-locator";
 export default defineConfig(({ mode }) => ({
   base: "/audio_visualizer_app/",
   plugins: [
-    viteSourceLocator({
-      prefix: "mgx",
-    }),
+    mode === "development" &&
+      viteSourceLocator({
+        prefix: "mgx",
+      }),
     react(),
-  ],
+  ].filter(Boolean),
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+    },
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          three: ["three"],
+        },
+      },
     },
   },
 }));

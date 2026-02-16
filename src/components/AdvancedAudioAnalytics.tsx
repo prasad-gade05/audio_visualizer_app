@@ -233,7 +233,7 @@ export const AdvancedAudioAnalytics = ({
     const newMetrics = calculateMetrics();
     setMetrics(newMetrics);
     setPrevRmsLevel(newMetrics.rmsLevel);
-  }, [audioData.frequencyData, audioData.timeData]);
+  }, [audioData]);
 
   const ProgressBar = ({ 
     value, 

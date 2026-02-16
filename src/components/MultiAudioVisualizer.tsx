@@ -1,11 +1,8 @@
-import { useEffect, useRef, useState, useMemo } from "react";
+import { useEffect, useRef, useState, useMemo, lazy, Suspense } from "react";
 import { AudioData, MultiVisualizationConfig } from "@/types/audio";
 import { Waves } from "lucide-react";
 import { GridDraggableVisualizationItem } from "./GridDraggableVisualizationItem";
 import { DragInstructions } from "./DragInstructions";
-import { AdvancedAudioAnalytics } from "./AdvancedAudioAnalytics";
-import { AudioGlobe3D } from "./AudioGlobe3D";
-import { AudioDisc3D } from "./AudioDisc3D";
 
 // Helper function moved outside to avoid recreation
 const hexToRgb = (hex: string) => {
@@ -59,6 +56,16 @@ export const MultiAudioVisualizer = ({
   const contextCacheRef = useRef<{ [key: string]: CanvasRenderingContext2D | null }>({});
   const isPageVisibleRef = useRef(true);
   const lastFrameTimeRef = useRef(0);
+  const audioDataRef = useRef(audioData);
+  const configRef = useRef(config);
+
+  useEffect(() => {
+    audioDataRef.current = audioData;
+  }, [audioData]);
+
+  useEffect(() => {
+    configRef.current = config;
+  }, [config]);
 
   // Get enabled visualizations
   const enabledVisualizations = useMemo(() => Object.entries(config.enabled)
@@ -521,7 +528,11 @@ export const MultiAudioVisualizer = ({
     ctx.fill();
     
     // Draw center pulse indicator
-    const avgValue = data.reduce((sum, val) => sum + val, 0) / data.length / 255;
+    let total = 0;
+    for (let i = 0; i < data.length; i++) {
+      total += data[i];
+    }
+    const avgValue = total / data.length / 255;
     const pulseRadius = 3 + avgValue * 5;
     
     ctx.fillStyle = "rgba(255, 255, 255, 0.7)";
@@ -942,8 +953,13 @@ export const MultiAudioVisualizer = ({
 
     // Add graph scales and legend for multi-visualization mode
     // Draw dynamic range indicator
-    const minValue = Math.min(...Array.from(data));
-    const maxValue = Math.max(...Array.from(data));
+    let minValue = 255;
+    let maxValue = 0;
+    for (let i = 0; i < data.length; i++) {
+      const value = data[i];
+      if (value < minValue) minValue = value;
+      if (value > maxValue) maxValue = value;
+    }
     const dynamicRange = maxValue - minValue;
     
     ctx.fillStyle = "rgba(255, 255, 255, 0.8)";
@@ -1055,7 +1071,7 @@ export const MultiAudioVisualizer = ({
 
       // Draw enabled visualizations
       enabledVisualizations.forEach((type) => {
-        if (type === "analytics" || type === "3d-globe") return; // Handled by separate components
+        if (type === "analytics" || type === "3d-globe" || type === "3d-disc") return; // Handled by separate components
 
         const canvas = canvasRefs.current[type];
         if (!canvas) return;
@@ -1082,50 +1098,53 @@ export const MultiAudioVisualizer = ({
         // Skip rendering if canvas has no size
         if (width === 0 || height === 0) return;
 
+        const currentAudioData = audioDataRef.current;
+        const currentConfig = configRef.current;
+
         switch (type) {
           case "bars":
             drawBars(
               ctx,
-              audioData.frequencyData,
+              currentAudioData.frequencyData,
               width,
               height,
-              config.configs.bars
+              currentConfig.configs.bars
             );
             break;
           case "circular":
             drawCircular(
               ctx,
-              audioData.frequencyData,
+              currentAudioData.frequencyData,
               width,
               height,
-              config.configs.circular
+              currentConfig.configs.circular
             );
             break;
           case "waveform":
             drawWaveform(
               ctx,
-              audioData.timeData,
+              currentAudioData.timeData,
               width,
               height,
-              config.configs.waveform
+              currentConfig.configs.waveform
             );
             break;
           case "particles":
             drawParticles(
               ctx,
-              audioData.frequencyData,
+              currentAudioData.frequencyData,
               width,
               height,
-              config.configs.particles
+              currentConfig.configs.particles
             );
             break;
           case "mirrored-waveform":
             drawMirroredWaveform(
               ctx,
-              audioData.timeData,
+              currentAudioData.timeData,
               width,
               height,
-              config.configs["mirrored-waveform"]
+              currentConfig.configs["mirrored-waveform"]
             );
             break;
         }
@@ -1142,11 +1161,11 @@ export const MultiAudioVisualizer = ({
       }
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
-  }, [audioData, isPlaying, config, enabledVisualizations]);
+  }, [isPlaying, enabledVisualizations]);
 
   return (
     <div className="w-full h-full relative p-4">
-      {showInstructions && <DragInstructions />}
+      <DragInstructions isVisible={showInstructions} />
       
       <div
         ref={containerRef}
@@ -1174,24 +1193,30 @@ export const MultiAudioVisualizer = ({
               allTypes={enabledVisualizations}
             >
               {type === "analytics" && (
-                <AdvancedAudioAnalytics 
-                  audioData={audioData}
-                  isPlaying={isPlaying}
-                />
+                <Suspense fallback={<div className="w-full h-full bg-black/40" />}>
+                  <AdvancedAudioAnalytics 
+                    audioData={audioData}
+                    isPlaying={isPlaying}
+                  />
+                </Suspense>
               )}
-              
+               
               {type === "3d-globe" && (
-                <AudioGlobe3D 
-                  audioData={audioData}
-                  isPlaying={isPlaying}
-                />
+                <Suspense fallback={<div className="w-full h-full bg-black/40" />}>
+                  <AudioGlobe3D 
+                    audioData={audioData}
+                    isPlaying={isPlaying}
+                  />
+                </Suspense>
               )}
 
               {type === "3d-disc" && (
-                <AudioDisc3D 
-                  audioData={audioData}
-                  isPlaying={isPlaying}
-                />
+                <Suspense fallback={<div className="w-full h-full bg-black/40" />}>
+                  <AudioDisc3D 
+                    audioData={audioData}
+                    isPlaying={isPlaying}
+                  />
+                </Suspense>
               )}
 
               {type !== "analytics" && type !== "3d-globe" && type !== "3d-disc" && (
@@ -1207,3 +1232,21 @@ export const MultiAudioVisualizer = ({
     </div>
   );
 };
+
+const AdvancedAudioAnalytics = lazy(() =>
+  import("./AdvancedAudioAnalytics").then((module) => ({
+    default: module.AdvancedAudioAnalytics,
+  }))
+);
+
+const AudioGlobe3D = lazy(() =>
+  import("./AudioGlobe3D").then((module) => ({
+    default: module.AudioGlobe3D,
+  }))
+);
+
+const AudioDisc3D = lazy(() =>
+  import("./AudioDisc3D").then((module) => ({
+    default: module.AudioDisc3D,
+  }))
+);
